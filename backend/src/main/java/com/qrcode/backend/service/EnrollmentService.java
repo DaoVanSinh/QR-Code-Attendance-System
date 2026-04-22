@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;

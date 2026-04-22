@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SessionService {
 
     private final SessionRepository sessionRepository;
@@ -59,6 +61,7 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public SessionResponse createSession(Integer courseId, CreateSessionRequest request) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User teacher = userDetails.getUser();
@@ -158,6 +161,7 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public SessionResponse refreshQrCode(Integer sessionId) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User teacher = userDetails.getUser();
@@ -238,6 +242,7 @@ public class SessionService {
         }).collect(Collectors.toList());
     }
 
+    @Transactional
     public void manualCheckIn(Integer sessionId, List<Integer> studentIds) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User teacher = userDetails.getUser();

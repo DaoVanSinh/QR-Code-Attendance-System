@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AttendanceService {
 
     private final SessionRepository sessionRepository;
@@ -30,6 +32,7 @@ public class AttendanceService {
     private final EnrollmentRepository enrollmentRepository;
     private final AuditService auditService;
 
+    @Transactional
     public void checkIn(CheckInRequest request) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User student = userDetails.getUser();

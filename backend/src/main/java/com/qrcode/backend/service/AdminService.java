@@ -12,6 +12,7 @@ import com.qrcode.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AdminService {
 
     private final UserRepository userRepository;
@@ -32,6 +34,7 @@ public class AdminService {
     private final AttendancesRepository attendancesRepository;
     private final SemesterRepository semesterRepository;
 
+    @Transactional
     public void createUser(AdminCreateUserRequest request) {
         // Check duplicate email
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -72,6 +75,7 @@ public class AdminService {
         userRepository.save(newUser);
     }
 
+    @Transactional
     public void deleteUser(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -104,6 +108,7 @@ public class AdminService {
         return subjectRepository.findAll();
     }
 
+    @Transactional
     public CourseDetailResponse createCourse(CreateCourseRequest request) {
         Subject subject = subjectRepository.findByCode(request.getSubjectCode())
                 .orElseGet(() -> {
@@ -177,6 +182,7 @@ public class AdminService {
         return toCourseDetailResponse(course);
     }
 
+    @Transactional
     public CourseDetailResponse updateCourse(Integer id, CreateCourseRequest request) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy môn học"));
