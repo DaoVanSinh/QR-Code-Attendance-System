@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theo Dõi Điểm Danh | Cổng Giảng Viên</title>
+    <link rel="stylesheet" href="css/style.css?v=3">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div id="sidebar-placeholder"></div>
+
+    <main class="main-content">
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+                <h1 class="page-title">Theo Dõi Trực Tiếp</h1>
+                <p class="page-subtitle">Danh sách sinh viên đã điểm danh thành công trong phiên hiện tại.</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-outline" onclick="loadAttendances()">
+                    <ion-icon name="refresh-outline"></ion-icon> Làm Mới
+                </button>
+                <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">
+                    <ion-icon name="home-outline"></ion-icon> Về Dashboard
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Đã Điểm Danh</div>
+                <div class="stat-value" id="statCount">0</div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="card-header">
+                <h2>Danh Sách Sinh Viên</h2>
+                <span class="badge badge-live" id="liveIndicator">🔴 Đang theo dõi</span>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px">#</th>
+                            <th>Họ & Tên</th>
+                            <th>Email</th>
+                            <th>Thời Gian Quét</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTable">
+                        <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:32px;">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/utils.js"></script>
+    <script src="js/monitor.js?v=4"></script>
+</body>
+</html>

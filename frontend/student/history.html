@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Lịch Sử Điểm Danh | Sinh Viên</title>
+    <link rel="stylesheet" href="css/style.css?v=3">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div class="app-root">
+        <header class="app-header">
+            <div>
+                <div class="brand">🎓 QR Lịch Sử</div>
+                <div class="user-name" id="studentName">Sinh Viên</div>
+            </div>
+            <button class="btn-logout-sm" onclick="logout()">Đăng xuất</button>
+        </header>
+
+        <div class="page-content">
+            <h1 class="page-title">Lịch Sử Điểm Danh</h1>
+            <p class="page-sub">Lịch sử được phân nhóm theo môn học.</p>
+
+            <div class="filter-section" style="margin-bottom: 20px;">
+                <label for="semesterFilter" style="font-weight: 500; font-size: 14px; color: var(--text);">Lọc theo Học kỳ:</label>
+                <select id="semesterFilter" style="width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: var(--text); font-size: 14px; appearance: none;">
+                    <option value="ALL">Tất cả học kỳ</option>
+                    <option value="Học kỳ 1 - Năm học 2023 - 2024">Học kỳ 1 - Năm học 2024 - 2025</option>
+                    <option value="Học kỳ 2 - Năm học 2023 - 2024">Học kỳ 2 - Năm học 2024 - 2025</option>
+                    <option value="Học kỳ 3 - Năm học 2023 - 2024">Học kỳ 3 - Năm học 2024 - 2025</option>
+                    <option value="Học kỳ 1 - Năm học 2024 - 2025">Học kỳ 1 - Năm học 2025 - 2026</option>
+                    <option value="Học kỳ 2 - Năm học 2024 - 2025">Học kỳ 2 - Năm học 2025 - 2026</option>
+                    <option value="Học kỳ 3 - Năm học 2024 - 2025">Học kỳ 3 - Năm học 2025 - 2026</option>
+                    <option value="Học kỳ 1 - Năm học 2025 - 2026">Học kỳ 1 - Năm học 2026 - 2027</option>                    
+                </select>
+            </div>
+
+            <div id="historyContainer">
+                <p style="text-align:center;color:var(--text-muted);padding:40px 0;">Đang tải dữ liệu...</p>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-btn">
+                <ion-icon name="home-outline"></ion-icon>
+                <span>Trang Chủ</span>
+            </a>
+            <a href="enrollment.html" class="nav-btn">
+                <ion-icon name="book-outline"></ion-icon>
+                <span>Đăng Ký</span>
+            </a>
+            <a href="timetable.html" class="nav-btn">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>Lịch Học</span>
+            </a>
+            <a href="attendance.html" class="nav-btn">
+                <ion-icon name="qr-code-outline"></ion-icon>
+                <span>Quét QR</span>
+            </a>
+            <a href="history.html" class="nav-btn active">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>Lịch Sử</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/history.js?v=4"></script>
+</body>
+</html>

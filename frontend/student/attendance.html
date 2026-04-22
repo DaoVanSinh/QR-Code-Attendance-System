@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Điểm Danh QR | Sinh Viên</title>
+    <link rel="stylesheet" href="css/style.css?v=3">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div class="app-root">
+        <header class="app-header">
+            <div>
+                <div class="brand">🎓 QR Quét Điểm Danh</div>
+                <div class="user-name" id="studentName">Sinh Viên</div>
+            </div>
+        </header>
+
+        <div class="page-content" style="display:flex;flex-direction:column;flex:1;">
+            <div style="text-align:center;margin-bottom:20px;">
+                <h1 class="page-title">Quét Mã Ngay</h1>
+                <p class="page-sub" style="margin-bottom:0;">Đưa mã QR do giảng viên hiển thị vào khung hình.</p>
+            </div>
+
+            <div class="glass-card" style="padding:10px;margin-bottom:20px;display:flex;justify-content:center;">
+                <div id="reader" style="width:100%;max-width:400px;border-radius:12px;overflow:hidden;"></div>
+            </div>
+
+            <div style="text-align:center; margin-top: 10px;">
+                <button id="btnStartCamera" class="btn btn-primary" style="display:inline-flex; width:auto; padding:10px 24px; font-size:15px; border-radius:6px;">
+                    <ion-icon name="camera-outline" style="margin-right:6px;font-size:18px;"></ion-icon> Bật Camera Quét QR
+                </button>
+                <p id="scanStatus" style="font-size:14px;color:var(--primary);font-weight:500; display:none; margin-top: 15px;">
+                    <ion-icon name="videocam-outline" style="vertical-align:middle;margin-right:4px;"></ion-icon>
+                    <span>Đang chuẩn bị...</span>
+                </p>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-btn">
+                <ion-icon name="home-outline"></ion-icon>
+                <span>Trang Chủ</span>
+            </a>
+            <a href="enrollment.html" class="nav-btn">
+                <ion-icon name="book-outline"></ion-icon>
+                <span>Đăng Ký</span>
+            </a>
+            <a href="timetable.html" class="nav-btn">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>Lịch Học</span>
+            </a>
+            <a href="attendance.html" class="nav-btn active">
+                <ion-icon name="qr-code-outline"></ion-icon>
+                <span>Quét QR</span>
+            </a>
+            <a href="history.html" class="nav-btn">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>Lịch Sử</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <ion-icon name="checkmark-circle" class="success-icon"></ion-icon>
+        <h2>Thành Công!</h2>
+        <p>Bạn đã điểm danh thành công.</p>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:16px;">Tự động quay về sau <span id="overlayCountdown">3</span> giây...</p>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/attendance.js?v=4"></script>
+</body>
+</html>

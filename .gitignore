@@ -1,0 +1,17 @@
+
+backend/.env
+.env
+
+
+.idea/
+.vscode/
+
+
+backend/target/
+
+
+*.log
+.DS_Store
+
+
+Makefile

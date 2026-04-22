@@ -1,0 +1,3 @@
+ALTER TABLE subject ADD COLUMN credits INT NOT NULL DEFAULT 3;
+ALTER TABLE course ADD COLUMN start_date DATE;
+ALTER TABLE course ADD COLUMN end_date DATE;

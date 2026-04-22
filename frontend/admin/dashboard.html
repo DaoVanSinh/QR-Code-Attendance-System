@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | QR Attendance</title>
+    <meta name="description" content="Trang quản trị hệ thống điểm danh QR - Tổng quan">
+    <link rel="stylesheet" href="css/style.css?v=5">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+    <div id="sidebar-placeholder"></div>
+
+    <main class="main-content">
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <h1 class="page-title">Tổng Quan Hệ Thống</h1>
+                <p class="page-subtitle">Quản lý tài khoản và môn học trong hệ thống.</p>
+            </div>
+            <button class="btn btn-primary" onclick="window.location.href='create-account.html'">
+                <ion-icon name="person-add-outline"></ion-icon> Thêm Tài Khoản
+            </button>
+        </div>
+
+        <!-- User Management -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h2>Danh Sách Tài Khoản</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Họ tên</th>
+                            <th>Mã SV</th>
+                            <th>Vai trò</th>
+                            <th>Ngày tạo</th>
+                            <th style="text-align:right;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTable">
+                        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Subject Overview -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h2>Danh Sách Môn Học</h2>
+                <a href="courses.html" class="btn btn-outline btn-sm">Quản lý →</a>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Mã Môn</th>
+                            <th>Tên Môn Học</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectTable">
+                        <tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="js/utils.js?v=5"></script>
+    <script>
+        const auth = checkAuth('ADMIN');
+        if (auth) {
+            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('dashboard.html');
+        }
+    </script>
+    <script src="js/dashboard.js?v=4"></script>
+</body>
+</html>
