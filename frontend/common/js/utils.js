@@ -43,11 +43,52 @@ function checkAuth(requiredRole) {
     return { token, role, name: localStorage.getItem('user_name') };
 }
 
-function authFetch(url, options = {}) {
+async function authFetch(url, options = {}) {
     const token = localStorage.getItem('jwt_token');
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    return fetch(url, { ...options, headers });
+
+    let response;
+    try {
+        response = await fetch(url, { ...options, headers });
+    } catch (e) {
+        // Lỗi mạng (network error) - không phải lỗi auth, không cần logout
+        throw e;
+    }
+
+    // Nếu backend trả 401 hoặc 403 → token hết hạn hoặc không hợp lệ → tự động logout
+    if (response.status === 401 || response.status === 403) {
+        const cloned = response.clone();
+        // Thử đọc body để kiểm tra - nếu là lỗi auth thật sự thì logout
+        // Chỉ logout nếu KHÔNG có token hợp lệ (tránh logout khi bị denied vì thiếu quyền role)
+        const storedToken = localStorage.getItem('jwt_token');
+        if (!storedToken) {
+            // Không có token → redirect thẳng
+            window.location.href = LOGIN_URL;
+            return cloned;
+        }
+
+        // Kiểm tra token có bị hết hạn không bằng cách decode phần payload
+        try {
+            const payloadBase64 = storedToken.split('.')[1];
+            const payload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
+            const isExpired = payload.exp && (payload.exp * 1000 < Date.now());
+            if (isExpired) {
+                showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = LOGIN_URL;
+                }, 1500);
+            }
+        } catch (e) {
+            // Không decode được token → token lỗi → logout
+            localStorage.clear();
+            window.location.href = LOGIN_URL;
+        }
+        return cloned;
+    }
+
+    return response;
 }
 
 function logout() {

@@ -36,11 +36,11 @@ services:
     restart: unless-stopped
     # Kiểm tra Spring Boot đã boot xong chưa
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || wget -qO- http://localhost:8080/api/auth/login -q 2>&1 | grep -q '.' && exit 0 || exit 1"]
+      test: ["CMD-SHELL", "wget -S --spider http://localhost:8080/api/auth/login 2>&1 | grep -q 'HTTP/1.1'"]
       interval: 15s
       timeout: 10s
-      retries: 5
-      start_period: 40s
+      retries: 10
+      start_period: 90s
 
   frontend:
     image: nginx:alpine

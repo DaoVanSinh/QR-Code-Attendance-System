@@ -24,3 +24,12 @@ app:
     jwt:
       secret: ${JWT_SECRET}
       expiration: ${JWT_EXPIRATION}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

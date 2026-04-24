@@ -3,7 +3,10 @@ package com.qrcode.backend.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +48,27 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage())
         );
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    // Xử lý đúng: Method không được hỗ trợ (GET thay vì POST, etc.) → 405
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        log.warn("[405] Method not allowed: {}", ex.getMessage());
+        return createResponse("Phương thức HTTP không được hỗ trợ: " + ex.getMethod(), HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    // Xử lý đúng: Content-Type không hỗ trợ (form-urlencoded thay vì JSON, etc.) → 415
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        log.warn("[415] Unsupported media type: {}", ex.getMessage());
+        return createResponse("Content-Type không được hỗ trợ. Vui lòng dùng application/json.", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    // Xử lý đúng: Request body không đọc được (JSON sai cú pháp, thiếu body, etc.) → 400
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleMessageNotReadable(HttpMessageNotReadableException ex) {
+        log.warn("[400] Message not readable: {}", ex.getMessage());
+        return createResponse("Dữ liệu gửi lên không hợp lệ hoặc thiếu body.", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
