@@ -36,7 +36,18 @@ function showToast(message, type = 'success') {
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
-function logout() { localStorage.clear(); window.location.href = LOGIN_URL; }
+function logout() {
+    localStorage.clear();
+    window.location.href = LOGIN_URL;
+}
+
+// Đóng dropdown khi click ra ngoài
+document.addEventListener('click', function(e) {
+    const teacherDropdown = document.getElementById('teacherProfileDropdown');
+    if (teacherDropdown && teacherDropdown.classList.contains('show')) {
+        teacherDropdown.classList.remove('show');
+    }
+});
 
 function buildSidebar(activePage) {
     const name = localStorage.getItem('user_name') || 'Giảng Viên';
@@ -46,6 +57,8 @@ function buildSidebar(activePage) {
         { href: 'timetable.html', icon: 'calendar-outline', label: 'Thời Khóa Biểu' },
         { href: 'monitor.html', icon: 'people-outline', label: 'Danh Sách Điểm Danh' },
         { href: 'manual-attendance.html', icon: 'clipboard-outline', label: 'Điểm Danh Thủ Công' },
+        { href: '../common/profile.html', icon: 'person-outline', label: 'Hồ Sơ Cá Nhân' },
+        { href: '../common/change-password.html', icon: 'key-outline', label: 'Đổi Mật Khẩu' }
     ];
 
     const navItems = pages.map(p =>
@@ -56,19 +69,26 @@ function buildSidebar(activePage) {
 
     return `
     <aside class="sidebar">
-        <div class="brand-section">
-            <div class="brand-logo">🎓 QR Attendance</div>
-            <div class="brand-title">Cổng Giảng Viên</div>
+        <div class="user-profile-card" onclick="document.getElementById('teacherProfileDropdown').classList.toggle('show')">
+            <img src="../teacher/css/default-avatar.png" onerror="this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${name}')+'&background=random'" alt="Avatar" class="avatar">
+            <div class="info">
+                <div class="name">${name}</div>
+                <div class="role">Giảng Viên</div>
+            </div>
+            <ion-icon name="chevron-down-outline" class="caret"></ion-icon>
+            
+            <div class="profile-dropdown" id="teacherProfileDropdown" onclick="event.stopPropagation()">
+                <a href="../common/profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
+                <a href="../common/change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
+                <button class="text-danger" onclick="logout()"><ion-icon name="log-out-outline"></ion-icon> Đăng xuất</button>
+            </div>
         </div>
-        <div class="user-snippet">
-            <div class="role-label">Giảng Viên</div>
-            <div class="user-name" id="sidebarUserName">${name}</div>
-        </div>
-        <nav class="nav-links">${navItems}</nav>
-        <div class="logout-container">
-            <button class="btn-logout" onclick="logout()">
-                <ion-icon name="log-out-outline"></ion-icon> Đăng Xuất
-            </button>
+
+        <nav class="nav-links" style="margin-top: 10px;">
+            ${navItems}
+        </nav>
+        <div class="brand-bottom">
+            QR Attendance System
         </div>
     </aside>`;
 }

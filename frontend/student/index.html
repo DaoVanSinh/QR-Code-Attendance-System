@@ -11,11 +11,18 @@
 <body>
     <div class="app-root">
         <header class="app-header">
-            <div>
-                <div class="brand">🎓 QR Attendance</div>
+            <div class="brand">🎓 QR Attendance</div>
+            <div class="header-profile" onclick="document.getElementById('studentProfileDropdown').classList.toggle('show')">
+                <img src="../teacher/css/default-avatar.png" id="studentAvatar" onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'" alt="Avatar" class="avatar">
                 <div class="user-name" id="headerUserName">Sinh Viên</div>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+                
+                <div class="profile-dropdown" id="studentProfileDropdown" onclick="event.stopPropagation()">
+                    <a href="../common/profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
+                    <a href="../common/change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
+                    <button class="text-danger" onclick="logout()"><ion-icon name="log-out-outline"></ion-icon> Đăng xuất</button>
+                </div>
             </div>
-            <button class="btn-logout-sm" onclick="logout()">Đăng xuất</button>
         </header>
 
         <div class="page-content">
@@ -40,6 +47,7 @@
                 <h2>Lịch Sử Điểm Danh</h2>
                 <p>Xem toàn bộ các buổi học bạn đã điểm danh thành công.</p>
             </a>
+
 
             <!-- Recent summary -->
             <div class="glass-card" id="recentCard">

@@ -40,4 +40,15 @@ function showToast(message, type = 'success') {
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
-function logout() { localStorage.clear(); window.location.href = LOGIN_URL; }
+function logout() {
+    localStorage.clear();
+    window.location.href = LOGIN_URL;
+}
+
+// Đóng dropdown khi click ra ngoài
+document.addEventListener('click', function(e) {
+    const studentDropdown = document.getElementById('studentProfileDropdown');
+    if (studentDropdown && studentDropdown.classList.contains('show')) {
+        studentDropdown.classList.remove('show');
+    }
+});

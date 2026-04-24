@@ -21,6 +21,49 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
+    private final EmailService emailService;
+
+    @Transactional
+    public void generateResetTokenAndSendEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với email: " + email));
+
+        String token = java.util.UUID.randomUUID().toString();
+        user.setResetPasswordToken(token);
+        user.setResetPasswordTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15)); // Hết hạn sau 15 phút
+        userRepository.save(user);
+
+        // Link sẽ trỏ về Frontend để reset password
+        String resetLink = "http://localhost:8080/common/reset-password.html?token=" + token;
+        
+        String subject = "Khôi phục mật khẩu - Hệ thống Điểm danh QR";
+        String content = "Xin chào,\n\n"
+                + "Bạn vừa yêu cầu khôi phục mật khẩu. Vui lòng nhấp vào liên kết dưới đây để đặt lại mật khẩu mới:\n"
+                + resetLink + "\n\n"
+                + "Liên kết này sẽ hết hạn sau 15 phút.\n"
+                + "Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.\n\n"
+                + "Trân trọng,\nQR Attendance Team";
+                
+        emailService.sendEmail(user.getEmail(), subject, content);
+        auditService.logAction(user, "FORGOT_PASSWORD", "User requested password reset.");
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByResetPasswordToken(token)
+                .orElseThrow(() -> new RuntimeException("Mã xác nhận không hợp lệ hoặc không tồn tại."));
+
+        if (user.getResetPasswordTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("Mã xác nhận đã hết hạn.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenExpiry(null);
+        userRepository.save(user);
+        
+        auditService.logAction(user, "RESET_PASSWORD", "User successfully reset their password via token.");
+    }
 
     @Transactional
     public void changePassword(ChangePasswordRequest request) {

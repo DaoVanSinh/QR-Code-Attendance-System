@@ -25,6 +25,26 @@ public class UserController {
         }
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody java.util.Map<String, String> request) {
+        try {
+            userService.generateResetTokenAndSendEmail(request.get("email"));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("{\"error\": \"" + e.getMessage() + "\"}");
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody java.util.Map<String, String> request) {
+        try {
+            userService.resetPassword(request.get("token"), request.get("newPassword"));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("{\"error\": \"" + e.getMessage() + "\"}");
+        }
+    }
+
     @GetMapping("/profile")
     public ResponseEntity<ProfileResponse> getProfile() {
         return ResponseEntity.ok(userService.getProfile());
