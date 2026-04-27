@@ -18,22 +18,35 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.count() == 0) {
-            User adminUser = User.builder()
-                    .email("admin@qrcode.com")
-                    .password(passwordEncoder.encode("admin"))
-                    .role(Role.ADMIN)
-                    .build();
+        final String ADMIN_EMAIL    = "admin@qrcode.com";
+        final String ADMIN_PASSWORD = "Admin@2026";   // mật khẩu mặc định
 
-            Profile adminProfile = Profile.builder()
-                    .user(adminUser)
-                    .fullName("Administrator Default")
-                    .build();
+        userRepository.findByEmail(ADMIN_EMAIL).ifPresentOrElse(
+            admin -> {
+                // Admin đã tồn tại — đảm bảo password vẫn hợp lệ (tự phục hồi nếu bị hỏng)
+                if (!passwordEncoder.matches(ADMIN_PASSWORD, admin.getPassword())) {
+                    admin.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
+                    userRepository.save(admin);
+                    System.out.println("====== [SYS] Admin password re-synced: " + ADMIN_EMAIL + " / " + ADMIN_PASSWORD + " ======");
+                }
+            },
+            () -> {
+                // Chưa có admin → tạo mới
+                User adminUser = User.builder()
+                        .email(ADMIN_EMAIL)
+                        .password(passwordEncoder.encode(ADMIN_PASSWORD))
+                        .role(Role.ADMIN)
+                        .build();
 
-            adminUser.setProfile(adminProfile);
+                Profile adminProfile = Profile.builder()
+                        .user(adminUser)
+                        .fullName("Super Administrator")
+                        .build();
 
-            userRepository.save(adminUser);
-            System.out.println("====== [SYS] Default Admin Account Created: admin@qrcode.com / admin ======");
-        }
+                adminUser.setProfile(adminProfile);
+                userRepository.save(adminUser);
+                System.out.println("====== [SYS] Default Admin Created: " + ADMIN_EMAIL + " / " + ADMIN_PASSWORD + " ======");
+            }
+        );
     }
 }
