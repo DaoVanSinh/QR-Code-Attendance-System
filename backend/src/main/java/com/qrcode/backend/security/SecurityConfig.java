@@ -79,19 +79,39 @@ public class SecurityConfig {
 
 
     /**
-     * Trả về 401 Unauthorized với JSON body khi request thiếu/sai JWT token.
-     * Ngăn Spring Security redirect về /api và gây lỗi 500 NoResourceFoundException.
+     * Trả về 401 Unauthorized với JSON body khi truy cập endpoint được bảo vệ
+     * mà không có JWT hoặc JWT hết hạn/không hợp lệ.
+     *
+     * Chú ý: EntryPoint chỉ được gọi khi Spring Security từ chối do THIẾU authentication
+     * (không có token). Các endpoint public như /api/auth/login tự xử lý lỗi trong controller.
      */
     @Bean
     public AuthenticationEntryPoint unauthorizedEntryPoint() {
         return (request, response, authException) -> {
+            // Endpoint public (auth/**) tự xử lý lỗi riêng — không can thiệp
+            String path = request.getRequestURI();
+            if (path.startsWith("/api/auth/") || path.startsWith("/api/user/forgot-password")
+                    || path.startsWith("/api/user/reset-password")) {
+                // Delegate về chain để controller xử lý
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.setCharacterEncoding("UTF-8");
+                String msg = (authException.getMessage() != null)
+                        ? authException.getMessage() : "Xác thực thất bại.";
+                response.getWriter().write(
+                        new ObjectMapper().writeValueAsString(Map.of("error", msg))
+                );
+                return;
+            }
+            // Endpoint được bảo vệ: thiếu/hết hạn token → trả thông báo thân thiện
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
-            String body = new ObjectMapper().writeValueAsString(
-                    Map.of("error", "Token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.")
+            response.getWriter().write(
+                    new ObjectMapper().writeValueAsString(
+                            Map.of("error", "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
+                    )
             );
-            response.getWriter().write(body);
         };
     }
 

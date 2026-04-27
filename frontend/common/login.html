@@ -203,7 +203,7 @@
         </form>
     </div>
 
-    <script src="js/utils.js"></script>
+    <script src="js/utils.js?v=99"></script>
     <script>
         // Xử lý toggle hiển thị mật khẩu
         const togglePassword = document.querySelector('.toggle-password');
@@ -220,12 +220,26 @@
             }
         });
 
-        // Nếu đã đăng nhập thì redirect luôn
+        // Nếu đã đăng nhập VÀ token còn hạn → redirect luôn, ngược lại xóa token cũ
         (function() {
             const token = localStorage.getItem('jwt_token');
-            const role = localStorage.getItem('user_role');
-            if (token && role) {
+            const role  = localStorage.getItem('user_role');
+            if (!token || !role) return; // Chưa đăng nhập → hiện form bình thường
+
+            // Decode JWT để kiểm tra hạn sử dụng (không cần gọi API)
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                const isExpired = payload.exp && (payload.exp * 1000 < Date.now());
+                if (isExpired) {
+                    // Token hết hạn → xóa im lặng, hiện form đăng nhập sạch
+                    localStorage.clear();
+                    return;
+                }
+                // Token còn hạn → redirect về trang phù hợp
                 redirectByRole(role);
+            } catch (e) {
+                // Token lỗi (không decode được) → xóa và hiện form
+                localStorage.clear();
             }
         })();
 
@@ -271,7 +285,17 @@
                     showToast('Đăng nhập thành công!', 'success');
                     setTimeout(() => redirectByRole(data.user.role), 900);
                 } else {
-                    errorBox.innerText = data.error || 'Email hoặc mật khẩu không đúng.';
+                    // Hiển thị thông báo thân thiện, không lộ lỗi kỹ thuật
+                    const rawMsg = (data && data.error) ? data.error : '';
+                    let friendlyMsg = 'Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại.';
+                    if (rawMsg.includes('Mật khẩu không đúng') || rawMsg.includes('Bad credentials')) {
+                        friendlyMsg = 'Mật khẩu không đúng. Vui lòng kiểm tra lại.';
+                    } else if (rawMsg.includes('Không tìm thấy tài khoản')) {
+                        friendlyMsg = 'Tài khoản không tồn tại. Vui lòng kiểm tra lại.';
+                    } else if (res.status === 401 || res.status === 403) {
+                        friendlyMsg = 'Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại.';
+                    }
+                    errorBox.innerText = friendlyMsg;
                     errorBox.style.display = 'block';
                 }
             } catch (err) {
