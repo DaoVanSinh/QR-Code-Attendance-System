@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thời Khóa Biểu | Teacher Dashboard</title>
     <meta name="description" content="Xem thời khóa biểu giảng dạy - Teacher QR Attendance">
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=99">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
@@ -223,6 +223,7 @@
             grid-auto-rows: minmax(68px, auto);
             gap: 1px;
             background: #dde3ea;
+            min-width: max-content;
         }
 
         /* ── Header cells ────────────────────────────────── */
@@ -396,7 +397,7 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=5"></script>
+    <script src="js/utils.js?v=99"></script>
     <script>
         const auth = checkAuth('TEACHER');
         if (auth) {

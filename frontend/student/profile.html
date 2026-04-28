@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Thông Tin Cá Nhân | Sinh Viên</title>
+    <meta name="description" content="Quản lý thông tin cá nhân sinh viên">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=99">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .profile-hero {
+            text-align: center; padding: 32px 20px 24px;
+            background: linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(236,72,153,0.06) 100%);
+            border-bottom: 1px solid var(--border-color);
+            position: relative; z-index: 1;
+        }
+        .profile-avatar {
+            width: 96px; height: 96px; border-radius: 50%;
+            object-fit: cover; margin: 0 auto 16px;
+            border: 3px solid rgba(79,70,229,0.2);
+            box-shadow: 0 8px 24px rgba(79,70,229,0.15);
+            transition: transform 0.3s;
+        }
+        .profile-avatar:hover { transform: scale(1.05); }
+        .profile-name { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+        .profile-role-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            background: rgba(79,70,229,0.1); color: var(--primary);
+        }
+        .profile-section {
+            padding: 20px; position: relative; z-index: 1;
+        }
+        .section-title {
+            font-size: 13px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 12px; padding-left: 4px;
+        }
+        .profile-card {
+            background: var(--bg-surface); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-sm); margin-bottom: 16px;
+        }
+        .profile-field {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px; border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        .profile-field:last-child { border-bottom: none; }
+        .profile-field-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+        }
+        .profile-field-icon.email { background: rgba(79,70,229,0.1); color: var(--primary); }
+        .profile-field-icon.name { background: rgba(16,185,129,0.1); color: #10b981; }
+        .profile-field-icon.phone { background: rgba(245,158,11,0.1); color: #f59e0b; }
+        .profile-field-icon.avatar { background: rgba(236,72,153,0.1); color: #ec4899; }
+        .profile-field-content { flex-grow: 1; min-width: 0; }
+        .profile-field-label {
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px;
+        }
+        .profile-field-input {
+            width: 100%; padding: 8px 0; border: none; border-bottom: 1.5px solid transparent;
+            font-size: 15px; font-weight: 500; color: var(--text-dark);
+            background: transparent; transition: all 0.2s; outline: none;
+        }
+        .profile-field-input:focus { border-bottom-color: var(--primary); }
+        .profile-field-input:disabled {
+            color: var(--text-muted); cursor: not-allowed;
+            border-bottom: 1.5px dashed rgba(0,0,0,0.08);
+        }
+        .profile-field-hint {
+            font-size: 11px; color: var(--text-muted); margin-top: 2px;
+        }
+        .profile-actions { padding: 0 20px 20px; position: relative; z-index: 1; }
+        .btn-save {
+            width: 100%; padding: 14px; border: none; border-radius: 14px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; box-shadow: 0 4px 16px rgba(79,70,229,0.3);
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,70,229,0.4); }
+        .btn-save:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-change-pwd {
+            width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 14px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            background: var(--bg-surface); color: var(--text-dark);
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-top: 10px; text-decoration: none;
+        }
+        .btn-change-pwd:hover { background: var(--bg-main); }
+        .back-btn {
+            display: flex; align-items: center; gap: 4px;
+            color: var(--text-muted); font-size: 14px; font-weight: 500;
+            text-decoration: none; padding: 4px 0; transition: color 0.2s;
+        }
+        .back-btn:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="app-root">
+        <header class="premium-header">
+            <a href="index.html" class="back-btn">
+                <ion-icon name="chevron-back-outline"></ion-icon> Quay lại
+            </a>
+            <div class="brand">Thông Tin Cá Nhân</div>
+            <div style="width: 70px;"></div>
+        </header>
+
+        <div class="profile-hero">
+            <img id="avatarPreview" class="profile-avatar" src="" alt="Avatar"
+                 onerror="this.src='https://ui-avatars.com/api/?name=SV&background=4f46e5&color=fff&size=128'">
+            <div class="profile-name" id="displayName">—</div>
+            <span class="profile-role-badge">
+                <ion-icon name="school-outline"></ion-icon>
+                <span id="displayRole">Sinh Viên</span>
+            </span>
+        </div>
+
+        <form id="profileForm">
+            <div class="profile-section">
+                <div class="section-title">Thông tin tài khoản</div>
+                <div class="profile-card">
+                    <div class="profile-field">
+                        <div class="profile-field-icon email"><ion-icon name="mail-outline"></ion-icon></div>
+                        <div class="profile-field-content">
+                            <div class="profile-field-label">Email</div>
+                            <input class="profile-field-input" type="email" id="email" disabled>
+                        </div>
+                    </div>
+                    <div class="profile-field">
+                        <div class="profile-field-icon name"><ion-icon name="person-outline"></ion-icon></div>
+                        <div class="profile-field-content">
+                            <div class="profile-field-label">Họ và Tên</div>
+                            <input class="profile-field-input" type="text" id="fullName" placeholder="Nhập họ và tên">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-section" style="padding-top: 0;">
+                <div class="section-title">Liên hệ & Ảnh đại diện</div>
+                <div class="profile-card">
+                    <div class="profile-field">
+                        <div class="profile-field-icon phone"><ion-icon name="call-outline"></ion-icon></div>
+                        <div class="profile-field-content">
+                            <div class="profile-field-label">Số điện thoại</div>
+                            <input class="profile-field-input" type="tel" id="phone" placeholder="VD: 0912 345 678">
+                        </div>
+                    </div>
+                    <div class="profile-field">
+                        <div class="profile-field-icon avatar"><ion-icon name="image-outline"></ion-icon></div>
+                        <div class="profile-field-content">
+                            <div class="profile-field-label">URL Ảnh đại diện</div>
+                            <input class="profile-field-input" type="url" id="avatar" placeholder="https://example.com/avatar.png">
+                            <div class="profile-field-hint">Để trống để sử dụng avatar mặc định.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button type="submit" class="btn-save" id="saveBtn">
+                    <ion-icon name="checkmark-outline"></ion-icon> Lưu Thay Đổi
+                </button>
+                <a href="change-password.html" class="btn-change-pwd">
+                    <ion-icon name="key-outline"></ion-icon> Đổi Mật Khẩu
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script src="js/utils.js?v=99"></script>
+    <script>
+        const auth = checkAuth('STUDENT');
+
+        async function loadProfile() {
+            try {
+                const res = await authFetch('/api/user/profile');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('fullName').value = data.fullName || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('avatar').value = data.avatar || '';
+                document.getElementById('displayName').textContent = data.fullName || data.email;
+                document.getElementById('displayRole').textContent = data.role === 'STUDENT' ? 'Sinh Viên' : data.role;
+                const avatarUrl = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName || 'SV')}&background=4f46e5&color=fff&size=128`;
+                document.getElementById('avatarPreview').src = avatarUrl;
+            } catch {
+                showToast('Không thể tải thông tin cá nhân.', 'error');
+            }
+        }
+
+        document.getElementById('avatar').addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url) document.getElementById('avatarPreview').src = url;
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spin" style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;display:inline-block;"></div> Đang lưu...';
+
+            try {
+                const res = await authFetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: document.getElementById('fullName').value.trim(),
+                        phone: document.getElementById('phone').value.trim(),
+                        avatar: document.getElementById('avatar').value.trim()
+                    })
+                });
+                if (res.ok) {
+                    showToast('Cập nhật thành công!', 'success');
+                    const name = document.getElementById('fullName').value.trim();
+                    if (name) localStorage.setItem('user_name', name);
+                    loadProfile();
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    showToast(data.error || 'Cập nhật thất bại.', 'error');
+                }
+            } catch {
+                showToast('Lỗi kết nối mạng.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Lưu Thay Đổi';
+            }
+        });
+
+        loadProfile();
+    </script>
+</body>
+</html>

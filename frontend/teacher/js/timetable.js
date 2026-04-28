@@ -8,6 +8,17 @@ const LESSON_END_TIMES = {
     6:'13:20', 7:'14:20', 8:'15:20', 9:'16:20', 10:'17:20',
     11:'18:20', 12:'19:20', 13:'20:20'
 };
+
+function hashCode(str) {
+    if (!str) return 0;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+}
+
 const DOW_LABELS = ['','','Thu 2','Thu 3','Thu 4','Thu 5','Thu 6','Thu 7','CN'];
 
 const CARD_COLORS = [
@@ -261,7 +272,7 @@ function renderGrid() {
             card.style.left      = `calc(${Math.max(0,idx) * (100 / count)}% + 3px)`;
             card.style.zIndex    = '5';
 
-            const color    = CARD_COLORS[0];
+            const color    = CARD_COLORS[hashCode(course.subjectCode) % CARD_COLORS.length];
             card.style.backgroundColor = color.bg;
             card.style.borderLeftColor  = color.border;
 

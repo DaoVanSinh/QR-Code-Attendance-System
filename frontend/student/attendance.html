@@ -4,17 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Điểm Danh QR | Sinh Viên</title>
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=99">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
     <div class="app-root">
-        <header class="app-header">
-            <div>
-                <div class="brand">🎓 QR Quét Điểm Danh</div>
+        <header class="app-header premium-header">
+            <div class="brand">🎓 QR Quét Điểm Danh</div>
+            <div class="header-profile" onclick="event.stopPropagation(); document.getElementById('studentProfileDropdown').classList.toggle('show')">
+                <img src="../teacher/css/default-avatar.png" id="studentAvatar" onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'" alt="Avatar" class="avatar">
                 <div class="user-name" id="studentName">Sinh Viên</div>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+                
+                <div class="profile-dropdown" id="studentProfileDropdown" onclick="event.stopPropagation()">
+                    <a href="profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
+                    <a href="change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
+                    <button class="text-danger" onclick="logout()"><ion-icon name="log-out-outline"></ion-icon> Đăng xuất</button>
+                </div>
             </div>
         </header>
 
@@ -52,13 +60,9 @@
                 <ion-icon name="calendar-outline"></ion-icon>
                 <span>Lịch Học</span>
             </a>
-            <a href="attendance.html" class="nav-btn active">
-                <ion-icon name="qr-code-outline"></ion-icon>
-                <span>Quét QR</span>
-            </a>
             <a href="history.html" class="nav-btn">
                 <ion-icon name="time-outline"></ion-icon>
-                <span>Lịch Sử</span>
+                <span>Kết Quả</span>
             </a>
         </nav>
     </div>
@@ -71,7 +75,7 @@
         <p style="font-size:13px;color:var(--text-muted);margin-top:16px;">Tự động quay về sau <span id="overlayCountdown">3</span> giây...</p>
     </div>
 
-    <script src="js/utils.js"></script>
+    <script src="js/utils.js?v=99"></script>
     <script src="js/attendance.js?v=4"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Thời Khóa Biểu | Sinh Viên</title>
-    <link rel="stylesheet" href="css/style.css?v=4">
+    <link rel="stylesheet" href="css/style.css?v=99">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
@@ -12,15 +12,6 @@
         body { background: #f0f4f8 !important; }
         .app-root { background: #f0f4f8; min-height: 100vh; display:flex; flex-direction:column; }
         .glass-card { background: #fff !important; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-
-        /* ── Header app ──────────────────────────────────── */
-        .app-header {
-            background: linear-gradient(135deg, #1565c0, #1976d2) !important;
-            padding: 12px 16px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .brand { color: #fff; font-weight: 700; font-size: 16px; }
-        .user-name { color: rgba(255,255,255,0.85); font-size: 12px; margin-top:2px; }
 
         /* ── Controls bar ────────────────────────────────── */
         .tkb-controls {
@@ -85,6 +76,7 @@
             grid-auto-rows: minmax(70px, auto);
             background: #e9edf2;
             gap: 1px;
+            min-width: max-content;
         }
 
         /* ── Header row ──────────────────────────────────── */
@@ -161,14 +153,19 @@
 </head>
 <body>
     <div class="app-root">
-        <header class="app-header">
-            <div>
-                <div class="brand">🎓 QR Attendance</div>
+        <header class="app-header premium-header">
+            <div class="brand">🎓 Lịch Học</div>
+            <div class="header-profile" onclick="event.stopPropagation(); document.getElementById('studentProfileDropdown').classList.toggle('show')">
+                <img src="../teacher/css/default-avatar.png" id="studentAvatar" onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'" alt="Avatar" class="avatar">
                 <div class="user-name" id="studentName">Sinh Viên</div>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+                
+                <div class="profile-dropdown" id="studentProfileDropdown" onclick="event.stopPropagation()">
+                    <a href="profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
+                    <a href="change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
+                    <button class="text-danger" onclick="logout()"><ion-icon name="log-out-outline"></ion-icon> Đăng xuất</button>
+                </div>
             </div>
-            <button class="btn-logout-sm" onclick="logout()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;">
-                <ion-icon name="log-out-outline"></ion-icon>
-            </button>
         </header>
 
         <div class="page-content" style="padding:14px;display:flex;flex-direction:column;flex:1;gap:12px;">
@@ -208,13 +205,12 @@
             <a href="index.html" class="nav-btn"><ion-icon name="home-outline"></ion-icon><span>Trang Chủ</span></a>
             <a href="enrollment.html" class="nav-btn"><ion-icon name="book-outline"></ion-icon><span>Đăng Ký</span></a>
             <a href="timetable.html" class="nav-btn active"><ion-icon name="calendar-outline"></ion-icon><span>Lịch Học</span></a>
-            <a href="attendance.html" class="nav-btn"><ion-icon name="qr-code-outline"></ion-icon><span>Quét QR</span></a>
-            <a href="history.html" class="nav-btn"><ion-icon name="time-outline"></ion-icon><span>Lịch Sử</span></a>
+            <a href="history.html" class="nav-btn"><ion-icon name="time-outline"></ion-icon><span>Kết Quả</span></a>
         </nav>
     </div>
 
     <div id="toast-container"></div>
-    <script src="js/utils.js?v=5"></script>
+    <script src="js/utils.js?v=99"></script>
     <script>
         const auth = checkAuth('STUDENT');
         if (auth) document.getElementById('studentName').textContent = auth.name || 'Sinh Viên';

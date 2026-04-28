@@ -66,16 +66,25 @@ function renderCourses() {
         return;
     }
 
-    list.innerHTML = filtered.map(c => `
+    list.innerHTML = filtered.map(c => {
+        const isFull = c.maxSlots && c.currentSlots >= c.maxSlots;
+        const isClosed = c.regStatus === 'CLOSED';
+        const slotsLabel = c.maxSlots ? `${c.currentSlots || 0}/${c.maxSlots}` : '';
+        const slotsColor = isFull ? '#ef4444' : (c.currentSlots >= (c.maxSlots * 0.8) ? '#f59e0b' : '#10b981');
+        const canEnroll = !c.enrolled && !isFull && !isClosed;
+
+        return `
         <div class="course-card ${c.enrolled ? 'enrolled' : ''}" id="card-${c.courseId}" data-course-id="${c.courseId}">
             <div class="course-info">
                 <span class="course-code">${escHtml(c.subjectCode)}</span>
+                ${isClosed ? '<span style="display:inline-block;background:rgba(239,68,68,0.15);color:#ef4444;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:6px;">ĐÃ ĐÓNG</span>' : ''}
                 <div class="course-name">${escHtml(c.subjectName)}</div>
                 <div class="course-meta">
                     <span><ion-icon name="business-outline"></ion-icon> ${escHtml(c.className)}</span>
                     <span><ion-icon name="person-outline"></ion-icon> ${escHtml(c.teacherName || '—')}</span>
                     <span><ion-icon name="school-outline"></ion-icon> ${escHtml(c.semester)}</span>
                     ${c.credits ? `<span><ion-icon name="star-outline"></ion-icon> ${c.credits} TC</span>` : ''}
+                    ${slotsLabel ? `<span style="color:${slotsColor};font-weight:700;"><ion-icon name="people-outline"></ion-icon> ${slotsLabel} chỗ</span>` : ''}
                 </div>
                 ${c.enrolled ? '<div class="badge-enrolled"><ion-icon name="checkmark-circle-outline"></ion-icon> Đã đăng ký</div>' : ''}
             </div>
@@ -83,11 +92,12 @@ function renderCourses() {
                 id="btn-${c.courseId}"
                 class="btn-enroll ${c.enrolled ? 'unenroll' : 'enroll'}"
                 onclick="${c.enrolled ? `unenroll(${c.courseId})` : `enroll(${c.courseId})`}"
+                ${!canEnroll && !c.enrolled ? 'disabled' : ''}
             >
-                ${c.enrolled ? '<ion-icon name="close-outline"></ion-icon> Hủy' : '<ion-icon name="add-outline"></ion-icon> Đăng ký'}
+                ${c.enrolled ? '<ion-icon name="close-outline"></ion-icon> Hủy' : (isFull ? '<ion-icon name="alert-outline"></ion-icon> Hết chỗ' : '<ion-icon name="add-outline"></ion-icon> Đăng ký')}
             </button>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 async function enroll(courseId) {

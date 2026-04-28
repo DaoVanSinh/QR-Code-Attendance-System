@@ -56,9 +56,7 @@ function buildSidebar(activePage) {
         { href: 'create-session.html', icon: 'qr-code-outline', label: 'Tạo Phiên Điểm Danh' },
         { href: 'timetable.html', icon: 'calendar-outline', label: 'Thời Khóa Biểu' },
         { href: 'monitor.html', icon: 'people-outline', label: 'Danh Sách Điểm Danh' },
-        { href: 'manual-attendance.html', icon: 'clipboard-outline', label: 'Điểm Danh Thủ Công' },
-        { href: '../common/profile.html', icon: 'person-outline', label: 'Hồ Sơ Cá Nhân' },
-        { href: '../common/change-password.html', icon: 'key-outline', label: 'Đổi Mật Khẩu' }
+        { href: 'manual-attendance.html', icon: 'clipboard-outline', label: 'Điểm Danh Thủ Công' }
     ];
 
     const navItems = pages.map(p =>
@@ -69,26 +67,28 @@ function buildSidebar(activePage) {
 
     return `
     <aside class="sidebar">
-        <div class="user-profile-card" onclick="document.getElementById('teacherProfileDropdown').classList.toggle('show')">
+        <div class="brand-header">
+            <div class="logo-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><ion-icon name="school-outline"></ion-icon></div>
+            <div class="brand-text">Cổng Giảng Viên</div>
+        </div>
+
+        <div class="user-profile-card" onclick="event.stopPropagation(); document.getElementById('teacherProfileDropdown').classList.toggle('show')">
             <img src="../teacher/css/default-avatar.png" onerror="this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${name}')+'&background=random'" alt="Avatar" class="avatar">
             <div class="info">
                 <div class="name">${name}</div>
                 <div class="role">Giảng Viên</div>
             </div>
-            <ion-icon name="chevron-down-outline" class="caret"></ion-icon>
+            <ion-icon name="chevron-down-outline" style="color:var(--text-muted);"></ion-icon>
             
             <div class="profile-dropdown" id="teacherProfileDropdown" onclick="event.stopPropagation()">
-                <a href="../common/profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
-                <a href="../common/change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
+                <a href="profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
+                <a href="change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
                 <button class="text-danger" onclick="logout()"><ion-icon name="log-out-outline"></ion-icon> Đăng xuất</button>
             </div>
         </div>
 
-        <nav class="nav-links" style="margin-top: 10px;">
+        <nav class="nav-links">
             ${navItems}
         </nav>
-        <div class="brand-bottom">
-            QR Attendance System
-        </div>
     </aside>`;
 }

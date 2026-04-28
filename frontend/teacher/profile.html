@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Tin Cá Nhân | Cổng Giảng Viên</title>
+    <meta name="description" content="Quản lý thông tin cá nhân tài khoản Giảng Viên">
+    <link rel="stylesheet" href="css/style.css?v=99">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .profile-page { max-width: 720px; }
+        .avatar-section {
+            display: flex; align-items: center; gap: 24px;
+            padding: 28px; background: linear-gradient(135deg, rgba(245,158,11,0.05), rgba(217,119,6,0.05));
+            border-radius: var(--radius); border: 1px solid var(--border-color);
+            margin-bottom: 28px;
+        }
+        .avatar-preview {
+            width: 88px; height: 88px; border-radius: 50%;
+            object-fit: cover; border: 3px solid rgba(245,158,11,0.3);
+            box-shadow: 0 4px 16px rgba(245,158,11,0.15);
+            transition: transform 0.3s;
+        }
+        .avatar-preview:hover { transform: scale(1.05); }
+        .avatar-info h2 { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+        .avatar-info .role-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            background: rgba(245,158,11,0.1); color: var(--warning);
+        }
+        .info-card {
+            background: var(--bg-surface); border: 1px solid var(--border-color);
+            border-radius: var(--radius); overflow: hidden;
+        }
+        .info-card-header {
+            padding: 18px 24px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(248,250,252,0.5);
+        }
+        .info-card-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .info-card-body { padding: 24px; }
+        .field-row {
+            display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px;
+        }
+        .field-row:last-child { margin-bottom: 0; }
+        .field-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0; margin-top: 2px;
+        }
+        .field-icon.email-icon { background: rgba(79,70,229,0.1); color: var(--primary); }
+        .field-icon.name-icon { background: rgba(16,185,129,0.1); color: var(--success); }
+        .field-icon.phone-icon { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .field-icon.avatar-icon { background: rgba(236,72,153,0.1); color: #ec4899; }
+        .field-content { flex-grow: 1; }
+        .field-content label {
+            display: block; font-size: 12px; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        .field-content input {
+            width: 100%; padding: 10px 14px; border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm); font-size: 14px; color: var(--text-dark);
+            background: var(--bg-surface); transition: all 0.2s;
+        }
+        .field-content input:focus {
+            border-color: var(--primary); outline: none;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+        .field-content input:disabled {
+            background: var(--bg-main); color: var(--text-muted);
+            cursor: not-allowed; border-style: dashed;
+        }
+        .field-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .actions-bar {
+            display: flex; gap: 12px; justify-content: flex-end;
+            padding: 20px 24px; border-top: 1px solid var(--border-color);
+            background: rgba(248,250,252,0.3);
+        }
+        .btn-secondary {
+            background: var(--bg-surface); border: 1px solid var(--border-color);
+            color: var(--text-dark); padding: 10px 20px; border-radius: var(--radius-sm);
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-secondary:hover { background: var(--bg-main); border-color: #cbd5e1; }
+    </style>
+</head>
+<body>
+    <div id="sidebar-placeholder"></div>
+
+    <main class="main-content">
+        <div class="profile-page">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Thông Tin Cá Nhân</h1>
+                    <p class="page-subtitle">Quản lý thông tin tài khoản giảng viên.</p>
+                </div>
+            </div>
+
+            <div class="avatar-section">
+                <img id="avatarPreview" class="avatar-preview" src="" alt="Avatar"
+                     onerror="this.src='https://ui-avatars.com/api/?name=GV&background=f59e0b&color=fff&size=128'">
+                <div class="avatar-info">
+                    <h2 id="displayName">—</h2>
+                    <span class="role-badge">
+                        <ion-icon name="school-outline"></ion-icon>
+                        <span id="displayRole">TEACHER</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <h3><ion-icon name="person-outline"></ion-icon> Thông Tin Chi Tiết</h3>
+                </div>
+                <form id="profileForm">
+                    <div class="info-card-body">
+                        <div class="field-row">
+                            <div class="field-icon email-icon"><ion-icon name="mail-outline"></ion-icon></div>
+                            <div class="field-content">
+                                <label for="email">Địa chỉ Email</label>
+                                <input type="email" id="email" disabled>
+                                <div class="field-hint">Email được quản lý bởi hệ thống, không thể thay đổi.</div>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-icon name-icon"><ion-icon name="text-outline"></ion-icon></div>
+                            <div class="field-content">
+                                <label for="fullName">Họ và Tên</label>
+                                <input type="text" id="fullName" placeholder="Nhập họ và tên đầy đủ">
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-icon phone-icon"><ion-icon name="call-outline"></ion-icon></div>
+                            <div class="field-content">
+                                <label for="phone">Số Điện Thoại</label>
+                                <input type="tel" id="phone" placeholder="VD: 0912 345 678">
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-icon avatar-icon"><ion-icon name="image-outline"></ion-icon></div>
+                            <div class="field-content">
+                                <label for="avatar">Liên Kết Ảnh Đại Diện</label>
+                                <input type="url" id="avatar" placeholder="https://example.com/avatar.png">
+                                <div class="field-hint">Nhập URL ảnh đại diện. Để trống để sử dụng avatar mặc định.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="actions-bar">
+                        <a href="change-password.html" class="btn-secondary">
+                            <ion-icon name="key-outline"></ion-icon> Đổi Mật Khẩu
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">
+                            <ion-icon name="checkmark-outline"></ion-icon> Lưu Thay Đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="js/utils.js?v=99"></script>
+    <script>
+        const auth = checkAuth('TEACHER');
+        if (auth) {
+            document.getElementById('sidebar-placeholder').innerHTML = buildSidebar('profile.html');
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await authFetch('/api/user/profile');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('fullName').value = data.fullName || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('avatar').value = data.avatar || '';
+                document.getElementById('displayName').textContent = data.fullName || data.email;
+                document.getElementById('displayRole').textContent = data.role === 'TEACHER' ? 'Giảng Viên' : data.role;
+                const avatarUrl = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName || 'GV')}&background=f59e0b&color=fff&size=128`;
+                document.getElementById('avatarPreview').src = avatarUrl;
+            } catch (e) {
+                showToast('Không thể tải thông tin cá nhân.', 'error');
+            }
+        }
+
+        document.getElementById('avatar').addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url) document.getElementById('avatarPreview').src = url;
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spin" style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;"></div> Đang lưu...';
+
+            try {
+                const res = await authFetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: document.getElementById('fullName').value.trim(),
+                        phone: document.getElementById('phone').value.trim(),
+                        avatar: document.getElementById('avatar').value.trim()
+                    })
+                });
+                if (res.ok) {
+                    showToast('Cập nhật thông tin thành công!', 'success');
+                    const name = document.getElementById('fullName').value.trim();
+                    if (name) localStorage.setItem('user_name', name);
+                    loadProfile();
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    showToast(data.error || 'Cập nhật thất bại.', 'error');
+                }
+            } catch {
+                showToast('Lỗi kết nối mạng.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Lưu Thay Đổi';
+            }
+        });
+
+        loadProfile();
+    </script>
+</body>
+</html>

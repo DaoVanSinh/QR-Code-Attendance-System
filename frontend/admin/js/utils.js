@@ -59,10 +59,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-/**
- * Build admin sidebar HTML.
- * @param {string} activePage - tên file hiện tại, VD: 'dashboard.html'
- */
 function buildAdminSidebar(activePage) {
     const name = localStorage.getItem('user_name') || 'Admin';
 
@@ -70,9 +66,7 @@ function buildAdminSidebar(activePage) {
         { href: 'dashboard.html',      icon: 'grid-outline',        label: 'Tổng Quan' },
         { href: 'create-account.html', icon: 'person-add-outline',  label: 'Thêm Tài Khoản' },
         { href: 'courses.html',        icon: 'book-outline',         label: 'Phân Công Môn Học' },
-        { href: 'timetable.html',      icon: 'calendar-outline',     label: 'Thời Khóa Biểu' },
-        { href: '../common/profile.html', icon: 'person-outline', label: 'Hồ Sơ Cá Nhân' },
-        { href: '../common/change-password.html', icon: 'key-outline', label: 'Đổi Mật Khẩu' }
+        { href: 'timetable.html',      icon: 'calendar-outline',     label: 'Thời Khóa Biểu' }
     ];
 
     const navItems = pages.map(p => `
@@ -83,26 +77,28 @@ function buildAdminSidebar(activePage) {
 
     return `
     <aside class="sidebar">
-        <div class="user-profile-card" onclick="document.getElementById('adminProfileDropdown').classList.toggle('show')">
+        <div class="brand-header">
+            <div class="logo-icon"><ion-icon name="shield-checkmark-outline"></ion-icon></div>
+            <div class="brand-text">Admin Panel</div>
+        </div>
+
+        <div class="user-profile-card" onclick="event.stopPropagation(); document.getElementById('adminProfileDropdown').classList.toggle('show')">
             <img src="../admin/css/default-avatar.png" onerror="this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${name}')+'&background=random'" alt="Avatar" class="avatar">
             <div class="info">
                 <div class="name">${name}</div>
-                <div class="role">Administrator</div>
+                <div class="role">Super Administrator</div>
             </div>
-            <ion-icon name="chevron-down-outline" class="caret"></ion-icon>
+            <ion-icon name="chevron-down-outline" style="color:var(--text-muted);"></ion-icon>
             
             <div class="profile-dropdown" id="adminProfileDropdown" onclick="event.stopPropagation()">
-                <a href="../common/profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
-                <a href="../common/change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
+                <a href="profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
+                <a href="change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
                 <button class="text-danger" onclick="logout()"><ion-icon name="log-out-outline"></ion-icon> Đăng xuất</button>
             </div>
         </div>
         
-        <nav class="nav-links" style="margin-top: 10px;">
+        <nav class="nav-links">
             ${navItems}
         </nav>
-        <div class="brand-bottom">
-            QR Attendance System
-        </div>
     </aside>`;
 }
