@@ -1,5 +1,6 @@
 package com.qrcode.backend.entity;
 
+import com.qrcode.backend.entity.enums.EnrollmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -30,4 +31,13 @@ public class Enrollment {
     @Column(name = "enrolled_at", nullable = false)
     @Builder.Default
     private LocalDateTime enrolledAt = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private EnrollmentStatus status = EnrollmentStatus.ACTIVE;
+
+    @Column(name = "note")
+    private String note;
 }
+

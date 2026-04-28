@@ -5,12 +5,14 @@ import com.qrcode.backend.dto.request.CreateCourseRequest;
 import com.qrcode.backend.dto.response.AdminSessionResponse;
 import com.qrcode.backend.dto.response.CourseDetailResponse;
 import com.qrcode.backend.dto.response.SemesterResponse;
+import com.qrcode.backend.dto.response.TimetableResponse;
 import com.qrcode.backend.dto.response.UserSummaryResponse;
 import com.qrcode.backend.entity.Classes;
 import com.qrcode.backend.entity.Subject;
 import com.qrcode.backend.repository.SubjectRepository;
 import com.qrcode.backend.repository.UserRepository;
 import com.qrcode.backend.service.AdminService;
+import com.qrcode.backend.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ public class AdminController {
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final AdminService adminService;
+    private final ScheduleService scheduleService;
 
     // ── Users ──────────────────────────────────────────────────
     @GetMapping("/users")
@@ -105,6 +108,16 @@ public class AdminController {
         }
     }
 
+    @DeleteMapping("/courses/{id}")
+    public ResponseEntity<?> deleteCourse(@PathVariable Integer id) {
+        try {
+            adminService.deleteCourse(id);
+            return ResponseEntity.ok(Map.of("message", "Xóa học phần thành công."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // ── Sessions (Admin read-only) ─────────────────────────
     @GetMapping("/sessions")
     public ResponseEntity<List<AdminSessionResponse>> getAllSessions() {
@@ -115,5 +128,12 @@ public class AdminController {
     @GetMapping("/semesters")
     public ResponseEntity<List<SemesterResponse>> getSemesters() {
         return ResponseEntity.ok(adminService.getAllSemesters());
+    }
+
+    // ── Timetable ──────────────────────────────────────────
+    @GetMapping("/timetable")
+    public ResponseEntity<TimetableResponse> getTimetable(
+            @RequestParam(required = false) Integer semesterId) {
+        return ResponseEntity.ok(scheduleService.getAdminTimetable(semesterId));
     }
 }

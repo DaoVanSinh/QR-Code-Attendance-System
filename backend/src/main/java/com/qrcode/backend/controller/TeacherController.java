@@ -8,7 +8,9 @@ import com.qrcode.backend.dto.response.ManualAttendanceStudentResponse;
 import com.qrcode.backend.dto.response.SemesterResponse;
 import com.qrcode.backend.dto.response.SessionResponse;
 import com.qrcode.backend.dto.response.SessionSummaryResponse;
+import com.qrcode.backend.dto.response.TimetableResponse;
 import com.qrcode.backend.service.AdminService;
+import com.qrcode.backend.service.ScheduleService;
 import com.qrcode.backend.service.SessionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class TeacherController {
 
     private final SessionService sessionService;
     private final AdminService adminService;
+    private final ScheduleService scheduleService;
 
     @GetMapping("/courses")
     public ResponseEntity<List<CourseResponse>> getMyCourses() {
@@ -73,9 +76,16 @@ public class TeacherController {
         return ResponseEntity.ok(response);
     }
 
-    // ── Semesters ──────────────────────────────────
+    // ── Semesters ──────────────────────────────────────────
     @GetMapping("/semesters")
     public ResponseEntity<List<SemesterResponse>> getSemesters() {
         return ResponseEntity.ok(adminService.getAllSemesters());
+    }
+
+    // ── Timetable ──────────────────────────────────────────
+    @GetMapping("/timetable")
+    public ResponseEntity<TimetableResponse> getTimetable(
+            @RequestParam(required = false) Integer semesterId) {
+        return ResponseEntity.ok(scheduleService.getTeacherTimetable(semesterId));
     }
 }

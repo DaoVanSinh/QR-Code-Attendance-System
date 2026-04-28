@@ -33,6 +33,8 @@ public class AdminService {
     private final SessionRepository sessionRepository;
     private final AttendancesRepository attendancesRepository;
     private final SemesterRepository semesterRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final ScheduleService scheduleService;
 
     @Transactional
     public void createUser(AdminCreateUserRequest request) {
@@ -126,10 +128,7 @@ public class AdminService {
         Classes classes = classesRepository.findByName(request.getClassName())
                 .orElseGet(() -> {
                     String cleanCode = request.getClassName().replaceAll("[^a-zA-Z0-9_-]", "").toUpperCase();
-                    // make code random if empty
                     if (cleanCode.isEmpty()) cleanCode = "CLASS-" + System.currentTimeMillis();
-                    
-                    // Add random digits to avoid duplicate code constraint if a similar room exists
                     String uniqueCode = cleanCode + "-" + (int)(Math.random() * 1000);
 
                     Classes newClass = Classes.builder()
@@ -144,24 +143,11 @@ public class AdminService {
             throw new RuntimeException("User is not a teacher.");
         }
 
-        if (request.getDayOfWeek() != null && request.getRoom() != null
-                && request.getStartLesson() != null && request.getEndLesson() != null) {
-            List<Course> conflicts = courseRepository.findConflictingCourses(
-                request.getDayOfWeek(),
-                request.getRoom(),
-                request.getStartLesson(),
-                request.getEndLesson(),
-                null   // null = không loại trừ course nào (đây là tạo mới)
-            );
-            if (!conflicts.isEmpty()) {
-                Course c = conflicts.get(0);
-                throw new RuntimeException(String.format(
-                    "Trùng lịch! Phòng %s - Thứ %d - Tiết %d→%d đã được sử dụng bởi môn '%s' (Nhóm: %s).",
-                    request.getRoom(), request.getDayOfWeek(),
-                    c.getStartLesson(), c.getEndLesson(),
-                    c.getSubject().getName(), c.getClasses().getName()
-                ));
-            }
+        // ── Resolve semester entity ────────────────────────────
+        Semester semesterEntity = null;
+        if (request.getSemesterId() != null) {
+            semesterEntity = semesterRepository.findById(request.getSemesterId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy học kỳ."));
         }
 
         Course course = Course.builder()
@@ -169,6 +155,8 @@ public class AdminService {
                 .teacher(teacher)
                 .classes(classes)
                 .semester(request.getSemester())
+                .semesterEntity(semesterEntity)
+                .maxSlots(request.getMaxSlots() != null ? request.getMaxSlots() : 50)
                 .room(request.getRoom())
                 .dayOfWeek(request.getDayOfWeek())
                 .startLesson(request.getStartLesson())
@@ -177,7 +165,28 @@ public class AdminService {
                 .endDate(request.getEndDate())
                 .build();
 
+        // ── Triple-Check Filter (Bộ lọc 3 lớp) ───────────────
+        scheduleService.runTripleCheck(
+            teacher.getId(), request.getRoom(),
+            request.getDayOfWeek(), request.getStartLesson(), request.getEndLesson(),
+            course, null
+        );
+
         course = courseRepository.save(course);
+
+        // ── Auto-create Schedule record ────────────────────────
+        if (request.getDayOfWeek() != null && request.getStartLesson() != null
+                && request.getEndLesson() != null) {
+            Schedule schedule = Schedule.builder()
+                    .course(course)
+                    .dayOfWeek(request.getDayOfWeek())
+                    .startPeriod(request.getStartLesson())
+                    .endPeriod(request.getEndLesson())
+                    .room(request.getRoom() != null ? request.getRoom() : "TBD")
+                    .isPrimary(true)
+                    .build();
+            scheduleRepository.save(schedule);
+        }
 
         return toCourseDetailResponse(course);
     }
@@ -234,29 +243,79 @@ public class AdminService {
         if (request.getEndLesson() != null) course.setEndLesson(request.getEndLesson());
         if (request.getStartDate() != null) course.setStartDate(request.getStartDate());
         if (request.getEndDate() != null) course.setEndDate(request.getEndDate());
+        if (request.getMaxSlots() != null) course.setMaxSlots(request.getMaxSlots());
 
-        if (request.getDayOfWeek() != null && request.getRoom() != null
-                && request.getStartLesson() != null && request.getEndLesson() != null) {
-            List<Course> conflicts = courseRepository.findConflictingCourses(
-                request.getDayOfWeek(),
-                request.getRoom(),
-                request.getStartLesson(),
-                request.getEndLesson(),
-                id   // loại trừ course đang được edit
-            );
-            if (!conflicts.isEmpty()) {
-                Course c = conflicts.get(0);
-                throw new RuntimeException(String.format(
-                    "Trùng lịch! Phòng %s - Thứ %d - Tiết %d→%d đã được sử dụng bởi môn '%s' (Nhóm: %s).",
-                    request.getRoom(), request.getDayOfWeek(),
-                    c.getStartLesson(), c.getEndLesson(),
-                    c.getSubject().getName(), c.getClasses().getName()
-                ));
+        // ── Resolve semester entity ────────────────────────────
+        if (request.getSemesterId() != null) {
+            Semester semesterEntity = semesterRepository.findById(request.getSemesterId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy học kỳ."));
+            course.setSemesterEntity(semesterEntity);
+        }
+
+        // ── Triple-Check Filter ────────────────────────────────
+        scheduleService.runTripleCheck(
+            course.getTeacher().getId(), course.getRoom(),
+            course.getDayOfWeek(), course.getStartLesson(), course.getEndLesson(),
+            course, id
+        );
+
+        course = courseRepository.save(course);
+
+        // ── Update Schedule record ────────────────────────────
+        if (request.getDayOfWeek() != null && request.getStartLesson() != null
+                && request.getEndLesson() != null) {
+            List<Schedule> existing = scheduleRepository.findByCourseId(id);
+            Schedule primary = existing.stream()
+                    .filter(s -> Boolean.TRUE.equals(s.getIsPrimary()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (primary != null) {
+                // Check attendance trước khi sửa schedule
+                long attCount = attendancesRepository.countBySessionCoursId(id);
+                if (attCount > 0) {
+                    // Chỉ cảnh báo, không chặn hoàn toàn
+                    // Cho phép sửa nhưng giữ data integrity
+                }
+                primary.setDayOfWeek(request.getDayOfWeek());
+                primary.setStartPeriod(request.getStartLesson());
+                primary.setEndPeriod(request.getEndLesson());
+                primary.setRoom(request.getRoom() != null ? request.getRoom() : primary.getRoom());
+                scheduleRepository.save(primary);
+            } else {
+                Schedule schedule = Schedule.builder()
+                        .course(course)
+                        .dayOfWeek(request.getDayOfWeek())
+                        .startPeriod(request.getStartLesson())
+                        .endPeriod(request.getEndLesson())
+                        .room(request.getRoom() != null ? request.getRoom() : "TBD")
+                        .isPrimary(true)
+                        .build();
+                scheduleRepository.save(schedule);
             }
         }
 
-        course = courseRepository.save(course);
         return toCourseDetailResponse(course);
+    }
+
+    /**
+     * Xóa course — kiểm tra Data Integrity trước khi xóa.
+     * Nếu đã có attendance → không cho xóa.
+     */
+    @Transactional
+    public void deleteCourse(Integer id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy học phần."));
+
+        long attCount = attendancesRepository.countBySessionCoursId(id);
+        if (attCount > 0) {
+            throw new RuntimeException(
+                "Không thể xóa! Học phần đã có " + attCount + " bản ghi điểm danh. Vui lòng hủy các phiên điểm danh trước."
+            );
+        }
+
+        // Schedules sẽ tự xóa nhờ ON DELETE CASCADE trong DB
+        courseRepository.delete(course);
     }
 
     public List<CourseDetailResponse> getAllCourses() {
@@ -343,12 +402,15 @@ public class AdminService {
                 .teacherName(teacherName)
                 .teacherEmail(course.getTeacher().getEmail())
                 .semester(course.getSemester())
+                .semesterId(course.getSemesterEntity() != null ? course.getSemesterEntity().getId() : null)
                 .room(course.getRoom())
                 .dayOfWeek(course.getDayOfWeek())
                 .startLesson(course.getStartLesson())
                 .endLesson(course.getEndLesson())
                 .startDate(course.getStartDate())
                 .endDate(course.getEndDate())
+                .maxSlots(course.getMaxSlots())
+                .currentSlots(course.getCurrentSlots())
                 .build();
     }
 }

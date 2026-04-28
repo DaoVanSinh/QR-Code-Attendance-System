@@ -4,9 +4,11 @@ import com.qrcode.backend.dto.request.CheckInRequest;
 import com.qrcode.backend.dto.response.EnrolledCourseResponse;
 import com.qrcode.backend.dto.response.MyAttendanceResponse;
 import com.qrcode.backend.dto.response.SemesterResponse;
+import com.qrcode.backend.dto.response.TimetableResponse;
 import com.qrcode.backend.service.AdminService;
 import com.qrcode.backend.service.AttendanceService;
 import com.qrcode.backend.service.EnrollmentService;
+import com.qrcode.backend.service.ScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ public class StudentController {
     private final AttendanceService attendanceService;
     private final EnrollmentService enrollmentService;
     private final AdminService adminService;
+    private final ScheduleService scheduleService;
 
     // ── Điểm danh ─────────────────────────────────────────────
     @PostMapping("/attendances/check-in")
@@ -65,5 +68,12 @@ public class StudentController {
     @GetMapping("/semesters")
     public ResponseEntity<List<SemesterResponse>> getSemesters() {
         return ResponseEntity.ok(adminService.getAllSemesters());
+    }
+
+    // ── Timetable ──────────────────────────────────
+    @GetMapping("/timetable")
+    public ResponseEntity<TimetableResponse> getTimetable(
+            @RequestParam(required = false) Integer semesterId) {
+        return ResponseEntity.ok(scheduleService.getStudentTimetable(semesterId));
     }
 }

@@ -16,6 +16,7 @@ public class CourseDetailResponse {
     private String teacherName;
     private String teacherEmail;
     private String semester;
+    private Integer semesterId;
     private Integer credits;
     private Integer dayOfWeek;
     private Integer startLesson;
@@ -23,4 +24,7 @@ public class CourseDetailResponse {
     private String room;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Integer maxSlots;
+    private Integer currentSlots;
 }
+

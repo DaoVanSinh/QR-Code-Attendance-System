@@ -18,6 +18,9 @@ public class CreateCourseRequest {
     private Integer startLesson;
     private Integer endLesson;
     private String semester;
+    private Integer semesterId;
+    private Integer maxSlots;
     private LocalDate startDate;
     private LocalDate endDate;
 }
+
