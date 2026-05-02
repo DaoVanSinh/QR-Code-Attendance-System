@@ -35,7 +35,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             localStorage.setItem('user_role', data.user.role);
             localStorage.setItem('user_name', data.user.fullName || data.user.email);
             localStorage.setItem('user_id', data.user.id);
-
+            if (data.user.avatar) {
+                localStorage.setItem('user_avatar', data.user.avatar);
+            } else {
+                localStorage.removeItem('user_avatar');
+            }
 
             setTimeout(() => {
                 // Điều hướng dựa trên vai trò
