@@ -169,3 +169,31 @@ function buildSidebar(activePage) {
         </nav>
     </aside>`;
 }
+
+/**
+ * Gọi /api/user/profile để lấy avatar mới nhất → lưu localStorage → cập nhật img#sidebarAvatar.
+ * Gọi sau buildSidebar() trên mọi trang teacher.
+ */
+async function fetchAndCacheAvatar() {
+    try {
+        const res = await authFetch(`${API_BASE_URL}/user/profile`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const avatar   = data.avatar   || data.profilePicture || '';
+        const fullName = data.fullName || data.name || '';
+
+        // Cập nhật cache
+        if (avatar)   localStorage.setItem('user_avatar', avatar);
+        if (fullName) localStorage.setItem('user_name',   fullName);
+
+        // Cập nhật DOM không cần reload trang
+        const imgEl  = document.getElementById('sidebarAvatar');
+        const nameEl = document.getElementById('sidebarUserName');
+        if (imgEl && avatar && avatar.length > 10) imgEl.src = avatar;
+        if (nameEl && fullName)                    nameEl.textContent = fullName;
+    } catch (e) {
+        // Không làm gì — avatar fallback về initials vẫn ổn
+    }
+}
+

@@ -4,6 +4,14 @@ let currentTab = 'all';
 
 if (auth) {
     document.getElementById('headerUserName').textContent = auth.name || 'Sinh Viên';
+    // Load avatar từ cache trước
+    const cachedAvatar = localStorage.getItem('user_avatar');
+    const avatarEl = document.getElementById('studentAvatar');
+    if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
+        avatarEl.src = cachedAvatar;
+    }
+    // Fetch mới nhất từ server
+    fetchAndCacheAvatar();
     loadCourses();
 }
 

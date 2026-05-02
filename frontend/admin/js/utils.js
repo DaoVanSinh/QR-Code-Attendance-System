@@ -184,7 +184,7 @@ function buildAdminSidebar(activePage) {
  */
 async function fetchAndCacheAvatar() {
     try {
-        const res = await authFetch(`${API_BASE_URL}/users/me`);
+        const res = await authFetch(`${API_BASE_URL}/user/profile`);
         if (!res.ok) return;
         const data = await res.json();
 

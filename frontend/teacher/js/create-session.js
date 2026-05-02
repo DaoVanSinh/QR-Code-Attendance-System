@@ -1,6 +1,7 @@
 const auth = checkAuth('TEACHER');
 if (auth) {
     document.getElementById('sidebar-placeholder').innerHTML = buildSidebar('create-session.html');
+    fetchAndCacheAvatar();
     loadCourses();
 }
 

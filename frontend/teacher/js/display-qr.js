@@ -1,6 +1,7 @@
 const auth = checkAuth('TEACHER');
 if (auth) {
     document.getElementById('sidebar-placeholder').innerHTML = buildSidebar('display-qr.html');
+    fetchAndCacheAvatar();
 }
 
 let qrCodeValue = localStorage.getItem('current_qr_code');

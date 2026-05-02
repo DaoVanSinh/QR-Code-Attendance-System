@@ -164,7 +164,7 @@
         const auth = checkAuth('STUDENT');
         if (auth) {
             document.getElementById('studentName').textContent = auth.name || 'Sinh Viên';
-            // Load avatar từ cache
+            // Load avatar từ cache trước (hiện ngay)
             const cachedAvatar = localStorage.getItem('user_avatar');
             const avatarEl = document.getElementById('studentAvatar');
             if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
@@ -172,6 +172,8 @@
             } else if (avatarEl) {
                 avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(auth.name || 'SV')}&background=4f46e5&color=fff&size=64`;
             }
+            // Fetch mới nhất từ server (cập nhật lại nếu có thay đổi)
+            fetchAndCacheAvatar();
         }
     </script>
     <script src="js/timetable.js?v=11"></script>

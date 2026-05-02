@@ -111,6 +111,7 @@
         const auth = checkAuth('TEACHER');
         if (auth) {
             document.getElementById('sidebar-placeholder').innerHTML = buildSidebar('manual-attendance.html');
+            fetchAndCacheAvatar();
             if(document.getElementById('sidebarUserName')) {
                 document.getElementById('sidebarUserName').textContent = auth.name || 'Teacher';
             }

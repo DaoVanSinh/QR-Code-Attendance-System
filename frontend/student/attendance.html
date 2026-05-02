@@ -159,6 +159,14 @@
         if (auth) {
             const nameEl = document.getElementById('studentName');
             if (nameEl) nameEl.textContent = auth.name || 'ST';
+            // Load avatar từ cache trước
+            const cachedAvatar = localStorage.getItem('user_avatar');
+            const avatarEl = document.getElementById('studentAvatar');
+            if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
+                avatarEl.src = cachedAvatar;
+            }
+            // Fetch mới nhất từ server
+            fetchAndCacheAvatar();
         }
 
         // Close dropdown when clicking outside

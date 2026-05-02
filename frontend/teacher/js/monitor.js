@@ -2,6 +2,7 @@
 const auth = checkAuth('TEACHER');
 if (auth) {
     document.getElementById('sidebar-placeholder').innerHTML = buildSidebar('monitor.html');
+    fetchAndCacheAvatar();
 }
 
 // ── State ──────────────────────────────────────────────────────────────────

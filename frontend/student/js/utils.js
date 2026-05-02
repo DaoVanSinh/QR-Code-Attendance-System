@@ -124,3 +124,40 @@ document.addEventListener('click', function(e) {
         studentDropdown.classList.remove('show');
     }
 });
+
+/**
+ * Gọi /api/user/profile để lấy avatar mới nhất → lưu localStorage → cập nhật header avatar.
+ * Gọi sau checkAuth() trên mọi trang student.
+ */
+async function fetchAndCacheAvatar() {
+    try {
+        const res = await authFetch(`${API_BASE_URL}/user/profile`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const avatar   = data.avatar   || data.profilePicture || '';
+        const fullName = data.fullName || data.name || '';
+
+        // Cập nhật cache
+        if (avatar)   localStorage.setItem('user_avatar', avatar);
+        if (fullName) localStorage.setItem('user_name',   fullName);
+
+        // Cập nhật DOM — student dùng header, không phải sidebar
+        const imgEl = document.getElementById('studentAvatar');
+        if (imgEl && avatar && avatar.length > 10) {
+            imgEl.src = avatar;
+        } else if (imgEl && fullName) {
+            imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=4f46e5&color=fff&size=64`;
+        }
+
+        // Cập nhật tên trên header (các trang student dùng ID khác nhau)
+        const nameEls = ['headerUserName', 'studentName'];
+        nameEls.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && fullName) el.textContent = fullName;
+        });
+    } catch (e) {
+        // Không làm gì — avatar fallback vẫn ổn
+    }
+}
+
