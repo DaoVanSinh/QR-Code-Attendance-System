@@ -1,3 +1,9 @@
+// ============================================================
+//  TIMETABLE.JS — Teacher View  v8
+//  Dùng endpoint /teacher/timetable (ScheduleService) thay vì /teacher/courses
+//  Field mapping: startPeriod / endPeriod / courseId (ScheduleDTO)
+// ============================================================
+
 const LESSON_TIMES = {
     1:'06:45', 2:'07:45', 3:'08:45', 4:'09:45',  5:'10:45',
     6:'12:30', 7:'13:30', 8:'14:30', 9:'15:30', 10:'16:30',
@@ -19,34 +25,35 @@ function hashCode(str) {
     return Math.abs(hash);
 }
 
-const DOW_LABELS = ['','','Thu 2','Thu 3','Thu 4','Thu 5','Thu 6','Thu 7','CN'];
+// ✅ Đầy đủ dấu tiếng Việt
+const DOW_LABELS  = ['','','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
+const DAY_HEADERS = ['','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
 
+// Blue monochrome palette — nhất quán cho toàn hệ thống
 const CARD_COLORS = [
-    { bg: '#bbdefb', border: '#1565c0', text: '#0d2f6e' },
-    { bg: '#c8e6c9', border: '#2e7d32', text: '#1b4d1e' },
-    { bg: '#fff9c4', border: '#f9a825', text: '#5d3b00' },
-    { bg: '#e8d5f5', border: '#6a1b9a', text: '#3d0060' },
-    { bg: '#ffccbc', border: '#bf360c', text: '#6d1e00' },
-    { bg: '#b2dfdb', border: '#00695c', text: '#00332e' },
-    { bg: '#f8bbd0', border: '#ad1457', text: '#6b0031' },
+    { bg: '#dbeafe', border: '#1d4ed8', text: '#1e3a8a' },
+    { bg: '#bfdbfe', border: '#1565c0', text: '#1e3a8a' },
+    { bg: '#e0effe', border: '#2563eb', text: '#1e40af' },
+    { bg: '#eff6ff', border: '#3b82f6', text: '#1d4ed8' },
+    { bg: '#dbeafe', border: '#1e40af', text: '#1e3a8a' },
 ];
 
-let allCourses = [];
-let weekData   = [];
+// allCourses: mảng flat các ScheduleDTO đã chuẩn hóa từ /teacher/timetable
+let allCourses      = [];
+let weekData        = [];
 let semesterDBCache = [];
 
-// --- Khoi dong ---
+// --- Khởi động ---
 document.addEventListener('DOMContentLoaded', () => {
-    loadTimetable();
+    loadSemesters();
     document.getElementById('btnPrevWeek').addEventListener('click', () => navigateWeek(-1));
     document.getElementById('btnNextWeek').addEventListener('click', () => navigateWeek(+1));
 });
 
 function navigateWeek(delta) {
-    const sel = document.getElementById('weekFilter');
+    const sel  = document.getElementById('weekFilter');
     if (!sel) return;
-    const cur = parseInt(sel.value);
-    const next = cur + delta;
+    const next = parseInt(sel.value) + delta;
     if (next >= 0 && next < weekData.length) {
         sel.value = next;
         renderGrid();
@@ -61,30 +68,23 @@ function updateWeekNav() {
     document.getElementById('btnPrevWeek').disabled = cur <= 0;
     document.getElementById('btnNextWeek').disabled = cur >= weekData.length - 1;
     if (weekData[cur]) {
-        const w = weekData[cur];
+        const w   = weekData[cur];
         const fmt = d => d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
-        document.getElementById('weekLabel').textContent = `Tuan ${w.num}  \u00b7  ${fmt(w.start)} \u2013 ${fmt(w.end)}`;
+        document.getElementById('weekLabel').textContent = `Tuần ${w.num}  ·  ${fmt(w.start)} – ${fmt(w.end)}`;
     }
 }
 
-// --- Load du lieu ---
-async function loadTimetable() {
+// --- Bước 1: Load danh sách học kỳ trước ---
+async function loadSemesters() {
     document.getElementById('loadingMsg').style.display = 'block';
     document.getElementById('timetableWrapper').style.display = 'none';
     try {
-        const [courseRes, semRes] = await Promise.all([
-            authFetch(`${API_BASE_URL}/teacher/courses`),
-            authFetch(`${API_BASE_URL}/teacher/semesters`)
-        ]);
-        if (!courseRes.ok) throw new Error('Khong the tai du lieu thoi khoa bieu');
-        allCourses = await courseRes.json();
+        const semRes = await authFetch(`${API_BASE_URL}/teacher/semesters`);
         if (semRes.ok) semesterDBCache = await semRes.json();
         populateSemesterFilter();
-        renderGrid();
     } catch (error) {
-        console.error('[Teacher TKB] Error:', error);
-        showToast(error.message, 'error');
-    } finally {
+        console.error('[Teacher TKB] loadSemesters error:', error);
+        showToast('Lỗi tải danh sách học kỳ.', 'error');
         document.getElementById('loadingMsg').style.display = 'none';
         document.getElementById('timetableWrapper').style.display = 'block';
     }
@@ -94,68 +94,88 @@ async function loadTimetable() {
 function populateSemesterFilter() {
     const semSel = document.getElementById('semesterFilter');
     if (!semSel) return;
-    const semesters = [...new Set(allCourses.map(c => c.semester).filter(Boolean))].sort((a,b) => b.localeCompare(a));
-    semSel.innerHTML = '';
-    if (semesters.length === 0) {
-        semSel.innerHTML = '<option value="ALL">T\u1ea5t c\u1ea3 h\u1ecdc k\u1ef3</option>';
-    } else {
-        semesters.forEach(s => {
-            const dbSem = semesterDBCache.find(d => d.label === s);
-            const displayName = dbSem ? `${dbSem.labelFull}${dbSem.isActive ? ' \u2605' : ''}` : s;
-            semSel.innerHTML += `<option value="${s}">${displayName}</option>`;
-        });
-    }
-    // Tu chon hoc ky dang active
-    const activeSem = semesterDBCache.find(d => d.isActive);
-    if (activeSem) {
-        const found = Array.from(semSel.options).find(o => o.value === activeSem.label);
-        semSel.value = found ? activeSem.label : (semesters.length > 0 ? semesters[0] : 'ALL');
-    } else {
-        semSel.value = semesters.length > 0 ? semesters[0] : 'ALL';
-    }
+    semSel.innerHTML = '<option value="ALL">— Tất cả học kỳ —</option>';
+    semesterDBCache.forEach(s => {
+        semSel.innerHTML += `<option value="${s.id}">${s.labelFull || s.label}</option>`;
+    });
+    // Mặc định "Tất cả" để luôn hiện dữ liệu dù courses cũ chưa có semesterEntity
+    semSel.value = 'ALL';
+    // Kích hoạt load TKB lần đầu
     onSemesterChange();
 }
 
-function onSemesterChange() {
-    const semSel = document.getElementById('semesterFilter');
-    const selectedSem = semSel ? semSel.value : 'ALL';
-    let coursesInSem = selectedSem === 'ALL' ? allCourses : allCourses.filter(c => c.semester === selectedSem);
-    computeWeeks(coursesInSem);
-    renderGrid();
+// --- Bước 2: Mỗi khi đổi học kỳ → fetch /teacher/timetable?semesterId=X ---
+async function onSemesterChange() {
+    const semSel      = document.getElementById('semesterFilter');
+    const selectedVal = semSel ? semSel.value : 'ALL';
+
+    document.getElementById('loadingMsg').style.display = 'block';
+    document.getElementById('timetableWrapper').style.display = 'none';
+
+    try {
+        const url = selectedVal === 'ALL'
+            ? `${API_BASE_URL}/teacher/timetable`
+            : `${API_BASE_URL}/teacher/timetable?semesterId=${selectedVal}`;
+
+        const res = await authFetch(url);
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `Lỗi tải thời khóa biểu (${res.status})`);
+        }
+
+        const data = await res.json(); // TimetableResponse: { schedulesByDay, totalCourses }
+
+        // Flatten Map<dayOfWeek, List<ScheduleDTO>> → mảng phẳng để render
+        allCourses = [];
+        if (data.schedulesByDay) {
+            Object.values(data.schedulesByDay).forEach(dayList => {
+                dayList.forEach(s => allCourses.push(s));
+            });
+        }
+
+    } catch (error) {
+        console.error('[Teacher TKB] Error:', error);
+        showToast(error.message, 'error');
+        allCourses = [];
+    } finally {
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('timetableWrapper').style.display = 'block';
+        computeWeeks(allCourses);
+        renderGrid();
+    }
 }
 
-// --- Tinh danh sach tuan ---
+// --- Tính danh sách tuần ---
 function computeWeeks(courses) {
     const weekSel = document.getElementById('weekFilter');
     if (!weekSel) return;
     weekSel.innerHTML = '';
     weekData = [];
     if (!courses || courses.length === 0) {
-        weekSel.innerHTML = '<option value="-1">Khong co du lieu</option>';
+        weekSel.innerHTML = '<option value="-1">Không có dữ liệu</option>';
         updateWeekNav();
         return;
     }
     let minD = new Date('2099-01-01'), maxD = new Date('1970-01-01'), hasData = false;
     courses.forEach(c => {
-        if (c.startDate) { let d = new Date(c.startDate); if (d < minD) minD = d; hasData = true; }
-        if (c.endDate)   { let d = new Date(c.endDate);   if (d > maxD) maxD = d; hasData = true; }
+        if (c.startDate) { const d = new Date(c.startDate); if (d < minD) minD = d; hasData = true; }
+        if (c.endDate)   { const d = new Date(c.endDate);   if (d > maxD) maxD = d; hasData = true; }
     });
     if (!hasData || minD > maxD) {
-        weekSel.innerHTML = '<option value="-1">Khong co du lieu</option>';
+        weekSel.innerHTML = '<option value="-1">Không có dữ liệu</option>';
         updateWeekNav();
         return;
     }
-    let day = minD.getDay();
-    let startWeek = new Date(minD);
+    const day = minD.getDay();
+    const startWeek = new Date(minD);
     startWeek.setDate(minD.getDate() - day + (day === 0 ? -6 : 1));
-    let curWeek = new Date(startWeek), weekNum = 1;
+    let curWeek = new Date(startWeek), weekNum = 1, currentWeekIndex = 0;
     const now = new Date();
-    let currentWeekIndex = 0;
     while (curWeek <= maxD) {
-        let endW = new Date(curWeek);
+        const endW = new Date(curWeek);
         endW.setDate(endW.getDate() + 6);
         const fmt = d => d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
-        weekData.push({ label:`Tuan ${weekNum} (${fmt(curWeek)} \u2013 ${fmt(endW)})`, num:weekNum, start:new Date(curWeek), end:new Date(endW) });
+        weekData.push({ label:`Tuần ${weekNum} (${fmt(curWeek)} – ${fmt(endW)})`, num:weekNum, start:new Date(curWeek), end:new Date(endW) });
         if (now >= curWeek && now <= endW) currentWeekIndex = weekNum - 1;
         curWeek.setDate(curWeek.getDate() + 7);
         weekNum++;
@@ -165,9 +185,8 @@ function computeWeeks(courses) {
     updateWeekNav();
 }
 
-// --- Render luoi TKB ---
+// --- Render lưới TKB ---
 function renderGrid() {
-    const filterSem    = document.getElementById('semesterFilter')?.value || 'ALL';
     const weekSelValue = document.getElementById('weekFilter')?.value;
     const grid         = document.getElementById('tkbGrid');
     grid.innerHTML     = '';
@@ -178,20 +197,19 @@ function renderGrid() {
         weekStart = weekData[parseInt(weekSelValue)].start;
     }
 
-    const dayNames = ['', 'Thu 2', 'Thu 3', 'Thu 4', 'Thu 5', 'Thu 6', 'Thu 7', 'CN'];
-    const today    = new Date();
-    today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
 
+    // Corner cell
     const cornerEl = document.createElement('div');
     cornerEl.className = 'tkb-header tkb-corner';
     cornerEl.innerHTML = `<ion-icon name="calendar-outline" style="font-size:20px;opacity:0.5;"></ion-icon>`;
     grid.appendChild(cornerEl);
 
+    // Header hàng đầu: Thứ 2 → CN
     for (let col = 1; col <= 7; col++) {
         const div = document.createElement('div');
         div.className = 'tkb-header';
-        let dateStr = '';
-        let isToday = false;
+        let dateStr = '', isToday = false;
         if (weekStart) {
             const colDate = new Date(weekStart);
             colDate.setDate(weekStart.getDate() + (col - 1));
@@ -201,22 +219,23 @@ function renderGrid() {
         }
         if (isToday) {
             div.classList.add('tkb-header-today');
-            div.innerHTML = `<div class="tkb-header-day">${dayNames[col]}</div><div class="tkb-header-date today-badge">${dateStr}</div><div class="today-dot"></div>`;
+            div.innerHTML = `<div class="tkb-header-day">${DAY_HEADERS[col]}</div><div class="tkb-header-date today-badge">${dateStr}</div><div class="today-dot"></div>`;
         } else {
-            div.innerHTML = `<div class="tkb-header-day">${dayNames[col]}</div>${dateStr ? `<div class="tkb-header-date">${dateStr}</div>` : ''}`;
+            div.innerHTML = `<div class="tkb-header-day">${DAY_HEADERS[col]}</div>${dateStr ? `<div class="tkb-header-date">${dateStr}</div>` : ''}`;
         }
         grid.appendChild(div);
     }
 
-    const todayJS = new Date().getDay();
+    const todayJS  = new Date().getDay();
     const todayCol = todayJS === 0 ? 7 : todayJS;
 
+    // Tiết + ô rỗng
     for (let i = 1; i <= 13; i++) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'tkb-time-label';
         timeDiv.style.gridRow    = `${i + 1}`;
         timeDiv.style.gridColumn = `1`;
-        timeDiv.innerHTML = `<div class="lesson-num">Tiet ${i}</div><div class="lesson-time">${LESSON_TIMES[i]}</div>`;
+        timeDiv.innerHTML = `<div class="lesson-num">Tiết ${i}</div><div class="lesson-time">${LESSON_TIMES[i]}</div>`;
         grid.appendChild(timeDiv);
         for (let d = 2; d <= 8; d++) {
             const emptyDiv = document.createElement('div');
@@ -228,14 +247,13 @@ function renderGrid() {
         }
     }
 
-    // Filter courses
+    // Lọc theo tuần (dùng startDate/endDate của course)
     let filtered = allCourses;
-    if (filterSem !== 'ALL') filtered = filtered.filter(c => c.semester === filterSem);
     if (weekSelValue && weekSelValue !== '-1' && weekData.length > parseInt(weekSelValue)) {
         const sel = weekData[parseInt(weekSelValue)];
         filtered = filtered.filter(c => {
             if (!c.startDate || !c.endDate) return false;
-            let sd = new Date(c.startDate), ed = new Date(c.endDate);
+            const sd = new Date(c.startDate), ed = new Date(c.endDate);
             sd.setHours(0,0,0,0); ed.setHours(23,59,59,999);
             const ws = new Date(sel.start); ws.setHours(0,0,0,0);
             const we = new Date(sel.end);   we.setHours(23,59,59,999);
@@ -243,7 +261,7 @@ function renderGrid() {
         });
     }
 
-    // Render course cards
+    // Render card môn học — dùng startPeriod / endPeriod (ScheduleDTO)
     for (let d = 2; d <= 8; d++) {
         const wrapper = document.createElement('div');
         wrapper.style.gridColumn    = `${d}`;
@@ -254,42 +272,41 @@ function renderGrid() {
         grid.appendChild(wrapper);
 
         const dayCourses = filtered
-            .filter(c => parseInt(c.dayOfWeek) === d && c.startLesson && c.endLesson)
-            .sort((a,b) => a.startLesson - b.startLesson);
+            .filter(c => parseInt(c.dayOfWeek) === d && c.startPeriod && c.endPeriod)
+            .sort((a, b) => a.startPeriod - b.startPeriod);
 
         dayCourses.forEach(course => {
-            const overlapping = dayCourses.filter(o => o.startLesson <= course.endLesson && o.endLesson >= course.startLesson);
+            const overlapping = dayCourses.filter(o => o.startPeriod <= course.endPeriod && o.endPeriod >= course.startPeriod);
             const count = Math.max(1, overlapping.length);
-            const idx   = overlapping.findIndex(o => o.id === course.id);
+            const idx   = overlapping.findIndex(o => o.courseId === course.courseId && o.scheduleId === course.scheduleId);
 
             const card = document.createElement('div');
             card.className = 'tkb-course-card';
             card.style.pointerEvents = 'auto';
             card.style.position  = 'absolute';
-            card.style.top       = `calc(${(course.startLesson - 1) / 13 * 100}% + 3px)`;
-            card.style.height    = `calc(${(course.endLesson - course.startLesson + 1) / 13 * 100}% - 6px)`;
+            card.style.top       = `calc(${(course.startPeriod - 1) / 13 * 100}% + 3px)`;
+            card.style.height    = `calc(${(course.endPeriod - course.startPeriod + 1) / 13 * 100}% - 6px)`;
             card.style.width     = `calc(${100 / count}% - 6px)`;
-            card.style.left      = `calc(${Math.max(0,idx) * (100 / count)}% + 3px)`;
+            card.style.left      = `calc(${Math.max(0, idx) * (100 / count)}% + 3px)`;
             card.style.zIndex    = '5';
 
-            const color    = CARD_COLORS[hashCode(course.subjectCode) % CARD_COLORS.length];
+            const color = CARD_COLORS[hashCode(course.subjectCode) % CARD_COLORS.length];
             card.style.backgroundColor = color.bg;
             card.style.borderLeftColor  = color.border;
 
-            const timeStr = `${LESSON_TIMES[course.startLesson]} \u2192 ${LESSON_END_TIMES[course.endLesson]}`;
-            let teacherName = course.teacherName || localStorage.getItem('user_name') || 'N/A';
+            // Dùng startTime/endTime từ ScheduleDTO (đã tính sẵn ở backend)
+            const timeStr = `${course.startTime || LESSON_TIMES[course.startPeriod]} → ${course.endTime || LESSON_END_TIMES[course.endPeriod]}`;
 
             card.innerHTML = `
                 <div class="card-subject" style="color:${color.text};">${course.subjectName}</div>
                 <div class="card-code" style="color:${color.border};">${course.subjectCode}</div>
                 <div class="card-meta">
-                    <div class="card-row"><ion-icon name="people-outline"></ion-icon><span>Nhom ${course.className || '\u2014'}</span></div>
+                    <div class="card-row"><ion-icon name="people-outline"></ion-icon><span>Nhóm ${course.className || '—'}</span></div>
                     <div class="card-row"><ion-icon name="business-outline"></ion-icon><span>${course.room || 'N/A'}</span></div>
-                    <div class="card-row"><ion-icon name="person-outline"></ion-icon><span>${teacherName}</span></div>
                     <div class="card-row card-time"><ion-icon name="time-outline"></ion-icon><span>${timeStr}</span></div>
                 </div>
             `;
-            card.title  = `${course.subjectName} \u2014 Tiet ${course.startLesson}\u2192${course.endLesson}`;
+            card.title = `${course.subjectName} — Tiết ${course.startPeriod}→${course.endPeriod}`;
             card.style.cursor = 'pointer';
             card.addEventListener('click', () => openCourseDetailModal(course));
             wrapper.appendChild(card);
@@ -297,28 +314,30 @@ function renderGrid() {
     }
 }
 
-// --- Modal chi tiet ---
+// --- Modal chi tiết ---
 function openCourseDetailModal(course) {
     const modal = document.getElementById('courseDetailModal');
     if (!modal) return;
-    const timeStr      = `${LESSON_TIMES[course.startLesson]} \u2013 ${LESSON_END_TIMES[course.endLesson]}`;
-    const startDateStr = course.startDate ? new Date(course.startDate+'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
-    const endDateStr   = course.endDate   ? new Date(course.endDate  +'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
 
-    // Hien thi ten hoc ky day du
-    const dbSem = semesterDBCache.find(d => d.label === course.semester);
+    // Dùng startTime/endTime từ ScheduleDTO
+    const timeStr      = `${course.startTime || LESSON_TIMES[course.startPeriod]} – ${course.endTime || LESSON_END_TIMES[course.endPeriod]}`;
+    const startDateStr = course.startDate ? new Date(course.startDate + 'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
+    const endDateStr   = course.endDate   ? new Date(course.endDate   + 'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
+
+    // Tìm tên học kỳ đầy đủ từ cache
+    const dbSem    = semesterDBCache.find(d => d.label === course.semester);
     const semLabel = dbSem ? dbSem.labelFull : (course.semester || 'N/A');
 
-    document.getElementById('cdmSubject').textContent  = `${course.subjectCode} \u2014 ${course.subjectName}`;
-    document.getElementById('cdmClass').textContent    = course.className;
+    document.getElementById('cdmSubject').textContent  = `${course.subjectCode} — ${course.subjectName}`;
+    document.getElementById('cdmClass').textContent    = course.className || '—';
     document.getElementById('cdmRoom').textContent     = course.room || 'N/A';
-    document.getElementById('cdmSchedule').textContent = `${DOW_LABELS[course.dayOfWeek] || ''} | Tiet ${course.startLesson}\u2192${course.endLesson} | ${timeStr}`;
+    document.getElementById('cdmSchedule').textContent = `${course.dayOfWeekLabel || DOW_LABELS[course.dayOfWeek] || ''} | Tiết ${course.startPeriod}→${course.endPeriod} | ${timeStr}`;
     document.getElementById('cdmSemester').textContent = semLabel;
-    document.getElementById('cdmPeriod').textContent   = `${startDateStr} \u2192 ${endDateStr}`;
-    document.getElementById('cdmCredits').textContent  = `${course.credits || 'N/A'} tin chi`;
+    document.getElementById('cdmPeriod').textContent   = `${startDateStr} → ${endDateStr}`;
+    document.getElementById('cdmCredits').textContent  = `${course.credits || 'N/A'} tín chỉ`;
 
     document.getElementById('cdmBtnCreateSession').onclick = () => {
-        localStorage.setItem('selected_course_id', course.id);
+        localStorage.setItem('selected_course_id', course.courseId);
         window.location.href = 'create-session.html';
     };
     modal.style.display = 'flex';

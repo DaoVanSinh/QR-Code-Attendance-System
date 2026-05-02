@@ -37,12 +37,16 @@ public class AttendanceService {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User student = userDetails.getUser();
 
-        Session session = sessionRepository.findByQrCode(request.getQrCode())
-                .orElseThrow(() -> new ResourceNotFoundException("Mã QR không hợp lệ hoặc đã hết hạn (khoảng thời gian 30s)."));
+        // Tìm session bằng qrCode HOẶC previousQrCode
+        // → Đảm bảo sinh viên quét đúng lúc mã vừa được refresh vẫn điểm danh được
+        Session session = sessionRepository
+                .findByQrCodeOrPreviousQrCode(request.getQrCode(), request.getQrCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Mã QR không hợp lệ hoặc đã hết hạn."));
 
         if (session.getExpiredAt() != null && session.getExpiredAt().isBefore(LocalDateTime.now())) {
             throw new TokenExpiredException("Phiên điểm danh này đã hết hạn.");
         }
+
 
         // ── Kiểm tra sinh viên đã đăng ký học phần chưa ──
         Integer courseId = session.getCourse().getId();

@@ -17,13 +17,73 @@ function checkAuth(requiredRole) {
     return { token, role, name: localStorage.getItem('user_name') };
 }
 
-function authFetch(url, options = {}) {
+// ── Refresh Token Helper ──────────────────────────────────────────────
+let _isRefreshing = false;
+let _refreshQueue = [];
+
+async function _doRefresh() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) return false;
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken })
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        if (data.token && data.refreshToken) {
+            localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('refresh_token', data.refreshToken);
+            if (data.user) {
+                localStorage.setItem('user_role', data.user.role);
+                localStorage.setItem('user_name', data.user.fullName || data.user.email);
+                localStorage.setItem('user_id', data.user.id);
+            }
+            return true;
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
+
+async function authFetch(url, options = {}) {
     const token = localStorage.getItem('jwt_token');
     const headers = { ...options.headers };
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    let response;
+    try {
+        response = await fetch(url, { ...options, headers });
+    } catch (e) {
+        throw e;
     }
-    return fetch(url, { ...options, headers });
+
+    if (response.status === 401) {
+        if (_isRefreshing) {
+            await new Promise(resolve => _refreshQueue.push(resolve));
+            return authFetch(url, options);
+        }
+        _isRefreshing = true;
+        const refreshed = await _doRefresh();
+        _isRefreshing = false;
+        _refreshQueue.forEach(r => r());
+        _refreshQueue = [];
+
+        if (refreshed) {
+            const newToken = localStorage.getItem('jwt_token');
+            const retryHeaders = { ...options.headers };
+            if (newToken) retryHeaders['Authorization'] = `Bearer ${newToken}`;
+            return fetch(url, { ...options, headers: retryHeaders });
+        } else {
+            showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+            setTimeout(() => logout(), 1500);
+            return response;
+        }
+    }
+
+    return response;
 }
 
 function showToast(message, type = 'success') {
@@ -46,7 +106,17 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-function logout() {
+async function logout() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+        try {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            });
+        } catch (e) {}
+    }
     localStorage.clear();
     window.location.href = LOGIN_URL;
 }
@@ -61,6 +131,11 @@ document.addEventListener('click', function(e) {
 
 function buildAdminSidebar(activePage) {
     const name = localStorage.getItem('user_name') || 'Admin';
+    const cachedAvatar = localStorage.getItem('user_avatar');
+    // Dùng cached avatar nếu có, ngược lại fallback về ui-avatars
+    const avatarSrc = (cachedAvatar && cachedAvatar.length > 10)
+        ? cachedAvatar
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4f46e5&color=fff&size=64`;
 
     const pages = [
         { href: 'dashboard.html',      icon: 'grid-outline',        label: 'Tổng Quan' },
@@ -83,9 +158,9 @@ function buildAdminSidebar(activePage) {
         </div>
 
         <div class="user-profile-card" onclick="event.stopPropagation(); document.getElementById('adminProfileDropdown').classList.toggle('show')">
-            <img src="../admin/css/default-avatar.png" onerror="this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${name}')+'&background=random'" alt="Avatar" class="avatar">
+            <img id="sidebarAvatar" src="${avatarSrc}" alt="Avatar" class="avatar">
             <div class="info">
-                <div class="name">${name}</div>
+                <div class="name" id="sidebarUserName">${name}</div>
                 <div class="role">Super Administrator</div>
             </div>
             <ion-icon name="chevron-down-outline" style="color:var(--text-muted);"></ion-icon>
@@ -101,4 +176,31 @@ function buildAdminSidebar(activePage) {
             ${navItems}
         </nav>
     </aside>`;
+}
+
+/**
+ * Gọi /api/users/me để lấy avatar mới nhất → lưu localStorage → cập nhật img#sidebarAvatar.
+ * Gọi sau buildAdminSidebar() trên mọi trang admin.
+ */
+async function fetchAndCacheAvatar() {
+    try {
+        const res = await authFetch(`${API_BASE_URL}/users/me`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const avatar   = data.avatar   || data.profilePicture || '';
+        const fullName = data.fullName || data.name || '';
+
+        // Cập nhật cache
+        if (avatar)   localStorage.setItem('user_avatar', avatar);
+        if (fullName) localStorage.setItem('user_name',   fullName);
+
+        // Cập nhật DOM không cần reload trang
+        const imgEl  = document.getElementById('sidebarAvatar');
+        const nameEl = document.getElementById('sidebarUserName');
+        if (imgEl && avatar && avatar.length > 10) imgEl.src = avatar;
+        if (nameEl && fullName)                    nameEl.textContent = fullName;
+    } catch (e) {
+        // Không làm gì — avatar fallback về initials vẫn ổn
+    }
 }

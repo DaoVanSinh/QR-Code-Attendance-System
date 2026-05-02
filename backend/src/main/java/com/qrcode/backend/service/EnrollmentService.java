@@ -11,6 +11,7 @@ import com.qrcode.backend.exception.ResourceNotFoundException;
 import com.qrcode.backend.repository.AttendancesRepository;
 import com.qrcode.backend.repository.CourseRepository;
 import com.qrcode.backend.repository.EnrollmentRepository;
+import com.qrcode.backend.repository.ScheduleRepository;
 import com.qrcode.backend.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +30,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final ScheduleService scheduleService;
+    private final ScheduleRepository scheduleRepository;
     private final AttendancesRepository attendancesRepository;
 
     /**
@@ -52,6 +54,9 @@ public class EnrollmentService {
                     String teacherName = c.getTeacher().getProfile() != null
                             ? c.getTeacher().getProfile().getFullName()
                             : c.getTeacher().getEmail();
+                    com.qrcode.backend.entity.Schedule secondary = scheduleRepository.findByCourseId(c.getId()).stream()
+                            .filter(s -> Boolean.FALSE.equals(s.getIsPrimary()))
+                            .findFirst().orElse(null);
                     return EnrolledCourseResponse.builder()
                             .courseId(c.getId())
                             .subjectCode(c.getSubject().getCode())
@@ -63,6 +68,9 @@ public class EnrollmentService {
                             .dayOfWeek(c.getDayOfWeek())
                             .startLesson(c.getStartLesson())
                             .endLesson(c.getEndLesson())
+                            .dayOfWeek2(secondary != null ? secondary.getDayOfWeek() : null)
+                            .startLesson2(secondary != null ? secondary.getStartPeriod() : null)
+                            .endLesson2(secondary != null ? secondary.getEndPeriod() : null)
                             .room(c.getRoom())
                             .startDate(c.getStartDate())
                             .endDate(c.getEndDate())

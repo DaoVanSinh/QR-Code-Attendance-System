@@ -26,5 +26,10 @@ public class CourseDetailResponse {
     private LocalDate endDate;
     private Integer maxSlots;
     private Integer currentSlots;
+
+    // Buổi học 2 (2TC/4TC)
+    private Integer dayOfWeek2;
+    private Integer startLesson2;
+    private Integer endLesson2;
 }
 

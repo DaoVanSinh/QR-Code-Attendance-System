@@ -1,5 +1,8 @@
 package com.qrcode.backend.service;
 
+import com.qrcode.backend.dto.export.AttendanceCourseInfo;
+import com.qrcode.backend.dto.export.AttendanceReportDTO;
+import com.qrcode.backend.dto.export.StudentAttendanceRow;
 import com.qrcode.backend.dto.request.CreateSessionRequest;
 import com.qrcode.backend.dto.response.AttendanceRecordResponse;
 import com.qrcode.backend.dto.response.CourseResponse;
@@ -9,12 +12,14 @@ import com.qrcode.backend.dto.response.SessionSummaryResponse;
 import com.qrcode.backend.entity.Attendances;
 import com.qrcode.backend.entity.Course;
 import com.qrcode.backend.entity.Enrollment;
+import com.qrcode.backend.entity.enums.EnrollmentStatus;
 import com.qrcode.backend.entity.Session;
 import com.qrcode.backend.entity.User;
 import com.qrcode.backend.exception.ResourceNotFoundException;
 import com.qrcode.backend.repository.AttendancesRepository;
 import com.qrcode.backend.repository.CourseRepository;
 import com.qrcode.backend.repository.EnrollmentRepository;
+import com.qrcode.backend.repository.ScheduleRepository;
 import com.qrcode.backend.repository.SessionRepository;
 import com.qrcode.backend.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +28,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,14 +45,20 @@ public class SessionService {
     private final CourseRepository courseRepository;
     private final AttendancesRepository attendancesRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final ScheduleRepository scheduleRepository;
     private final AuditService auditService;
+    private final ExportService exportService;
 
     public List<CourseResponse> getMyCourses() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User teacher = userDetails.getUser();
 
         return courseRepository.findByTeacherId(teacher.getId()).stream()
-                .map(course -> CourseResponse.builder()
+                .map(course -> {
+                    com.qrcode.backend.entity.Schedule secondary = scheduleRepository.findByCourseId(course.getId()).stream()
+                            .filter(s -> Boolean.FALSE.equals(s.getIsPrimary()))
+                            .findFirst().orElse(null);
+                    return CourseResponse.builder()
                         .id(course.getId())
                         .subjectName(course.getSubject().getName())
                         .subjectCode(course.getSubject().getCode())
@@ -54,10 +68,14 @@ public class SessionService {
                         .dayOfWeek(course.getDayOfWeek())
                         .startLesson(course.getStartLesson())
                         .endLesson(course.getEndLesson())
+                        .dayOfWeek2(secondary != null ? secondary.getDayOfWeek() : null)
+                        .startLesson2(secondary != null ? secondary.getStartPeriod() : null)
+                        .endLesson2(secondary != null ? secondary.getEndPeriod() : null)
                         .room(course.getRoom())
                         .startDate(course.getStartDate())
                         .endDate(course.getEndDate())
-                        .build())
+                        .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -222,7 +240,7 @@ public class SessionService {
             throw new IllegalArgumentException("Session does not belong to this course.");
         }
 
-        List<Enrollment> enrollments = enrollmentRepository.findByCourseId(courseId);
+        List<Enrollment> enrollments = enrollmentRepository.findByCourseIdAndStatus(courseId, EnrollmentStatus.ACTIVE);
         List<Attendances> attendances = attendancesRepository.findBySessionId(sessionId);
 
         return enrollments.stream().map(enrollment -> {
@@ -234,6 +252,7 @@ public class SessionService {
 
             return ManualAttendanceStudentResponse.builder()
                     .studentId(student.getId())
+                    .studentCode(student.getUsername())   // mã SV dùng để đăng nhập
                     .studentName(student.getProfile() != null ? student.getProfile().getFullName() : student.getEmail())
                     .studentEmail(student.getEmail())
                     .present(att != null)
@@ -279,5 +298,82 @@ public class SessionService {
         }
 
         auditService.logAction(teacher, "MANUAL_CHECK_IN", "Teacher manually checked in " + studentIds.size() + " students for session " + sessionId);
+    }
+
+    // ── Export Báo Cáo Điểm Danh ─────────────────────────────────────────────
+
+    /**
+     * Xuất báo cáo điểm danh của một buổi học ra file Excel.
+     * Giảng viên chỉ có thể xuất báo cáo của buổi học thuộc học phần mình phụ trách.
+     *
+     * @param sessionId ID buổi học cần xuất báo cáo
+     * @return {@link ByteArrayInputStream} chứa nội dung file .xlsx
+     * @throws IOException nếu có lỗi khi ghi file Excel
+     * @throws AccessDeniedException nếu giảng viên không phụ trách buổi học này
+     */
+    public ByteArrayInputStream exportSessionAttendanceReport(Integer sessionId) throws IOException {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User teacher = userDetails.getUser();
+
+        // 1. Load session và kiểm tra quyền
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy buổi học."));
+
+        Course course = session.getCourse();
+        if (!course.getTeacher().getId().equals(teacher.getId())) {
+            throw new AccessDeniedException("Bạn không có quyền xuất báo cáo của buổi học này.");
+        }
+
+        // 2. Lấy danh sách sinh viên đã đăng ký (ACTIVE)
+        List<Enrollment> enrollments = enrollmentRepository
+                .findByCourseIdAndStatus(course.getId(), EnrollmentStatus.ACTIVE);
+
+        // 3. Lấy danh sách sinh viên đã điểm danh (Set để tìm kiếm O(1))
+        List<Attendances> attendances = attendancesRepository.findBySessionId(sessionId);
+        Set<Integer> checkedInIds = attendances.stream()
+                .map(a -> a.getStudent().getId())
+                .collect(Collectors.toSet());
+        // Map: studentId -> checkInTime
+        java.util.Map<Integer, LocalDateTime> checkInTimeMap = attendances.stream()
+                .collect(Collectors.toMap(
+                        a -> a.getStudent().getId(),
+                        Attendances::getCheckInTime
+                ));
+
+        // 4. Build danh sách StudentAttendanceRow
+        List<StudentAttendanceRow> rows = new java.util.ArrayList<>();
+        int stt = 1;
+        for (Enrollment enrollment : enrollments) {
+            User student = enrollment.getStudent();
+            boolean present = checkedInIds.contains(student.getId());
+            rows.add(StudentAttendanceRow.builder()
+                    .stt(stt++)
+                    .studentCode(student.getUsername())   // username = mã SV
+                    .fullName(student.getProfile() != null
+                            ? student.getProfile().getFullName()
+                            : student.getEmail())
+                    .present(present)
+                    .checkInTime(checkInTimeMap.get(student.getId()))
+                    .build());
+        }
+
+        // 5. Build CourseInfo
+        String teacherName = course.getTeacher().getProfile() != null
+                ? course.getTeacher().getProfile().getFullName()
+                : course.getTeacher().getEmail();
+        AttendanceCourseInfo courseInfo = AttendanceCourseInfo.builder()
+                .subjectName(course.getSubject().getName())
+                .courseCode(course.getCourseCode() != null ? course.getCourseCode() : "N/A")
+                .teacherName(teacherName)
+                .semesterName(course.getSemester())
+                .build();
+
+        // 6. Build DTO và gọi ExportService
+        AttendanceReportDTO report = AttendanceReportDTO.builder()
+                .courseInfo(courseInfo)
+                .students(rows)
+                .build();
+
+        return exportService.generateAttendanceExcel(report);
     }
 }

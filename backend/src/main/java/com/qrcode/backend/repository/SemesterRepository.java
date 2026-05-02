@@ -12,4 +12,6 @@ public interface SemesterRepository extends JpaRepository<Semester, Integer> {
     List<Semester> findAllByOrderBySchoolYearDescNameAsc();
 
     List<Semester> findByIsActiveTrue();
+
+    java.util.Optional<Semester> findByNameAndSchoolYear(String name, String schoolYear);
 }

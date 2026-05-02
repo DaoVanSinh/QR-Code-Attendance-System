@@ -13,6 +13,9 @@ import java.util.List;
 public interface CourseRepository extends JpaRepository<Course, Integer> {
     List<Course> findByTeacherId(Integer teacherId);
 
+    long countBySubjectId(Integer subjectId);
+    List<Course> findBySubjectId(Integer subjectId);
+
     @Query("SELECT c FROM Course c WHERE c.dayOfWeek = :dow " +
            "AND LOWER(c.room) = LOWER(:room) " +
            "AND c.startLesson <= :endLesson " +

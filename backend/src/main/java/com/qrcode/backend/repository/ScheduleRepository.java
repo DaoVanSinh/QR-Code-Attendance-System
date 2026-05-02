@@ -51,9 +51,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
      */
     @Query("SELECT s FROM Schedule s " +
            "JOIN Enrollment e ON e.course.id = s.course.id " +
+           "LEFT JOIN s.course c " +
+           "LEFT JOIN c.semesterEntity sem " +
            "WHERE e.student.id = :studentId " +
            "AND e.status = com.qrcode.backend.entity.enums.EnrollmentStatus.ACTIVE " +
-           "AND (:semesterId IS NULL OR s.course.semesterEntity.id = :semesterId)")
+           "AND (:semesterId IS NULL OR sem.id = :semesterId)")
     List<Schedule> findByStudentEnrolled(
         @Param("studentId") Integer studentId,
         @Param("semesterId") Integer semesterId
@@ -61,9 +63,13 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
     /**
      * Lấy tất cả schedule của giảng viên trong kỳ.
+     * Dùng LEFT JOIN để cả courses chưa có semesterEntity vẫn được lấy khi semesterId=null.
      */
-    @Query("SELECT s FROM Schedule s WHERE s.course.teacher.id = :teacherId " +
-           "AND (:semesterId IS NULL OR s.course.semesterEntity.id = :semesterId)")
+    @Query("SELECT s FROM Schedule s " +
+           "LEFT JOIN s.course c " +
+           "LEFT JOIN c.semesterEntity sem " +
+           "WHERE c.teacher.id = :teacherId " +
+           "AND (:semesterId IS NULL OR sem.id = :semesterId)")
     List<Schedule> findByTeacher(
         @Param("teacherId") Integer teacherId,
         @Param("semesterId") Integer semesterId
@@ -72,7 +78,10 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     /**
      * Lấy tất cả schedule trong kỳ (admin view).
      */
-    @Query("SELECT s FROM Schedule s WHERE (:semesterId IS NULL OR s.course.semesterEntity.id = :semesterId)")
+    @Query("SELECT s FROM Schedule s " +
+           "LEFT JOIN s.course c " +
+           "LEFT JOIN c.semesterEntity sem " +
+           "WHERE (:semesterId IS NULL OR sem.id = :semesterId)")
     List<Schedule> findBySemester(@Param("semesterId") Integer semesterId);
 
     /**

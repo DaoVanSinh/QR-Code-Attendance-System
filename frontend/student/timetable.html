@@ -8,83 +8,48 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
-        /* ── Override nền body cho màu sáng ─────────────── */
         body { background: #f0f4f8 !important; }
         .app-root { background: #f0f4f8; min-height: 100vh; display:flex; flex-direction:column; }
         .glass-card { background: #fff !important; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
 
-        /* ── Controls bar ────────────────────────────────── */
         .tkb-controls {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 12px 14px;
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            margin-bottom: 14px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            display: flex; align-items: center; flex-wrap: wrap;
+            gap: 10px; padding: 12px 14px; background: #fff;
+            border: 1px solid #e2e8f0; border-radius: 12px;
+            margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         }
         .tkb-controls select {
-            flex: 1;
-            min-width: 150px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1.5px solid #cbd5e1;
-            background: #f8fafc;
-            color: #334155;
-            font-size: 13px;
-            outline: none;
+            flex: 1; min-width: 150px; padding: 8px 12px;
+            border-radius: 8px; border: 1.5px solid #cbd5e1;
+            background: #f8fafc; color: #334155; font-size: 13px; outline: none;
         }
         .tkb-controls select:focus { border-color: #2563eb; }
 
-        /* ── Week navigator ──────────────────────────────── */
         .week-nav {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #eff6ff;
-            border: 1.5px solid #bfdbfe;
-            border-radius: 10px;
-            padding: 4px 8px;
-            flex-shrink: 0;
+            display: flex; align-items: center; gap: 6px;
+            background: #eff6ff; border: 1.5px solid #bfdbfe;
+            border-radius: 10px; padding: 4px 8px; flex-shrink: 0;
         }
         .week-nav-btn {
-            width: 30px; height: 30px;
-            border-radius: 7px;
-            border: none;
-            background: #dbeafe;
-            color: #1d4ed8;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex; align-items:center; justify-content:center;
-            transition: all 0.15s;
+            width: 30px; height: 30px; border-radius: 7px; border: none;
+            background: #dbeafe; color: #1d4ed8; font-size: 16px; cursor: pointer;
+            display: flex; align-items:center; justify-content:center; transition: all 0.15s;
         }
         .week-nav-btn:hover:not(:disabled) { background: #2563eb; color: #fff; transform: scale(1.1); }
         .week-nav-btn:disabled { opacity: 0.35; cursor: default; }
-        #weekLabel {
-            font-size: 12px; font-weight: 700;
-            color: #1d4ed8; min-width: 180px; text-align: center;
-        }
+        #weekLabel { font-size: 12px; font-weight: 700; color: #1d4ed8; min-width: 180px; text-align: center; }
 
-        /* ── TKB wrapper & grid ──────────────────────────── */
         .tkb-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #e2e8f0; background:#fff; }
         .tkb-grid {
             display: grid;
             grid-template-columns: 68px repeat(7, minmax(130px, 1fr));
             grid-auto-rows: minmax(70px, auto);
-            background: #e9edf2;
-            gap: 1px;
-            min-width: max-content;
+            background: #e9edf2; gap: 1px; min-width: max-content;
         }
 
-        /* ── Header row ──────────────────────────────────── */
         .tkb-header {
-            background: #1565c0;
-            border-bottom: none;
-            text-align: center;
-            padding: 10px 6px 8px;
+            background: #1565c0; border-bottom: none;
+            text-align: center; padding: 10px 6px 8px;
         }
         .tkb-corner { background: #0d47a1; display:flex; align-items:center; justify-content:center; }
         .tkb-header-day  { font-size: 13px; font-weight: 700; color: #fff; }
@@ -92,21 +57,13 @@
         .tkb-header-today { background: #0d47a1 !important; }
         .tkb-header-today .tkb-header-day { color: #fff; }
         .today-badge {
-            display: inline-block;
-            background: #fff;
-            color: #1565c0 !important;
-            border-radius: 20px;
-            padding: 1px 8px;
-            font-size: 11px;
-            margin-top: 3px;
-            font-weight: 700;
+            display: inline-block; background: #fff; color: #1565c0 !important;
+            border-radius: 20px; padding: 1px 8px; font-size: 11px; margin-top: 3px; font-weight: 700;
         }
         .today-dot { width: 6px; height: 6px; background: #fff; border-radius:50%; margin:4px auto 0; }
 
-        /* ── Time label ──────────────────────────────────── */
         .tkb-time-label {
-            background: #f1f5f9;
-            border-right: none;
+            background: #f1f5f9; border-right: none;
             display: flex; flex-direction:column;
             align-items:center; justify-content:center;
             padding: 5px 3px; text-align:center;
@@ -114,39 +71,30 @@
         .lesson-num  { font-weight:700; font-size:12px; color:#1565c0; }
         .lesson-time { font-size:9.5px; color:#94a3b8; margin-top:2px; line-height:1.3; }
 
-        /* ── Empty cells ─────────────────────────────────── */
         .tkb-cell-empty  { background: #ffffff; min-height: 70px; }
         .tkb-cell-today  { background: #f0f7ff !important; }
 
-        /* ── Course cards ────────────────────────────────── */
         .tkb-course-card {
-            border-radius: 6px;
-            border-left: 4px solid;
-            padding: 7px 8px;
-            font-size: 11px;
-            line-height: 1.4;
-            overflow: hidden;
-            display: flex; flex-direction: column; gap: 4px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-            cursor: pointer;
+            border-radius: 6px; border-left: 4px solid;
+            padding: 7px 8px; font-size: 11px; line-height: 1.4;
+            overflow: hidden; display: flex; flex-direction: column; gap: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12); cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s;
         }
         .tkb-course-card:hover {
             transform: translateY(-2px) scale(1.015);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
-            z-index: 20;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18); z-index: 20;
         }
         .card-subject { font-weight:700; font-size:12px; line-height:1.3; }
         .card-code    { font-size:10px; font-weight:600; opacity:0.85; }
         .card-meta    { display:flex; flex-direction:column; gap:2px; }
         .card-row {
-            display:flex; align-items:center; gap:3px;
-            font-size:10.5px;
+            display:flex; align-items:center; gap:3px; font-size:10.5px;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
         .card-row ion-icon { font-size:10px; flex-shrink:0; }
         .card-row span { overflow:hidden; text-overflow:ellipsis; }
-        .card-time     { font-weight:600; margin-top:2px; }
+        .card-time { font-weight:600; margin-top:2px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -156,10 +104,11 @@
         <header class="app-header premium-header">
             <div class="brand">🎓 Lịch Học</div>
             <div class="header-profile" onclick="event.stopPropagation(); document.getElementById('studentProfileDropdown').classList.toggle('show')">
-                <img src="../teacher/css/default-avatar.png" id="studentAvatar" onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'" alt="Avatar" class="avatar">
+                <img src="" id="studentAvatar"
+                     onerror="this.src='https://ui-avatars.com/api/?name=SV&background=4f46e5&color=fff&size=64'" alt="Avatar" class="avatar">
                 <div class="user-name" id="studentName">Sinh Viên</div>
                 <ion-icon name="chevron-down-outline"></ion-icon>
-                
+
                 <div class="profile-dropdown" id="studentProfileDropdown" onclick="event.stopPropagation()">
                     <a href="profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
                     <a href="change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
@@ -210,12 +159,22 @@
     </div>
 
     <div id="toast-container"></div>
-    <script src="js/utils.js?v=99"></script>
+    <script src="js/utils.js?v=101"></script>
     <script>
         const auth = checkAuth('STUDENT');
-        if (auth) document.getElementById('studentName').textContent = auth.name || 'Sinh Viên';
+        if (auth) {
+            document.getElementById('studentName').textContent = auth.name || 'Sinh Viên';
+            // Load avatar từ cache
+            const cachedAvatar = localStorage.getItem('user_avatar');
+            const avatarEl = document.getElementById('studentAvatar');
+            if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
+                avatarEl.src = cachedAvatar;
+            } else if (avatarEl) {
+                avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(auth.name || 'SV')}&background=4f46e5&color=fff&size=64`;
+            }
+        }
     </script>
-    <script src="js/timetable.js?v=9"></script>
+    <script src="js/timetable.js?v=11"></script>
 
     <!-- Modal chi tiết -->
     <div id="studentCourseModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;align-items:center;justify-content:center;">
@@ -240,7 +199,7 @@
                     <div style="font-weight:700;color:#c2410c;" id="scmTime">—</div>
                 </div>
                 <div style="background:#f0fdf4;padding:10px;border-radius:8px;border:1px solid #bbf7d0;">
-                    <div style="font-size:10px;color:#64748b;margin-bottom:3px;">👨🏫 Giảng viên</div>
+                    <div style="font-size:10px;color:#64748b;margin-bottom:3px;">👨‍🏫 Giảng viên</div>
                     <div style="font-weight:700;color:#15803d;" id="scmTeacher">—</div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -254,7 +213,7 @@
                     </div>
                 </div>
                 <div style="background:#f8fafc;padding:10px;border-radius:8px;border:1px solid #e2e8f0;">
-                    <div style="font-size:10px;color:#64748b;margin-bottom:3px;">🗓 Học kỳ & Thời gian</div>
+                    <div style="font-size:10px;color:#64748b;margin-bottom:3px;">🗓 Học kỳ &amp; Thời gian</div>
                     <div style="font-weight:600;color:#334155;"><span id="scmSemester">—</span> &nbsp;|&nbsp; <span id="scmPeriod">—</span></div>
                 </div>
             </div>

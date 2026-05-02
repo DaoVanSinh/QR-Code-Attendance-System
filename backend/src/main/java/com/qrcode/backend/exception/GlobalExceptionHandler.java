@@ -71,9 +71,22 @@ public class GlobalExceptionHandler {
         return createResponse("Dữ liệu gửi lên không hợp lệ hoặc thiếu body.", HttpStatus.BAD_REQUEST);
     }
 
+    // IllegalArgumentException: email trùng, giới tính không hợp lệ, v.v → 400
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("[400] IllegalArgument: {}", ex.getMessage());
+        return createResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    // RuntimeException có message người dùng (mật khẩu sai, token không hợp lệ, v.v) → 400
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
+        log.warn("[400] RuntimeException: {}", ex.getMessage());
+        return createResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        // Log lỗi nội bộ để debug qua "make logs-backend"
         log.error("[500] Unhandled exception: {}", ex.getMessage(), ex);
         return createResponse("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.", HttpStatus.INTERNAL_SERVER_ERROR);
     }

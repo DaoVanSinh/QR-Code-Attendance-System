@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thời Khóa Biểu | Admin Dashboard</title>
     <meta name="description" content="Xem thời khóa biểu toàn trường - Admin QR Attendance">
-    <link rel="stylesheet" href="css/style.css?v=99">
+    <link rel="stylesheet" href="css/style.css?v=100">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
@@ -120,6 +120,65 @@
         .card-time { font-weight:600; margin-top:2px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── View Mode toggle ─────────────────────────────── */
+        .view-mode-toggle {
+            display: flex;
+            gap: 0;
+            border: 1.5px solid #bfdbfe;
+            border-radius: 9px;
+            overflow: hidden;
+            background: #eff6ff;
+            flex-shrink: 0;
+        }
+        .view-mode-toggle button {
+            padding: 7px 14px;
+            border: none;
+            background: transparent;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 5px;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .view-mode-toggle button:hover:not(.view-mode-active) { background: #dbeafe; }
+        .view-mode-toggle button.view-mode-active {
+            background: #1d4ed8;
+            color: #fff;
+        }
+        .view-mode-toggle button:first-child { border-right: 1.5px solid #bfdbfe; }
+
+        /* ── Teacher Tab bar ─────────────────────────────── */
+        .teacher-tabs-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px 0 14px;
+        }
+        .teacher-tab {
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: 1.5px solid #bfdbfe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .teacher-tab:hover:not(.teacher-tab-active) { background: #dbeafe; }
+        .teacher-tab.teacher-tab-active {
+            background: #1d4ed8;
+            color: #fff;
+            border-color: #1d4ed8;
+            box-shadow: 0 2px 8px rgba(29,78,216,0.25);
+        }
     </style>
 </head>
 <body>
@@ -140,19 +199,29 @@
         <div class="tkb-controls">
             <div class="filter-group">
                 <label>🗓 Học kỳ:</label>
-                <select id="semesterFilter" class="form-control" style="width:220px;" onchange="onSemesterChange()">
+                <select id="semesterFilter" class="form-control" style="width:210px;" onchange="onSemesterChange()">
                     <option value="ALL">— Tất cả học kỳ —</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Tuần:</label>
-                <select id="weekFilter" class="form-control" style="width:250px;" onchange="renderGrid()"></select>
+                <select id="weekFilter" class="form-control" style="width:240px;" onchange="renderGrid()"></select>
             </div>
-            <div class="filter-group">
+            <!-- Giảng viên filter (chỉ hiện ở mode Tổng hợp) -->
+            <div class="filter-group" id="teacherFilterGroup">
                 <label>👨‍🏫 Giảng viên:</label>
-                <select id="teacherFilter" class="form-control" style="width:220px;" onchange="renderGrid()">
-                    <option value="ALL">— Tất cả —</option>
+                <select id="teacherFilter" class="form-control" style="width:210px;" onchange="renderGrid()">
                 </select>
+            </div>
+
+            <!-- View mode toggle -->
+            <div class="view-mode-toggle">
+                <button id="btnViewCombined" class="view-mode-active" title="Xem tổng hợp tất cả">
+                    <ion-icon name="grid-outline"></ion-icon> Tổng hợp
+                </button>
+                <button id="btnViewByTeacher" title="Xem theo từng giảng viên">
+                    <ion-icon name="people-outline"></ion-icon> Theo GV
+                </button>
             </div>
 
             <!-- Mũi tên điều hướng tuần -->
@@ -172,24 +241,31 @@
                 <ion-icon name="sync-outline" style="font-size:32px;animation:spin 1s linear infinite;color:#1565c0;"></ion-icon>
                 <p style="margin-top:10px;">Đang tải dữ liệu thời khóa biểu...</p>
             </div>
+
+            <!-- Mode: Tổng hợp -->
             <div id="timetableWrapper" class="tkb-wrapper" style="display:none;">
                 <div class="tkb-grid" id="tkbGrid"></div>
             </div>
+
+            <!-- Mode: Theo giảng viên -->
+            <div id="teacherTabsBar" class="teacher-tabs-bar" style="display:none;"></div>
+            <div id="teacherGridContainer" style="display:none;"></div>
         </div>
     </main>
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=99"></script>
+    <script src="js/utils.js?v=102"></script>
     <script>
         const auth = checkAuth('ADMIN');
         if (auth) {
-            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('timetable.html');
+            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('timetable.html');`n            fetchAndCacheAvatar();
             if (document.getElementById('sidebarUserName')) {
                 document.getElementById('sidebarUserName').textContent = auth.name || 'Admin';
             }
         }
     </script>
-    <script src="js/timetable.js?v=6"></script>
+    <script src="js/timetable.js?v=10"></script>
 </body>
 </html>
+

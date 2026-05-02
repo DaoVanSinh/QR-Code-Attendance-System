@@ -17,6 +17,11 @@ public class EnrolledCourseResponse {
     private Integer dayOfWeek;
     private Integer startLesson;
     private Integer endLesson;
+
+    private Integer dayOfWeek2;
+    private Integer startLesson2;
+    private Integer endLesson2;
+
     private String room;
     private LocalDate startDate;
     private LocalDate endDate;

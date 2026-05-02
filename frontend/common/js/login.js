@@ -31,9 +31,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             
             // Lưu thông tin vào localstorage
             localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('refresh_token', data.refreshToken || '');
             localStorage.setItem('user_role', data.user.role);
             localStorage.setItem('user_name', data.user.fullName || data.user.email);
             localStorage.setItem('user_id', data.user.id);
+
 
             setTimeout(() => {
                 // Điều hướng dựa trên vai trò

@@ -65,6 +65,18 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/users/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Integer id, @RequestBody AdminCreateUserRequest request) {
+        try {
+            adminService.updateUser(id, request);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/teachers")
     public ResponseEntity<List<UserSummaryResponse>> getTeachers() {
         return ResponseEntity.ok(adminService.getTeachers());
@@ -74,6 +86,30 @@ public class AdminController {
     @GetMapping("/subjects")
     public ResponseEntity<List<Subject>> getSubjects() {
         return ResponseEntity.ok(adminService.getAllSubjects());
+    }
+
+    @DeleteMapping("/subjects/{id}")
+    public ResponseEntity<?> deleteSubject(@PathVariable Integer id) {
+        try {
+            adminService.deleteSubject(id);
+            return ResponseEntity.ok(Map.of("message", "Xóa môn học thành công."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/subjects/{id}")
+    public ResponseEntity<?> updateSubject(@PathVariable Integer id,
+                                            @RequestBody Map<String, Object> body) {
+        try {
+            String code  = body.get("code")    != null ? body.get("code").toString()    : null;
+            String name  = body.get("name")    != null ? body.get("name").toString()    : null;
+            Integer cred = body.get("credits") != null ? Integer.parseInt(body.get("credits").toString()) : null;
+            Subject updated = adminService.updateSubject(id, code, name, cred);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // ── Classes ────────────────────────────────────────────────
@@ -113,6 +149,15 @@ public class AdminController {
         try {
             adminService.deleteCourse(id);
             return ResponseEntity.ok(Map.of("message", "Xóa học phần thành công."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/courses/sync-schedules")
+    public ResponseEntity<?> syncSchedules() {
+        try {
+            return ResponseEntity.ok(adminService.syncAllSchedules());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

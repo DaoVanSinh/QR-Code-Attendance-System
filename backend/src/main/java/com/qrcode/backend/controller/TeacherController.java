@@ -12,16 +12,31 @@ import com.qrcode.backend.dto.response.TimetableResponse;
 import com.qrcode.backend.service.AdminService;
 import com.qrcode.backend.service.ScheduleService;
 import com.qrcode.backend.service.SessionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "Teacher API", description = "Các endpoint dành riêng cho giảng viên")
 @RestController
 @RequestMapping("/api/teacher")
 @RequiredArgsConstructor
@@ -87,5 +102,44 @@ public class TeacherController {
     public ResponseEntity<TimetableResponse> getTimetable(
             @RequestParam(required = false) Integer semesterId) {
         return ResponseEntity.ok(scheduleService.getTeacherTimetable(semesterId));
+    }
+
+    // ── Export Báo Cáo Điểm Danh ──────────────────────────
+    @Operation(
+        summary     = "Xuất báo cáo điểm danh (Excel)",
+        description = "Tạo và tải xuống file .xlsx chứa danh sách điểm danh của toàn bộ sinh viên "
+                    + "trong một buổi học. Chỉ giảng viên phụ trách buổi học mới được phép truy cập."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200",
+            description = "File Excel tải xuống thành công",
+            content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")),
+        @ApiResponse(responseCode = "403",
+            description = "Không có quyền xuất báo cáo của buổi học này",
+            content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "404",
+            description = "Không tìm thấy buổi học",
+            content = @Content(mediaType = "application/json"))
+    })
+    @GetMapping("/sessions/{sessionId}/export")
+    public ResponseEntity<Resource> exportAttendanceReport(
+            @Parameter(description = "ID của buổi học cần xuất báo cáo", required = true, example = "42")
+            @PathVariable Integer sessionId) throws IOException {
+
+        ByteArrayInputStream excelStream = sessionService.exportSessionAttendanceReport(sessionId);
+
+        // Đặt tên file: diemdanh_session_<id>_<timestamp>.xlsx
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String filename  = String.format("diemdanh_session_%d_%s.xlsx", sessionId, timestamp);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(excelStream));
     }
 }

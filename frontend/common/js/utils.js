@@ -43,6 +43,40 @@ function checkAuth(requiredRole) {
     return { token, role, name: localStorage.getItem('user_name') };
 }
 
+// ── Refresh Token Helper ──────────────────────────────────────────────
+let _isRefreshing = false;
+let _refreshQueue = [];
+
+async function _doRefresh() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) return false;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken })
+        });
+        if (!res.ok) return false;
+
+        const data = await res.json();
+        if (data.token && data.refreshToken) {
+            localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('refresh_token', data.refreshToken);
+            if (data.user) {
+                localStorage.setItem('user_role', data.user.role);
+                localStorage.setItem('user_name', data.user.fullName || data.user.email);
+                localStorage.setItem('user_id', data.user.id);
+            }
+            return true;
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
+
+// ── authFetch — gọi API với auto-refresh khi 401 ─────────────────────
 async function authFetch(url, options = {}) {
     const token = localStorage.getItem('jwt_token');
     const headers = { 'Content-Type': 'application/json', ...options.headers };
@@ -52,46 +86,57 @@ async function authFetch(url, options = {}) {
     try {
         response = await fetch(url, { ...options, headers });
     } catch (e) {
-        // Lỗi mạng (network error) - không phải lỗi auth, không cần logout
+        // Lỗi mạng — không phải lỗi auth
         throw e;
     }
 
-    // Nếu backend trả 401 hoặc 403 → token hết hạn hoặc không hợp lệ → tự động logout
-    if (response.status === 401 || response.status === 403) {
-        const cloned = response.clone();
-        // Thử đọc body để kiểm tra - nếu là lỗi auth thật sự thì logout
-        // Chỉ logout nếu KHÔNG có token hợp lệ (tránh logout khi bị denied vì thiếu quyền role)
-        const storedToken = localStorage.getItem('jwt_token');
-        if (!storedToken) {
-            // Không có token → redirect thẳng
-            window.location.href = LOGIN_URL;
-            return cloned;
+    // Nếu 401 → thử refresh token một lần
+    if (response.status === 401) {
+        if (_isRefreshing) {
+            // Chờ refresh đang chạy xong rồi retry
+            await new Promise(resolve => _refreshQueue.push(resolve));
+            return authFetch(url, options);
         }
 
-        // Kiểm tra token có bị hết hạn không bằng cách decode phần payload
-        try {
-            const payloadBase64 = storedToken.split('.')[1];
-            const payload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
-            const isExpired = payload.exp && (payload.exp * 1000 < Date.now());
-            if (isExpired) {
-                showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
-                setTimeout(() => {
-                    localStorage.clear();
-                    window.location.href = LOGIN_URL;
-                }, 1500);
-            }
-        } catch (e) {
-            // Không decode được token → token lỗi → logout
-            localStorage.clear();
-            window.location.href = LOGIN_URL;
+        _isRefreshing = true;
+        const refreshed = await _doRefresh();
+        _isRefreshing = false;
+        _refreshQueue.forEach(r => r());
+        _refreshQueue = [];
+
+        if (refreshed) {
+            // Retry với token mới
+            const newToken = localStorage.getItem('jwt_token');
+            const retryHeaders = { 'Content-Type': 'application/json', ...options.headers };
+            if (newToken) retryHeaders['Authorization'] = `Bearer ${newToken}`;
+            return fetch(url, { ...options, headers: retryHeaders });
+        } else {
+            // Refresh thất bại → logout thật sự
+            showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+            setTimeout(() => {
+                logout();
+            }, 1500);
+            return response;
         }
-        return cloned;
     }
 
     return response;
 }
 
-function logout() {
+async function logout() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    // Gọi API backend thu hồi refresh token
+    if (refreshToken) {
+        try {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            });
+        } catch (e) {
+            // Bỏ qua lỗi mạng khi logout
+        }
+    }
     localStorage.clear();
     window.location.href = LOGIN_URL;
 }

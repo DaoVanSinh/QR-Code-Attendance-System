@@ -24,11 +24,39 @@
             transition: transform 0.3s;
         }
         .profile-avatar:hover { transform: scale(1.05); }
+
+        /* Avatar upload button — hiển thị ngay dưới avatar circle */
+        .avatar-upload-hero {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; flex-wrap: wrap; margin-top: 10px; margin-bottom: 10px;
+        }
+        .avatar-upload-hero-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            border: 1.5px solid var(--primary); background: rgba(79,70,229,0.08);
+            color: var(--primary); cursor: pointer; transition: all 0.2s;
+        }
+        .avatar-upload-hero-btn:hover { background: rgba(79,70,229,0.15); }
+        .avatar-remove-hero-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            border: 1px solid #fca5a5; background: #fff5f5;
+            color: #dc2626; cursor: pointer; transition: all 0.2s;
+        }
+        .avatar-remove-hero-btn:hover { background: #fee2e2; }
+        #avatarFileInput { display: none; }
+        .avatar-size-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
         .profile-name { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
         .profile-role-badge {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
             background: rgba(79,70,229,0.1); color: var(--primary);
+        }
+        .student-code-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+            background: rgba(16,185,129,0.1); color: #10b981; margin-top: 6px;
         }
         .profile-section {
             padding: 20px; position: relative; z-index: 1;
@@ -56,7 +84,9 @@
         .profile-field-icon.email { background: rgba(79,70,229,0.1); color: var(--primary); }
         .profile-field-icon.name { background: rgba(16,185,129,0.1); color: #10b981; }
         .profile-field-icon.phone { background: rgba(245,158,11,0.1); color: #f59e0b; }
-        .profile-field-icon.avatar { background: rgba(236,72,153,0.1); color: #ec4899; }
+        .profile-field-icon.id-card { background: rgba(99,102,241,0.1); color: #6366f1; }
+        .profile-field-icon.calendar { background: rgba(14,165,233,0.1); color: #0ea5e9; }
+        .profile-field-icon.gender { background: rgba(168,85,247,0.1); color: #a855f7; }
         .profile-field-content { flex-grow: 1; min-width: 0; }
         .profile-field-label {
             font-size: 11px; font-weight: 600; color: var(--text-muted);
@@ -72,8 +102,20 @@
             color: var(--text-muted); cursor: not-allowed;
             border-bottom: 1.5px dashed rgba(0,0,0,0.08);
         }
+        .profile-field-select {
+            width: 100%; padding: 8px 0; border: none; border-bottom: 1.5px solid transparent;
+            font-size: 15px; font-weight: 500; color: var(--text-dark);
+            background: transparent; transition: all 0.2s; outline: none; appearance: none; cursor: pointer;
+        }
+        .profile-field-select:focus { border-bottom-color: var(--primary); }
         .profile-field-hint {
             font-size: 11px; color: var(--text-muted); margin-top: 2px;
+        }
+        .readonly-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 10px; font-weight: 600; color: #64748b;
+            background: rgba(100,116,139,0.08); padding: 2px 7px;
+            border-radius: 6px; margin-left: 8px; vertical-align: middle;
         }
         .profile-actions { padding: 0 20px 20px; position: relative; z-index: 1; }
         .btn-save {
@@ -114,24 +156,56 @@
         <div class="profile-hero">
             <img id="avatarPreview" class="profile-avatar" src="" alt="Avatar"
                  onerror="this.src='https://ui-avatars.com/api/?name=SV&background=4f46e5&color=fff&size=128'">
+
+            <!-- Upload / Remove nằm ngay dưới avatar -->
+            <div class="avatar-upload-hero">
+                <label class="avatar-upload-hero-btn" for="avatarFileInput">
+                    <ion-icon name="camera-outline"></ion-icon> Đổi ảnh
+                </label>
+                <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif">
+                <button type="button" class="avatar-remove-hero-btn" id="avatarRemoveBtn" style="display:none;" onclick="removeAvatar()">
+                    <ion-icon name="trash-outline"></ion-icon> Xóa
+                </button>
+            </div>
+            <div class="avatar-size-hint">Tối đa 200KB · JPG, PNG, WebP</div>
+
             <div class="profile-name" id="displayName">—</div>
             <span class="profile-role-badge">
                 <ion-icon name="school-outline"></ion-icon>
                 <span id="displayRole">Sinh Viên</span>
             </span>
+            <div id="studentCodeBadge" class="student-code-badge" style="display:none;">
+                <ion-icon name="card-outline"></ion-icon>
+                <span id="displayStudentCode">—</span>
+            </div>
         </div>
 
         <form id="profileForm">
+            <!-- Thông tin tài khoản -->
             <div class="profile-section">
                 <div class="section-title">Thông tin tài khoản</div>
                 <div class="profile-card">
+                    <!-- Mã sinh viên — READ ONLY -->
+                    <div class="profile-field" id="usernameField" style="display:none;">
+                        <div class="profile-field-icon id-card"><ion-icon name="card-outline"></ion-icon></div>
+                        <div class="profile-field-content">
+                            <div class="profile-field-label">
+                                Mã Sinh Viên
+                                <span class="readonly-badge"><ion-icon name="lock-closed-outline" style="font-size:9px;"></ion-icon> Chỉ đọc</span>
+                            </div>
+                            <input class="profile-field-input" type="text" id="username" disabled>
+                            <div class="profile-field-hint">Mã sinh viên do Admin cấp, không thể thay đổi.</div>
+                        </div>
+                    </div>
+                    <!-- Email -->
                     <div class="profile-field">
                         <div class="profile-field-icon email"><ion-icon name="mail-outline"></ion-icon></div>
                         <div class="profile-field-content">
                             <div class="profile-field-label">Email</div>
-                            <input class="profile-field-input" type="email" id="email" disabled>
+                            <input class="profile-field-input" type="email" id="email" placeholder="Nhập địa chỉ email">
                         </div>
                     </div>
+                    <!-- Họ tên -->
                     <div class="profile-field">
                         <div class="profile-field-icon name"><ion-icon name="person-outline"></ion-icon></div>
                         <div class="profile-field-content">
@@ -142,22 +216,43 @@
                 </div>
             </div>
 
+            <!-- Thông tin cá nhân -->
             <div class="profile-section" style="padding-top: 0;">
-                <div class="section-title">Liên hệ & Ảnh đại diện</div>
+                <div class="section-title">Thông tin cá nhân</div>
+                <div class="profile-card">
+                    <!-- Ngày sinh -->
+                    <div class="profile-field">
+                        <div class="profile-field-icon calendar"><ion-icon name="calendar-outline"></ion-icon></div>
+                        <div class="profile-field-content">
+                            <div class="profile-field-label">Ngày Sinh</div>
+                            <input class="profile-field-input" type="date" id="birthday">
+                        </div>
+                    </div>
+                    <!-- Giới tính -->
+                    <div class="profile-field">
+                        <div class="profile-field-icon gender"><ion-icon name="male-female-outline"></ion-icon></div>
+                        <div class="profile-field-content">
+                            <div class="profile-field-label">Giới Tính</div>
+                            <select class="profile-field-select" id="gender">
+                                <option value="">— Chọn giới tính —</option>
+                                <option value="MALE">Nam</option>
+                                <option value="FEMALE">Nữ</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liên hệ -->
+            <div class="profile-section" style="padding-top: 0;">
+                <div class="section-title">Liên hệ</div>
                 <div class="profile-card">
                     <div class="profile-field">
                         <div class="profile-field-icon phone"><ion-icon name="call-outline"></ion-icon></div>
                         <div class="profile-field-content">
                             <div class="profile-field-label">Số điện thoại</div>
                             <input class="profile-field-input" type="tel" id="phone" placeholder="VD: 0912 345 678">
-                        </div>
-                    </div>
-                    <div class="profile-field">
-                        <div class="profile-field-icon avatar"><ion-icon name="image-outline"></ion-icon></div>
-                        <div class="profile-field-content">
-                            <div class="profile-field-label">URL Ảnh đại diện</div>
-                            <input class="profile-field-input" type="url" id="avatar" placeholder="https://example.com/avatar.png">
-                            <div class="profile-field-hint">Để trống để sử dụng avatar mặc định.</div>
                         </div>
                     </div>
                 </div>
@@ -174,32 +269,86 @@
         </form>
     </div>
 
-    <script src="js/utils.js?v=99"></script>
+    <div id="toast-container"></div>
+
+    <script src="js/utils.js?v=101"></script>
     <script>
         const auth = checkAuth('STUDENT');
+
+        let currentAvatarBase64 = '';
 
         async function loadProfile() {
             try {
                 const res = await authFetch('/api/user/profile');
                 if (!res.ok) throw new Error();
                 const data = await res.json();
-                document.getElementById('email').value = data.email || '';
-                document.getElementById('fullName').value = data.fullName || '';
-                document.getElementById('phone').value = data.phone || '';
-                document.getElementById('avatar').value = data.avatar || '';
+
+                document.getElementById('email').value     = data.email    || '';
+                document.getElementById('fullName').value  = data.fullName || '';
+                document.getElementById('phone').value     = data.phone    || '';
+                document.getElementById('birthday').value  = data.birthday || '';
+                document.getElementById('gender').value    = data.gender   || '';
+
+                // Mã sinh viên (username) — read-only
+                if (data.username) {
+                    document.getElementById('username').value = data.username;
+                    document.getElementById('usernameField').style.display = 'flex';
+                    document.getElementById('studentCodeBadge').style.display = 'inline-flex';
+                    document.getElementById('displayStudentCode').textContent = data.username;
+                }
+
                 document.getElementById('displayName').textContent = data.fullName || data.email;
-                document.getElementById('displayRole').textContent = data.role === 'STUDENT' ? 'Sinh Viên' : data.role;
-                const avatarUrl = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName || 'SV')}&background=4f46e5&color=fff&size=128`;
-                document.getElementById('avatarPreview').src = avatarUrl;
+                document.getElementById('displayRole').textContent = 'Sinh Viên';
+
+                currentAvatarBase64 = data.avatar || '';
+                updateAvatarDisplay(currentAvatarBase64, data.fullName || 'SV');
+
+                // Cache vào localStorage và cập nhật header avatar ngay
+                const displayName = data.fullName || data.email || 'Sinh Viên';
+                localStorage.setItem('user_avatar', currentAvatarBase64);
+                localStorage.setItem('user_name', displayName);
+                // Cập nhật avatar trên header nếu có (student index.html)
+                const headerAv = document.getElementById('studentAvatar');
+                if (headerAv) {
+                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4f46e5&color=fff&size=64`;
+                    headerAv.src = (currentAvatarBase64 && currentAvatarBase64.length > 10) ? currentAvatarBase64 : fallback;
+                }
             } catch {
                 showToast('Không thể tải thông tin cá nhân.', 'error');
             }
         }
 
-        document.getElementById('avatar').addEventListener('input', function() {
-            const url = this.value.trim();
-            if (url) document.getElementById('avatarPreview').src = url;
+        function updateAvatarDisplay(src, name) {
+            const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'SV')}&background=4f46e5&color=fff&size=128`;
+            const displaySrc = src || fallback;
+            document.getElementById('avatarPreview').src = displaySrc;
+            document.getElementById('avatarRemoveBtn').style.display = src ? 'inline-flex' : 'none';
+        }
+
+        document.getElementById('avatarFileInput').addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const MAX_SIZE = 200 * 1024; // 200KB
+            if (file.size > MAX_SIZE) {
+                showToast(`Ảnh quá lớn (${(file.size/1024).toFixed(0)}KB). Tối đa 200KB.`, 'error');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                currentAvatarBase64 = e.target.result;
+                updateAvatarDisplay(currentAvatarBase64, document.getElementById('fullName').value || 'SV');
+            };
+            reader.readAsDataURL(file);
         });
+
+        function removeAvatar() {
+            currentAvatarBase64 = '';
+            document.getElementById('avatarFileInput').value = '';
+            updateAvatarDisplay('', document.getElementById('fullName').value || 'SV');
+        }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -212,9 +361,13 @@
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        email:    document.getElementById('email').value.trim(),
                         fullName: document.getElementById('fullName').value.trim(),
-                        phone: document.getElementById('phone').value.trim(),
-                        avatar: document.getElementById('avatar').value.trim()
+                        phone:    document.getElementById('phone').value.trim(),
+                        avatar:   currentAvatarBase64,
+                        birthday: document.getElementById('birthday').value || null,
+                        gender:   document.getElementById('gender').value   || null
+                        // username & studentCode KHÔNG gửi — read-only
                     })
                 });
                 if (res.ok) {

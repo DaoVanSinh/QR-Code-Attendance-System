@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -50,7 +50,18 @@
 
                 <div class="form-group" id="studentIdGroup" style="display: none;">
                     <label>Mã Sinh Viên *</label>
-                    <input type="text" id="username" class="form-control" placeholder="Nhập mã sinh viên (VD: SV001)">
+                    <input type="text" id="username" class="form-control" placeholder="VD: SV001, B21DCCN123">
+                    <small style="color:var(--text-muted);font-size:12px;">Sinh viên dùng mã này để đăng nhập.</small>
+                </div>
+
+                <div class="form-group" id="departmentGroup" style="display: none;">
+                    <label>Khoa / Bộ Môn</label>
+                    <input type="text" id="department" class="form-control" placeholder="VD: Khoa Công nghệ Thông tin">
+                </div>
+
+                <div class="form-group" id="classNameGroup" style="display: none;">
+                    <label>Lớp</label>
+                    <input type="text" id="className" class="form-control" placeholder="VD: CNTT-K23A">
                 </div>
 
                 <div class="form-group" style="margin-top: 24px; display: flex; gap: 12px;">
@@ -66,13 +77,14 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=99"></script>
+    <script src="js/utils.js?v=102"></script>
     <script>
         const auth = checkAuth('ADMIN');
         if (auth) {
-            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('create-account.html');
+            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('create-account.html');`n            fetchAndCacheAvatar();
         }
     </script>
     <script src="js/create-account.js?v=2"></script>
 </body>
 </html>
+

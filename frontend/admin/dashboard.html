@@ -8,6 +8,111 @@
     <link rel="stylesheet" href="css/style.css?v=99">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        /* ── Tab Filter ── */
+        .tab-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 0;
+        }
+        .tab-btn {
+            padding: 7px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .tab-btn:not(.active):hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .tab-count {
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 1px 7px;
+            font-size: 11px;
+        }
+        .tab-btn.active .tab-count {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* ── Edit User Modal ── */
+        .eu-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,23,42,.55); z-index: 1000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+        .eu-overlay.open { display: flex; animation: fadeIn .2s; }
+        .eu-box {
+            background: #fff; border-radius: 16px; width: 92%; max-width: 480px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.2); overflow: hidden;
+        }
+        .eu-head {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 22px; border-bottom: 1px solid #e8edf5;
+            background: #f8fafd;
+        }
+        .eu-head h3 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; }
+        .eu-close {
+            background: #f1f5f9; border: none; width: 30px; height: 30px;
+            border-radius: 50%; cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; color: #64748b;
+        }
+        .eu-close:hover { background: #fee2e2; color: #dc2626; }
+        .eu-body { padding: 20px 22px; }
+        .eu-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .eu-row.full { grid-template-columns: 1fr; }
+        .eu-fgroup label {
+            display: block; font-size: 11px; font-weight: 700;
+            color: #64748b; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px;
+        }
+        .eu-fgroup input, .eu-fgroup select {
+            width: 100%; padding: 9px 13px; border: 1.5px solid #dde3ed; border-radius: 9px;
+            font-size: 13px; background: #fff; color: #0f172a; outline: none;
+            transition: border-color .2s; font-family: inherit; box-sizing: border-box;
+        }
+        .eu-fgroup input:focus, .eu-fgroup select:focus {
+            border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+        }
+        .eu-fgroup small { display: block; margin-top: 4px; font-size: 11px; color: #94a3b8; }
+        .eu-foot {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 22px; border-top: 1px solid #e8edf5; background: #f8fafd;
+        }
+        .eu-btn-save {
+            padding: 9px 22px; background: #2563eb; color: #fff; border: none;
+            border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 6px; transition: background .15s;
+        }
+        .eu-btn-save:hover { background: #1d4ed8; }
+        .eu-btn-save:disabled { opacity: .6; cursor: not-allowed; }
+        .eu-btn-cancel {
+            padding: 9px 16px; background: transparent; color: #64748b;
+            border: 1.5px solid #dde3ed; border-radius: 9px; font-size: 13px;
+            font-weight: 600; cursor: pointer; transition: all .15s;
+        }
+        .eu-btn-cancel:hover { background: #f1f5f9; }
+        .eu-btn-delete {
+            padding: 8px 15px; background: transparent; color: #dc2626;
+            border: 1.5px solid #fecaca; border-radius: 9px; font-size: 13px;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px;
+            transition: all .15s;
+        }
+        .eu-btn-delete:hover { background: #fef2f2; border-color: #f87171; }
+    </style>
 </head>
 <body>
     <div id="sidebar-placeholder"></div>
@@ -25,24 +130,35 @@
 
         <!-- User Management -->
         <div class="glass-card">
-            <div class="card-header">
+            <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
                 <h2>Danh Sách Tài Khoản</h2>
+                <div class="tab-filter">
+                    <button id="tabStudent" class="tab-btn active" onclick="switchTab('STUDENT')">
+                        <ion-icon name="school-outline"></ion-icon>
+                        Sinh Viên
+                        <span class="tab-count" id="countStudent">0</span>
+                    </button>
+                    <button id="tabTeacher" class="tab-btn" onclick="switchTab('TEACHER')">
+                        <ion-icon name="person-outline"></ion-icon>
+                        Giảng Viên
+                        <span class="tab-count" id="countTeacher">0</span>
+                    </button>
+                </div>
             </div>
             <div class="table-wrapper">
-                <table>
-                    <thead>
+                <table id="userTableEl">
+                    <thead id="userTableHead">
                         <tr>
                             <th>ID</th>
                             <th>Email</th>
                             <th>Họ tên</th>
-                            <th>Mã SV</th>
-                            <th>Vai trò</th>
+                            <th id="thMaSV">Mã SV</th>
                             <th>Ngày tạo</th>
                             <th style="text-align:right;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="userTable">
-                        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Đang tải dữ liệu...</td></tr>
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -61,6 +177,7 @@
                             <th>ID</th>
                             <th>Mã Môn</th>
                             <th>Tên Môn Học</th>
+                            <th style="text-align:right;width:70px;">Sửa</th>
                         </tr>
                     </thead>
                     <tbody id="subjectTable">
@@ -73,13 +190,127 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=99"></script>
+    <!-- ── Edit User Modal ── -->
+    <div id="editUserModal" class="eu-overlay">
+        <div class="eu-box">
+            <div class="eu-head">
+                <h3 id="euTitle">Sửa Thông Tin Tài Khoản</h3>
+                <button class="eu-close" onclick="closeEditUser()">✕</button>
+            </div>
+            <div class="eu-body">
+                <!-- Row 1: Họ tên + Email -->
+                <div class="eu-row">
+                    <div class="eu-fgroup">
+                        <label>Họ &amp; Tên</label>
+                        <input id="euFullName" type="text" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div class="eu-fgroup">
+                        <label>Email *</label>
+                        <input id="euEmail" type="email" placeholder="email@domain.com">
+                    </div>
+                </div>
+                <!-- Row 2: Mật khẩu + Vai trò (readonly) -->
+                <div class="eu-row">
+                    <div class="eu-fgroup">
+                        <label>Mật khẩu mới</label>
+                        <input id="euPassword" type="password" placeholder="Để trống nếu không đổi">
+                        <small>Nhập để đặt lại mật khẩu</small>
+                    </div>
+                    <div class="eu-fgroup">
+                        <label>Vai trò</label>
+                        <input id="euRole" type="text" readonly
+                            style="background:#f1f5f9;color:#64748b;cursor:default;">
+                    </div>
+                </div>
+                <!-- Row 3: Mã SV (chỉ hiện với STUDENT) -->
+                <div class="eu-row full" id="euStudentIdRow" style="display:none;">
+                    <div class="eu-fgroup">
+                        <label>Mã Sinh Viên</label>
+                        <input id="euUsername" type="text" placeholder="VD: SV001, B21DCCN123">
+                        <small>Sinh viên dùng mã này để đăng nhập</small>
+                    </div>
+                </div>
+                <!-- Row 4: Khoa + Lớp -->
+                <div class="eu-row" id="euExtraRow" style="display:none;">
+                    <div class="eu-fgroup">
+                        <label>Khoa / Bộ Môn</label>
+                        <input id="euDepartment" type="text" placeholder="Công nghệ thông tin">
+                    </div>
+                    <div class="eu-fgroup">
+                        <label>Lớp</label>
+                        <input id="euClassName" type="text" placeholder="CNTT-K23A">
+                    </div>
+                </div>
+            </div>
+            <div class="eu-foot">
+                <button class="eu-btn-delete" id="euBtnDelete" onclick="confirmDeleteFromModal()">
+                    <ion-icon name="trash-outline"></ion-icon> Xóa Tài Khoản
+                </button>
+                <div style="display:flex;gap:8px;">
+                    <button class="eu-btn-cancel" onclick="closeEditUser()">Hủy</button>
+                    <button class="eu-btn-save" id="euBtnSave" onclick="saveEditUser()">
+                        <ion-icon name="checkmark-outline"></ion-icon> Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Edit Subject Modal ── -->
+    <div id="editSubjectModal" class="eu-overlay">
+        <div class="eu-box" style="max-width:440px;">
+            <div class="eu-head">
+                <h3 id="esTitle">Sửa Thông Tin Môn Học</h3>
+                <button class="eu-close" onclick="closeEditSubject()">✕</button>
+            </div>
+            <div class="eu-body">
+                <!-- Mã Môn + Số Tín Chỉ -->
+                <div class="eu-row">
+                    <div class="eu-fgroup">
+                        <label>Mã Môn *</label>
+                        <input id="esCode" type="text" placeholder="VD: CS101, INT2210">
+                    </div>
+                    <div class="eu-fgroup">
+                        <label>Số Tín Chỉ *</label>
+                        <select id="esCredits">
+                            <option value="1">1 tín chỉ</option>
+                            <option value="2">2 tín chỉ</option>
+                            <option value="3" selected>3 tín chỉ</option>
+                            <option value="4">4 tín chỉ</option>
+                            <option value="5">5 tín chỉ</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Tên Môn Học -->
+                <div class="eu-row full">
+                    <div class="eu-fgroup">
+                        <label>Tên Môn Học *</label>
+                        <input id="esName" type="text" placeholder="VD: Lập Trình Web, Giải Tích 1">
+                    </div>
+                </div>
+            </div>
+            <div class="eu-foot" style="justify-content:space-between;">
+                <button class="eu-btn-delete" id="esBtnDelete" onclick="deleteSubjectFromModal()">
+                    <ion-icon name="trash-outline"></ion-icon> Xóa Môn
+                </button>
+                <div style="display:flex;gap:8px;">
+                    <button class="eu-btn-cancel" onclick="closeEditSubject()">Hủy</button>
+                    <button class="eu-btn-save" id="esBtnSave" onclick="saveEditSubject()">
+                        <ion-icon name="checkmark-outline"></ion-icon> Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js?v=102"></script>
     <script>
         const auth = checkAuth('ADMIN');
         if (auth) {
             document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('dashboard.html');
+            fetchAndCacheAvatar();
         }
     </script>
-    <script src="js/dashboard.js?v=4"></script>
+    <script src="js/dashboard.js?v=8"></script>
 </body>
 </html>

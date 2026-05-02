@@ -24,16 +24,15 @@ function hashCode(str) {
     }
     return Math.abs(hash);
 }
-const DOW_LABELS = ['','','Thu 2','Thu 3','Thu 4','Thu 5','Thu 6','Thu 7','CN'];
+const DOW_LABELS = ['','','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
 
+// Blue monochrome palette — nhất quán cho toàn hệ thống
 const CARD_COLORS = [
-    { bg: '#bbdefb', border: '#1565c0', text: '#0d2f6e' },
-    { bg: '#c8e6c9', border: '#2e7d32', text: '#1b4d1e' },
-    { bg: '#fff9c4', border: '#f9a825', text: '#5d3b00' },
-    { bg: '#e8d5f5', border: '#6a1b9a', text: '#3d0060' },
-    { bg: '#ffccbc', border: '#bf360c', text: '#6d1e00' },
-    { bg: '#b2dfdb', border: '#00695c', text: '#00332e' },
-    { bg: '#f8bbd0', border: '#ad1457', text: '#6b0031' },
+    { bg: '#dbeafe', border: '#1d4ed8', text: '#1e3a8a' },
+    { bg: '#bfdbfe', border: '#1565c0', text: '#1e3a8a' },
+    { bg: '#e0effe', border: '#2563eb', text: '#1e40af' },
+    { bg: '#eff6ff', border: '#3b82f6', text: '#1d4ed8' },
+    { bg: '#dbeafe', border: '#1e40af', text: '#1e3a8a' },
 ];
 
 let allCourses = [];
@@ -66,7 +65,7 @@ function updateWeekNav() {
     if (weekData[cur]) {
         const w   = weekData[cur];
         const fmt = d => d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
-        document.getElementById('weekLabel').textContent = `Tuan ${w.num}  \u00b7  ${fmt(w.start)} \u2013 ${fmt(w.end)}`;
+        document.getElementById('weekLabel').textContent = `Tuần ${w.num}  \u00b7  ${fmt(w.start)} \u2013 ${fmt(w.end)}`;
     }
 }
 
@@ -78,7 +77,7 @@ async function loadTimetable() {
             authFetch(`${API_BASE_URL}/student/courses`),
             authFetch(`${API_BASE_URL}/student/semesters`)
         ]);
-        if (!courseRes.ok) throw new Error('Khong the tai du lieu thoi khoa bieu');
+        if (!courseRes.ok) throw new Error('Không thể tải du lieu thoi khoa bieu');
         const data = await courseRes.json();
         allCourses = data.filter(c => c.enrolled === true);
         if (semRes.ok) semesterDBCache = await semRes.json();
@@ -132,7 +131,7 @@ function computeWeeks(courses) {
     weekSel.innerHTML = '';
     weekData = [];
     if (!courses || courses.length === 0) {
-        weekSel.innerHTML = '<option value="-1">Khong co du lieu</option>';
+        weekSel.innerHTML = '<option value="-1">Không có dữ liệu</option>';
         updateWeekNav(); return;
     }
     let minD = new Date('2099-01-01'), maxD = new Date('1970-01-01'), hasData = false;
@@ -141,7 +140,7 @@ function computeWeeks(courses) {
         if (c.endDate)   { const d = new Date(c.endDate);   if (d > maxD) maxD = d; hasData = true; }
     });
     if (!hasData || minD > maxD) {
-        weekSel.innerHTML = '<option value="-1">Khong co du lieu</option>';
+        weekSel.innerHTML = '<option value="-1">Không có dữ liệu</option>';
         updateWeekNav(); return;
     }
     let day = minD.getDay();
@@ -153,7 +152,7 @@ function computeWeeks(courses) {
         const endW = new Date(curWeek);
         endW.setDate(endW.getDate() + 6);
         const fmt = d => d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
-        weekData.push({ label:`Tuan ${weekNum} (${fmt(curWeek)} \u2013 ${fmt(endW)})`, num:weekNum, start:new Date(curWeek), end:new Date(endW) });
+        weekData.push({ label:`Tuần ${weekNum} (${fmt(curWeek)} \u2013 ${fmt(endW)})`, num:weekNum, start:new Date(curWeek), end:new Date(endW) });
         if (now >= curWeek && now <= endW) currentWeekIndex = weekNum - 1;
         curWeek.setDate(curWeek.getDate() + 7);
         weekNum++;
@@ -175,7 +174,7 @@ function renderGrid() {
         weekStart = weekData[parseInt(weekSelValue)].start;
     }
 
-    const dayNames = ['','Thu 2','Thu 3','Thu 4','Thu 5','Thu 6','Thu 7','CN'];
+    const dayNames = ['','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
     const today = new Date(); today.setHours(0,0,0,0);
 
     const corner = document.createElement('div');
@@ -210,7 +209,7 @@ function renderGrid() {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'tkb-time-label';
         timeDiv.style.gridRow = `${i+1}`; timeDiv.style.gridColumn = '1';
-        timeDiv.innerHTML = `<div class="lesson-num">Tiet ${i}</div><div class="lesson-time">${LESSON_TIMES[i]}</div>`;
+        timeDiv.innerHTML = `<div class="lesson-num">Tiết ${i}</div><div class="lesson-time">${LESSON_TIMES[i]}</div>`;
         grid.appendChild(timeDiv);
         for (let d = 2; d <= 8; d++) {
             const empty = document.createElement('div');
@@ -269,13 +268,13 @@ function renderGrid() {
                 <div class="card-subject" style="color:${color.text};">${course.subjectName}</div>
                 <div class="card-code"    style="color:${color.border};">${course.subjectCode}</div>
                 <div class="card-meta">
-                    <div class="card-row" style="color:${color.text};"><ion-icon name="people-outline"></ion-icon><span>Nhom ${course.className||'\u2014'}</span></div>
+                    <div class="card-row" style="color:${color.text};"><ion-icon name="people-outline"></ion-icon><span>Nhóm ${course.className||'\u2014'}</span></div>
                     <div class="card-row" style="color:${color.text};"><ion-icon name="business-outline"></ion-icon><span>${course.room||'N/A'}</span></div>
                     <div class="card-row" style="color:${color.text};"><ion-icon name="person-outline"></ion-icon><span>${teacherName}</span></div>
                     <div class="card-row card-time" style="color:${color.text};"><ion-icon name="time-outline"></ion-icon><span>${timeStr}</span></div>
                 </div>
             `;
-            card.title = `${course.subjectName} \u2014 Tiet ${course.startLesson}\u2192${course.endLesson}`;
+            card.title = `${course.subjectName} \u2014 Tiết ${course.startLesson}\u2192${course.endLesson}`;
             card.addEventListener('click', () => openStudentCourseModal(course));
             wrapper.appendChild(card);
         });
@@ -297,7 +296,7 @@ function openStudentCourseModal(course) {
     document.getElementById('scmClass').textContent    = course.className;
     document.getElementById('scmTeacher').textContent  = course.teacherName || 'N/A';
     document.getElementById('scmRoom').textContent     = course.room || 'N/A';
-    document.getElementById('scmSchedule').textContent = `${DOW_LABELS[course.dayOfWeek]||''} | Tiet ${course.startLesson}\u2192${course.endLesson}`;
+    document.getElementById('scmSchedule').textContent = `${DOW_LABELS[course.dayOfWeek]||''} | Tiết ${course.startLesson}\u2192${course.endLesson}`;
     document.getElementById('scmTime').textContent     = timeStr;
     document.getElementById('scmSemester').textContent = semLabel;
     document.getElementById('scmPeriod').textContent   = `${startDateStr} \u2192 ${endDateStr}`;
@@ -308,3 +307,4 @@ function openStudentCourseModal(course) {
 function closeStudentCourseModal() {
     document.getElementById('studentCourseModal').style.display = 'none';
 }
+

@@ -1,8 +1,11 @@
 package com.qrcode.backend.entity;
 
+import com.qrcode.backend.entity.enums.Gender;
 import com.qrcode.backend.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "user")
@@ -34,9 +37,22 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Profile profile;
 
+    @Column(name = "birthday")
+    private LocalDate birthday;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
 
     @Column(name = "reset_password_token_expiry")
     private java.time.LocalDateTime resetPasswordTokenExpiry;
+
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
+
+    @Column(name = "refresh_token_expiry")
+    private java.time.LocalDateTime refreshTokenExpiry;
 }

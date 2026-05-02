@@ -22,5 +22,9 @@ public class CreateCourseRequest {
     private Integer maxSlots;
     private LocalDate startDate;
     private LocalDate endDate;
+
+    private Integer dayOfWeek2;
+    private Integer startLesson2;
+    private Integer endLesson2;
 }
 

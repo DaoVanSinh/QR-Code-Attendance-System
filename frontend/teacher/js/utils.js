@@ -14,11 +14,73 @@ function checkAuth(requiredRole) {
     return { token, role, name: localStorage.getItem('user_name') };
 }
 
-function authFetch(url, options = {}) {
+// ── Refresh Token Helper ──────────────────────────────────────────────
+let _isRefreshing = false;
+let _refreshQueue = [];
+
+async function _doRefresh() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) return false;
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken })
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        if (data.token && data.refreshToken) {
+            localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('refresh_token', data.refreshToken);
+            if (data.user) {
+                localStorage.setItem('user_role', data.user.role);
+                localStorage.setItem('user_name', data.user.fullName || data.user.email);
+                localStorage.setItem('user_id', data.user.id);
+            }
+            return true;
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
+
+async function authFetch(url, options = {}) {
     const token = localStorage.getItem('jwt_token');
     const headers = { ...options.headers };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    return fetch(url, { ...options, headers });
+
+    let response;
+    try {
+        response = await fetch(url, { ...options, headers });
+    } catch (e) {
+        throw e;
+    }
+
+    if (response.status === 401) {
+        if (_isRefreshing) {
+            await new Promise(resolve => _refreshQueue.push(resolve));
+            return authFetch(url, options);
+        }
+        _isRefreshing = true;
+        const refreshed = await _doRefresh();
+        _isRefreshing = false;
+        _refreshQueue.forEach(r => r());
+        _refreshQueue = [];
+
+        if (refreshed) {
+            const newToken = localStorage.getItem('jwt_token');
+            const retryHeaders = { ...options.headers };
+            if (newToken) retryHeaders['Authorization'] = `Bearer ${newToken}`;
+            return fetch(url, { ...options, headers: retryHeaders });
+        } else {
+            showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+            setTimeout(() => logout(), 1500);
+            return response;
+        }
+    }
+
+    return response;
 }
 
 function showToast(message, type = 'success') {
@@ -36,7 +98,17 @@ function showToast(message, type = 'success') {
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
-function logout() {
+async function logout() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+        try {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            });
+        } catch (e) {}
+    }
     localStorage.clear();
     window.location.href = LOGIN_URL;
 }
@@ -51,6 +123,11 @@ document.addEventListener('click', function(e) {
 
 function buildSidebar(activePage) {
     const name = localStorage.getItem('user_name') || 'Giảng Viên';
+    const cachedAvatar = localStorage.getItem('user_avatar');
+    const avatarSrc = (cachedAvatar && cachedAvatar.length > 10)
+        ? cachedAvatar
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f59e0b&color=fff&size=64`;
+
     const pages = [
         { href: 'dashboard.html', icon: 'home-outline', label: 'Tổng Quan' },
         { href: 'create-session.html', icon: 'qr-code-outline', label: 'Tạo Phiên Điểm Danh' },
@@ -73,9 +150,9 @@ function buildSidebar(activePage) {
         </div>
 
         <div class="user-profile-card" onclick="event.stopPropagation(); document.getElementById('teacherProfileDropdown').classList.toggle('show')">
-            <img src="../teacher/css/default-avatar.png" onerror="this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${name}')+'&background=random'" alt="Avatar" class="avatar">
+            <img id="sidebarAvatar" src="${avatarSrc}" alt="Avatar" class="avatar">
             <div class="info">
-                <div class="name">${name}</div>
+                <div class="name" id="sidebarUserName">${name}</div>
                 <div class="role">Giảng Viên</div>
             </div>
             <ion-icon name="chevron-down-outline" style="color:var(--text-muted);"></ion-icon>

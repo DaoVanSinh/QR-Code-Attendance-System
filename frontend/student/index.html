@@ -8,16 +8,132 @@
     <link rel="stylesheet" href="css/style.css?v=99">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        /* ── QR Scan Hero Button ───────────────────────────── */
+        .qr-scan-hero {
+            margin: 20px 16px 4px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+            border-radius: 20px;
+            padding: 28px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 8px 32px rgba(79,70,229,0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .qr-scan-hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 150px; height: 150px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        .qr-scan-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30px; left: 30px;
+            width: 100px; height: 100px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        .qr-scan-hero:active { transform: scale(0.97); box-shadow: 0 4px 16px rgba(79,70,229,0.3); }
+        .qr-scan-hero:hover  { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(79,70,229,0.45); }
+
+        .qr-scan-icon-wrap {
+            width: 64px; height: 64px; border-radius: 18px;
+            background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: #fff; flex-shrink: 0;
+            backdrop-filter: blur(4px);
+            animation: qr-pulse 2s ease-in-out infinite;
+        }
+        @keyframes qr-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
+            50%       { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+        }
+        .qr-scan-text { z-index: 1; }
+        .qr-scan-text h2 {
+            font-size: 18px; font-weight: 800; color: #fff;
+            margin: 0 0 4px; letter-spacing: -0.3px;
+        }
+        .qr-scan-text p {
+            font-size: 13px; color: rgba(255,255,255,0.8); margin: 0;
+        }
+        .qr-scan-arrow {
+            margin-left: auto; color: rgba(255,255,255,0.7); font-size: 22px; z-index: 1;
+            transition: transform 0.2s;
+        }
+        .qr-scan-hero:hover .qr-scan-arrow { transform: translateX(4px); }
+
+        /* ── Action Grid ───────────────────────────────────── */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 16px 16px 0;
+        }
+        .action-card {
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-decoration: none;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .action-card:hover  { transform: translateY(-2px); }
+        .action-card:active { transform: scale(0.97); }
+        .card-icon {
+            font-size: 28px; width: 48px; height: 48px;
+            border-radius: 12px; background: rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .action-card h2 { font-size: 14px; font-weight: 700; color: #fff; margin: 0; }
+        .action-card p  { font-size: 12px; color: rgba(255,255,255,0.8); margin: 0; }
+
+        .enrollment-bg { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+        .history-bg    { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 20px rgba(245,158,11,0.3); }
+
+        /* ── Recent Card ───────────────────────────────────── */
+        .recent-card {
+            margin: 16px 16px 0;
+            border-radius: 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .card-header-flex {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 18px 12px; border-bottom: 1px solid var(--border-color);
+        }
+        .card-header-flex h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0; }
+        .card-header-flex ion-icon { font-size: 18px; color: var(--text-muted); }
+        .recent-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 13px 18px; border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        .recent-item:last-child { border-bottom: none; }
+        .subject-name { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+        .meta-info    { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .status-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+        .status-badge.success { background: rgba(16,185,129,0.1); color: #10b981; }
+        .loading-text { text-align: center; color: var(--text-muted); font-size: 14px; padding: 20px; margin: 0; }
+    </style>
 </head>
 <body>
     <div class="app-root">
         <header class="app-header premium-header">
             <div class="brand">🎓 QR Attendance</div>
             <div class="header-profile" onclick="event.stopPropagation(); document.getElementById('studentProfileDropdown').classList.toggle('show')">
-                <img src="../teacher/css/default-avatar.png" id="studentAvatar" onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'" alt="Avatar" class="avatar">
+                <img src="" id="studentAvatar"
+                     onerror="this.src='https://ui-avatars.com/api/?name=SV&background=4f46e5&color=fff&size=64'" alt="Avatar" class="avatar">
                 <div class="user-name" id="headerUserName">Sinh Viên</div>
                 <ion-icon name="chevron-down-outline"></ion-icon>
-                
+
                 <div class="profile-dropdown" id="studentProfileDropdown" onclick="event.stopPropagation()">
                     <a href="profile.html"><ion-icon name="person-outline"></ion-icon> Thông tin cá nhân</a>
                     <a href="change-password.html"><ion-icon name="key-outline"></ion-icon> Đổi mật khẩu</a>
@@ -26,20 +142,33 @@
             </div>
         </header>
 
-        <div class="page-content">
-            <div class="welcome-section">
-                <h1 class="page-title">Xin chào! 👋</h1>
-                <p class="page-sub" id="welcomeMsg">Chào mừng bạn đến với hệ thống điểm danh QR.</p>
+        <div class="page-content" style="padding-bottom: 90px;">
+            <!-- Welcome -->
+            <div class="welcome-section" style="padding: 20px 16px 4px;">
+                <h1 class="page-title" style="font-size:22px; margin-bottom:4px;">Xin chào! 👋</h1>
+                <p class="page-sub" id="welcomeMsg" style="color:var(--text-muted);font-size:14px;margin:0;">Chào mừng bạn đến với hệ thống điểm danh QR.</p>
             </div>
 
+            <!-- ★ NÚT QUÉT QR NỔI BẬT ★ -->
+            <a href="attendance.html" class="qr-scan-hero">
+                <div class="qr-scan-icon-wrap">
+                    <ion-icon name="qr-code-outline"></ion-icon>
+                </div>
+                <div class="qr-scan-text">
+                    <h2>Quét QR Điểm Danh</h2>
+                    <p>Bật camera và quét mã QR của giảng viên</p>
+                </div>
+                <ion-icon name="chevron-forward-outline" class="qr-scan-arrow"></ion-icon>
+            </a>
+
+            <!-- Action grid -->
             <div class="action-grid">
-                <a href="enrollment.html" class="premium-card action-card enrollment-bg">
+                <a href="enrollment.html" class="action-card enrollment-bg">
                     <div class="card-icon"><ion-icon name="book-outline"></ion-icon></div>
                     <h2>Đăng Ký Học Phần</h2>
                     <p>Đăng ký môn học để điểm danh.</p>
                 </a>
-
-                <a href="history.html" class="premium-card action-card history-bg">
+                <a href="history.html" class="action-card history-bg">
                     <div class="card-icon"><ion-icon name="receipt-outline"></ion-icon></div>
                     <h2>Kết Quả Điểm Danh</h2>
                     <p>Xem lại lịch sử điểm danh.</p>
@@ -47,7 +176,7 @@
             </div>
 
             <!-- Recent summary -->
-            <div class="premium-card recent-card">
+            <div class="recent-card">
                 <div class="card-header-flex">
                     <h3>Điểm Danh Gần Đây</h3>
                     <ion-icon name="time-outline"></ion-icon>
@@ -78,14 +207,30 @@
         </nav>
     </div>
 
-    <script src="js/utils.js?v=99"></script>
+    <script src="js/utils.js?v=101"></script>
     <script>
         const auth = checkAuth('STUDENT');
         if (auth) {
             document.getElementById('headerUserName').textContent = auth.name || 'Sinh Viên';
-            document.getElementById('welcomeMsg').textContent = `Chào ${auth.name || 'bạn'}! Hôm nay có buổi học nào không?`;
+            document.getElementById('welcomeMsg').textContent =
+                `Chào ${auth.name || 'bạn'}! Hôm nay có buổi học nào không?`;
+            // Hiển thị avatar từ cache localStorage
+            const cachedAvatar = localStorage.getItem('user_avatar');
+            const avatarEl = document.getElementById('studentAvatar');
+            if (cachedAvatar && avatarEl) {
+                avatarEl.src = cachedAvatar;
+            } else if (avatarEl) {
+                const name = encodeURIComponent(auth.name || 'SV');
+                avatarEl.src = `https://ui-avatars.com/api/?name=${name}&background=4f46e5&color=fff&size=64`;
+            }
             loadRecent();
         }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            const dd = document.getElementById('studentProfileDropdown');
+            if (dd) dd.classList.remove('show');
+        });
 
         async function loadRecent() {
             const div = document.getElementById('recentList');

@@ -28,8 +28,17 @@ public class Profile {
 
     private String avatar;
 
+    @Column(name = "student_code")
+    private String studentCode;
+
+    private String department;
+
+    @Column(name = "class_name")
+    private String className;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private Status status = Status.ACTIVE;
 }
+

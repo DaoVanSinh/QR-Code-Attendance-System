@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -84,6 +84,33 @@
             display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
         }
         .btn-secondary:hover { background: var(--bg-main); border-color: #cbd5e1; }
+
+        /* ── Avatar upload ─────────────────────────────────── */
+        .avatar-upload-area {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .avatar-thumb {
+            width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
+            border: 2px solid var(--border-color); flex-shrink: 0;
+        }
+        .avatar-upload-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: var(--radius-sm);
+            border: 1.5px dashed var(--primary); background: rgba(79,70,229,0.05);
+            color: var(--primary); font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .avatar-upload-btn:hover { background: rgba(79,70,229,0.1); border-style: solid; }
+        .avatar-remove-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 7px 12px; border-radius: var(--radius-sm);
+            border: 1px solid #fca5a5; background: #fff5f5;
+            color: #dc2626; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .avatar-remove-btn:hover { background: #fee2e2; }
+        #avatarFileInput { display: none; }
+        .avatar-size-hint { font-size: 11px; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -120,8 +147,8 @@
                             <div class="field-icon email-icon"><ion-icon name="mail-outline"></ion-icon></div>
                             <div class="field-content">
                                 <label for="email">Địa chỉ Email</label>
-                                <input type="email" id="email" disabled>
-                                <div class="field-hint">Email được quản lý bởi hệ thống, không thể thay đổi.</div>
+                                <input type="email" id="email" placeholder="Nhập địa chỉ email mới">
+                                <div class="field-hint">Bạn có thể thay đổi email đăng nhập tại đây.</div>
                             </div>
                         </div>
                         <div class="field-row">
@@ -141,9 +168,40 @@
                         <div class="field-row">
                             <div class="field-icon avatar-icon"><ion-icon name="image-outline"></ion-icon></div>
                             <div class="field-content">
-                                <label for="avatar">Liên Kết Ảnh Đại Diện</label>
-                                <input type="url" id="avatar" placeholder="https://example.com/avatar.png">
-                                <div class="field-hint">Nhập URL ảnh đại diện. Để trống để sử dụng avatar mặc định.</div>
+                                <label>Ảnh Đại Diện</label>
+                                <div class="avatar-upload-area">
+                                    <img id="avatarThumb" class="avatar-thumb" src="" alt="Preview"
+                                         onerror="this.src='https://ui-avatars.com/api/?name=A&background=4f46e5&color=fff&size=56'">
+                                    <div>
+                                        <label class="avatar-upload-btn" for="avatarFileInput">
+                                            <ion-icon name="cloud-upload-outline"></ion-icon> Chọn ảnh từ máy
+                                        </label>
+                                        <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif">
+                                        <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn" style="display:none;" onclick="removeAvatar()">
+                                            <ion-icon name="trash-outline"></ion-icon> Xóa ảnh
+                                        </button>
+                                        <div class="avatar-size-hint" style="margin-top:6px;">Tối đa 200KB. Định dạng: JPG, PNG, WebP</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-icon" style="background:rgba(14,165,233,0.1);color:#0ea5e9;"><ion-icon name="calendar-outline"></ion-icon></div>
+                            <div class="field-content">
+                                <label for="birthday">Ngày Sinh</label>
+                                <input type="date" id="birthday">
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-icon" style="background:rgba(168,85,247,0.1);color:#a855f7;"><ion-icon name="male-female-outline"></ion-icon></div>
+                            <div class="field-content">
+                                <label for="gender">Giới Tính</label>
+                                <select id="gender" style="width:100%;padding:10px 14px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:14px;color:var(--text-dark);background:var(--bg-surface);">
+                                    <option value="">— Chọn giới tính —</option>
+                                    <option value="MALE">Nam</option>
+                                    <option value="FEMALE">Nữ</option>
+                                    <option value="OTHER">Khác</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -162,40 +220,86 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=99"></script>
+    <script src="js/utils.js?v=102"></script>
     <script>
         const auth = checkAuth('ADMIN');
         if (auth) {
-            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('profile.html');
+            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('profile.html');`n            fetchAndCacheAvatar();
         }
 
-        const token = localStorage.getItem('jwt_token');
+        // Base64 hiện tại (từ DB hoặc chọn mới)
+        let currentAvatarBase64 = '';
 
         async function loadProfile() {
             try {
                 const res = await authFetch('/api/user/profile');
                 if (!res.ok) throw new Error();
                 const data = await res.json();
-                document.getElementById('email').value = data.email || '';
-                document.getElementById('fullName').value = data.fullName || '';
-                document.getElementById('phone').value = data.phone || '';
-                document.getElementById('avatar').value = data.avatar || '';
+                document.getElementById('email').value    = data.email    || '';
+                document.getElementById('fullName').value  = data.fullName || '';
+                document.getElementById('phone').value     = data.phone    || '';
+                document.getElementById('birthday').value  = data.birthday || '';
+                document.getElementById('gender').value    = data.gender   || '';
                 document.getElementById('displayName').textContent = data.fullName || data.email;
                 document.getElementById('displayRole').textContent = data.role;
-                const avatarUrl = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName || 'A')}&background=4f46e5&color=fff&size=128`;
-                document.getElementById('avatarPreview').src = avatarUrl;
+
+                // Hiển thị avatar trong form
+                currentAvatarBase64 = data.avatar || '';
+                updateAvatarDisplay(currentAvatarBase64, data.fullName || 'Admin');
+
+                // Cache vào localStorage + cập nhật sidebar ngay lập tức
+                const displayName = data.fullName || data.email || 'Admin';
+                localStorage.setItem('user_avatar', currentAvatarBase64);
+                localStorage.setItem('user_name', displayName);
+                _updateSidebarAvatar(currentAvatarBase64, displayName);
             } catch (e) {
                 showToast('Không thể tải thông tin cá nhân.', 'error');
             }
         }
 
-        // Live preview avatar
-        document.getElementById('avatar').addEventListener('input', function() {
-            const url = this.value.trim();
-            if (url) {
-                document.getElementById('avatarPreview').src = url;
+        // Cập nhật avatar + tên trong sidebar mà không reload trang
+        function _updateSidebarAvatar(avatarSrc, name) {
+            const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'A')}&background=4f46e5&color=fff&size=64`;
+            const finalSrc = (avatarSrc && avatarSrc.length > 10) ? avatarSrc : fallback;
+            const el = document.getElementById('sidebarAvatar');
+            if (el) el.src = finalSrc;
+            const nameEl = document.getElementById('sidebarUserName');
+            if (nameEl) nameEl.textContent = name;
+        }
+
+        function updateAvatarDisplay(src, name) {
+            const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'A')}&background=4f46e5&color=fff&size=128`;
+            const displaySrc = src || fallback;
+            document.getElementById('avatarPreview').src = displaySrc;
+            document.getElementById('avatarThumb').src   = displaySrc;
+            document.getElementById('avatarRemoveBtn').style.display = src ? 'inline-flex' : 'none';
+        }
+
+        // Xử lý chọn file ảnh
+        document.getElementById('avatarFileInput').addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const MAX_SIZE = 200 * 1024; // 200KB
+            if (file.size > MAX_SIZE) {
+                showToast(`Ảnh quá lớn (${(file.size/1024).toFixed(0)}KB). Tối đa 200KB.`, 'error');
+                this.value = '';
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                currentAvatarBase64 = e.target.result; // data:image/...;base64,...
+                updateAvatarDisplay(currentAvatarBase64, document.getElementById('fullName').value || 'Admin');
+            };
+            reader.readAsDataURL(file);
         });
+
+        function removeAvatar() {
+            currentAvatarBase64 = '';
+            document.getElementById('avatarFileInput').value = '';
+            updateAvatarDisplay('', document.getElementById('fullName').value || 'Admin');
+        }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -208,14 +312,16 @@
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        email:    document.getElementById('email').value.trim(),
                         fullName: document.getElementById('fullName').value.trim(),
-                        phone: document.getElementById('phone').value.trim(),
-                        avatar: document.getElementById('avatar').value.trim()
+                        phone:    document.getElementById('phone').value.trim(),
+                        avatar:   currentAvatarBase64,
+                        birthday: document.getElementById('birthday').value || null,
+                        gender:   document.getElementById('gender').value   || null
                     })
                 });
                 if (res.ok) {
                     showToast('Cập nhật thông tin thành công!', 'success');
-                    // Update localStorage for sidebar name
                     const name = document.getElementById('fullName').value.trim();
                     if (name) localStorage.setItem('user_name', name);
                     loadProfile();
@@ -235,3 +341,4 @@
     </script>
 </body>
 </html>
+

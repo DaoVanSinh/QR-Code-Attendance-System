@@ -19,6 +19,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     Optional<Enrollment> findByCourseIdAndStudentId(Integer courseId, Integer studentId);
     void deleteByCourseIdAndStudentId(Integer courseId, Integer studentId);
     List<Enrollment> findByCourseId(Integer courseId);
+    List<Enrollment> findByCourseIdAndStatus(Integer courseId, EnrollmentStatus status);
 
     /**
      * Đếm số enrollment ACTIVE của 1 course (dùng cho check sĩ số).
