@@ -123,7 +123,7 @@
                 <h1 class="page-title">Tổng Quan Hệ Thống</h1>
                 <p class="page-subtitle">Quản lý tài khoản và môn học trong hệ thống.</p>
             </div>
-            <button class="btn btn-primary" onclick="window.location.href='create-account.html'">
+            <button class="btn btn-primary" onclick="openCreateAccountModal()" id="btnOpenCreateAccount">
                 <ion-icon name="person-add-outline"></ion-icon> Thêm Tài Khoản
             </button>
         </div>
@@ -254,7 +254,66 @@
             </div>
         </div>
     </div>
-
+    <!-- ── Create Account Modal ── -->
+    <div id="createAccountModal" class="eu-overlay">
+        <div class="eu-box" style="max-width:520px;">
+            <div class="eu-head">
+                <h3><ion-icon name="person-add-outline" style="color:#2563eb;margin-right:6px;"></ion-icon>Thêm Tài Khoản Mới</h3>
+                <button class="eu-close" onclick="closeCreateAccountModal()">&#10005;</button>
+            </div>
+            <div class="eu-body">
+                <!-- Role -->
+                <div class="eu-row full" style="margin-bottom:14px;">
+                    <div class="eu-fgroup">
+                        <label>Vai trò *</label>
+                        <select id="caRole" onchange="onCaRoleChange()">
+                            <option value="STUDENT">Sinh Viên</option>
+                            <option value="TEACHER">Giảng Viên</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Họ tên + Email -->
+                <div class="eu-row">
+                    <div class="eu-fgroup">
+                        <label>Họ &amp; Tên *</label>
+                        <input id="caFullName" type="text" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div class="eu-fgroup">
+                        <label>Email *</label>
+                        <input id="caEmail" type="email" placeholder="email@gmail.com">
+                    </div>
+                </div>
+                <!-- Mật khẩu -->
+                <div class="eu-row full">
+                    <div class="eu-fgroup">
+                        <label>Mật Khẩu *</label>
+                        <input id="caPassword" type="password" placeholder="Tối thiểu 6 ký tự">
+                    </div>
+                </div>
+                <!-- Mã SV + Lớp (chỉ hiện khi STUDENT) -->
+                <div class="eu-row" id="caStudentFields">
+                    <div class="eu-fgroup">
+                        <label>Mã Sinh Viên *</label>
+                        <input id="caUsername" type="text" placeholder="VD: B21DCCN123">
+                        <small>Sinh viên dùng mã này để đăng nhập</small>
+                    </div>
+                    <div class="eu-fgroup">
+                        <label>Lớp</label>
+                        <input id="caClassName" type="text" placeholder="VD: CNTT-K23A">
+                    </div>
+                </div>
+            </div>
+            <div class="eu-foot">
+                <div style="font-size:12px;color:#94a3b8;">(*) bắt buộc</div>
+                <div style="display:flex;gap:8px;">
+                    <button class="eu-btn-cancel" onclick="closeCreateAccountModal()">Hủy</button>
+                    <button class="eu-btn-save" id="caBtnSave" onclick="submitCreateAccount()">
+                        <ion-icon name="checkmark-outline"></ion-icon> Tạo Tài Khoản
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <script src="js/utils.js?v=300"></script>

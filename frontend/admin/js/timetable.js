@@ -1,13 +1,13 @@
 
 const LESSON_TIMES = {
-    1:'06:45', 2:'07:45', 3:'08:45', 4:'09:45',  5:'10:45',
-    6:'12:30', 7:'13:30', 8:'14:30', 9:'15:30', 10:'16:30',
-    11:'17:30', 12:'18:30', 13:'19:30'
+    1: '06:45', 2: '07:45', 3: '08:45', 4: '09:45', 5: '10:45',
+    6: '12:30', 7: '13:30', 8: '14:30', 9: '15:30', 10: '16:30',
+    11: '17:30', 12: '18:30', 13: '19:30'
 };
 const LESSON_END_TIMES = {
-    1:'07:35', 2:'08:35', 3:'09:35', 4:'10:35',  5:'11:35',
-    6:'13:20', 7:'14:20', 8:'15:20', 9:'16:20', 10:'17:20',
-    11:'18:20', 12:'19:20', 13:'20:20'
+    1: '07:35', 2: '08:35', 3: '09:35', 4: '10:35', 5: '11:35',
+    6: '13:20', 7: '14:20', 8: '15:20', 9: '16:20', 10: '17:20',
+    11: '18:20', 12: '19:20', 13: '20:20'
 };
 
 function hashCode(str) {
@@ -20,20 +20,20 @@ function hashCode(str) {
     return Math.abs(hash);
 }
 
-const DOW_LABELS  = ['','','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
-const DAY_HEADERS = ['','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
+const DOW_LABELS = ['', '', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+const DAY_HEADERS = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
 
 // Blue monochrome palette — nhất quán cho toàn hệ thống
 const CARD_COLORS = [
+    { bg: '#dbeafe', border: '#2563eb', text: '#1e3a8a' },
     { bg: '#dbeafe', border: '#1d4ed8', text: '#1e3a8a' },
-    { bg: '#bfdbfe', border: '#1565c0', text: '#1e3a8a' },
-    { bg: '#e0effe', border: '#2563eb', text: '#1e40af' },
-    { bg: '#eff6ff', border: '#3b82f6', text: '#1d4ed8' },
     { bg: '#dbeafe', border: '#1e40af', text: '#1e3a8a' },
+    { bg: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' },
+    { bg: '#dbeafe', border: '#1565c0', text: '#1e3a8a' },
 ];
 
-let allCourses      = [];
-let weekData        = [];
+let allCourses = [];
+let weekData = [];
 let semesterDBCache = [];
 // --- Khởi động ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function navigateWeek(delta) {
-    const sel  = document.getElementById('weekFilter');
+    const sel = document.getElementById('weekFilter');
     if (!sel) return;
     const next = parseInt(sel.value) + delta;
     if (next >= 0 && next < weekData.length) {
@@ -60,8 +60,8 @@ function updateWeekNav() {
     document.getElementById('btnPrevWeek').disabled = cur <= 0;
     document.getElementById('btnNextWeek').disabled = cur >= weekData.length - 1;
     if (weekData[cur]) {
-        const w   = weekData[cur];
-        const fmt = d => d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
+        const w = weekData[cur];
+        const fmt = d => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
         document.getElementById('weekLabel').textContent = `Tuần ${w.num}  ·  ${fmt(w.start)} – ${fmt(w.end)}`;
     }
 }
@@ -91,12 +91,12 @@ async function loadTimetable() {
 // --- Populate filters ---
 function populateAdminFilters() {
     // Học kỳ
-    const semSet = [...new Set(allCourses.map(c => c.semester).filter(Boolean))].sort((a,b) => b.localeCompare(a));
+    const semSet = [...new Set(allCourses.map(c => c.semester).filter(Boolean))].sort((a, b) => b.localeCompare(a));
     const semSel = document.getElementById('semesterFilter');
     semSel.innerHTML = '<option value="ALL">— Tất cả học kỳ —</option>';
     semSet.forEach(s => {
         const dbSem = semesterDBCache.find(d => d.label === s);
-        const name  = dbSem ? dbSem.labelFull : s;
+        const name = dbSem ? dbSem.labelFull : s;
         semSel.innerHTML += `<option value="${s}">${name}</option>`;
     });
     // Tự chọn học kỳ đang active
@@ -120,7 +120,7 @@ function populateAdminFilters() {
         teacherSel.innerHTML = '<option value="">— Chưa có giảng viên —</option>';
     } else {
         teacherMap.forEach((email, name) => {
-            teacherSel.innerHTML += `<option value="${name}">${name}${email ? ' ('+email+')' : ''}</option>`;
+            teacherSel.innerHTML += `<option value="${name}">${name}${email ? ' (' + email + ')' : ''}</option>`;
         });
     }
 
@@ -129,8 +129,8 @@ function populateAdminFilters() {
 
 function onSemesterChange() {
     const semSel = document.getElementById('semesterFilter');
-    const sel    = semSel ? semSel.value : 'ALL';
-    const list   = sel === 'ALL' ? allCourses : allCourses.filter(c => c.semester === sel);
+    const sel = semSel ? semSel.value : 'ALL';
+    const list = sel === 'ALL' ? allCourses : allCourses.filter(c => c.semester === sel);
     computeWeeks(list);
     renderGrid();
 }
@@ -148,7 +148,7 @@ function computeWeeks(courses) {
     let minD = new Date('2099-01-01'), maxD = new Date('1970-01-01'), hasData = false;
     courses.forEach(c => {
         if (c.startDate) { const d = new Date(c.startDate); if (d < minD) minD = d; hasData = true; }
-        if (c.endDate)   { const d = new Date(c.endDate);   if (d > maxD) maxD = d; hasData = true; }
+        if (c.endDate) { const d = new Date(c.endDate); if (d > maxD) maxD = d; hasData = true; }
     });
     if (!hasData || minD > maxD) {
         weekSel.innerHTML = '<option value="-1">Không có dữ liệu</option>';
@@ -162,22 +162,22 @@ function computeWeeks(courses) {
     while (curWeek <= maxD) {
         const endW = new Date(curWeek);
         endW.setDate(endW.getDate() + 6);
-        const fmt = d => d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
-        weekData.push({ label:`Tuần ${weekNum} (${fmt(curWeek)} – ${fmt(endW)})`, num:weekNum, start:new Date(curWeek), end:new Date(endW) });
+        const fmt = d => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+        weekData.push({ label: `Tuần ${weekNum} (${fmt(curWeek)} – ${fmt(endW)})`, num: weekNum, start: new Date(curWeek), end: new Date(endW) });
         if (now >= curWeek && now <= endW) currentWeekIndex = weekNum - 1;
         curWeek.setDate(curWeek.getDate() + 7);
         weekNum++;
     }
-    weekData.forEach((w,i) => weekSel.innerHTML += `<option value="${i}">${w.label}</option>`);
+    weekData.forEach((w, i) => weekSel.innerHTML += `<option value="${i}">${w.label}</option>`);
     if (weekData.length > 0) weekSel.value = Math.min(currentWeekIndex, weekData.length - 1).toString();
     updateWeekNav();
 }
 
 // --- Render lưới TKB ---
 function renderGrid() {
-    const filterSem     = document.getElementById('semesterFilter')?.value || 'ALL';
-    const filterTeacher = document.getElementById('teacherFilter')?.value  || '';
-    const weekSelValue  = document.getElementById('weekFilter')?.value;
+    const filterSem = document.getElementById('semesterFilter')?.value || 'ALL';
+    const filterTeacher = document.getElementById('teacherFilter')?.value || '';
+    const weekSelValue = document.getElementById('weekFilter')?.value;
 
     const grid = document.getElementById('tkbGrid');
     if (!grid) return;
@@ -185,7 +185,7 @@ function renderGrid() {
     updateWeekNav();
 
     const weekStart = _getWeekStart(weekSelValue);
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
 
     _buildGridHeader(grid, weekStart, today);
     _buildEmptyCells(grid);
@@ -222,9 +222,9 @@ function _filterCourses(courses, filterSem, weekSelValue) {
         filtered = filtered.filter(c => {
             if (!c.startDate || !c.endDate) return false;
             const sd = new Date(c.startDate), ed = new Date(c.endDate);
-            sd.setHours(0,0,0,0); ed.setHours(23,59,59,999);
-            const ws = new Date(sel.start); ws.setHours(0,0,0,0);
-            const we = new Date(sel.end);   we.setHours(23,59,59,999);
+            sd.setHours(0, 0, 0, 0); ed.setHours(23, 59, 59, 999);
+            const ws = new Date(sel.start); ws.setHours(0, 0, 0, 0);
+            const we = new Date(sel.end); we.setHours(23, 59, 59, 999);
             return sd <= we && ed >= ws;
         });
     }
@@ -245,8 +245,8 @@ function _buildGridHeader(grid, weekStart, today) {
         if (weekStart) {
             const colDate = new Date(weekStart);
             colDate.setDate(weekStart.getDate() + (col - 1));
-            dateStr = colDate.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' });
-            colDate.setHours(0,0,0,0);
+            dateStr = colDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+            colDate.setHours(0, 0, 0, 0);
             isToday = colDate.getTime() === today.getTime();
         }
         if (isToday) {
@@ -261,18 +261,18 @@ function _buildGridHeader(grid, weekStart, today) {
 
 // ── Helper: dựng ô trống nền lưới ──────────────────────────
 function _buildEmptyCells(grid) {
-    const todayJS  = new Date().getDay();
+    const todayJS = new Date().getDay();
     const todayCol = todayJS === 0 ? 7 : todayJS;
     for (let i = 1; i <= 13; i++) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'tkb-time-label';
-        timeDiv.style.gridRow = `${i+1}`; timeDiv.style.gridColumn = '1';
+        timeDiv.style.gridRow = `${i + 1}`; timeDiv.style.gridColumn = '1';
         timeDiv.innerHTML = `<div class="lesson-num">Tiết ${i}</div><div class="lesson-time">${LESSON_TIMES[i]}</div>`;
         grid.appendChild(timeDiv);
         for (let d = 2; d <= 8; d++) {
             const empty = document.createElement('div');
-            empty.className = 'tkb-cell-empty' + ((d-1) === todayCol ? ' tkb-cell-today' : '');
-            empty.style.gridRow = `${i+1}`; empty.style.gridColumn = `${d}`;
+            empty.className = 'tkb-cell-empty' + ((d - 1) === todayCol ? ' tkb-cell-today' : '');
+            empty.style.gridRow = `${i + 1}`; empty.style.gridColumn = `${d}`;
             grid.appendChild(empty);
         }
     }
@@ -297,36 +297,36 @@ function _renderCourseCards(grid, filtered, weekSelValue) {
 
         const dayCourses = sessions
             .filter(c => parseInt(c.renderDay) === d && c.renderStart && c.renderEnd)
-            .sort((a,b) => a.renderStart - b.renderStart);
+            .sort((a, b) => a.renderStart - b.renderStart);
 
         dayCourses.forEach(course => {
             const overlapping = dayCourses.filter(o => o.renderStart <= course.renderEnd && o.renderEnd >= course.renderStart);
             const count = Math.max(1, overlapping.length);
-            const idx   = overlapping.findIndex(o => o.id === course.id && o.isSecondary === course.isSecondary);
+            const idx = overlapping.findIndex(o => o.id === course.id && o.isSecondary === course.isSecondary);
 
             const card = document.createElement('div');
             card.className = 'tkb-course-card';
             card.style.cssText = `
                 pointer-events:auto;position:absolute;
-                top:calc(${(course.renderStart-1)/13*100}% + 3px);
-                height:calc(${(course.renderEnd-course.renderStart+1)/13*100}% - 6px);
-                width:calc(${100/count}% - 6px);
-                left:calc(${Math.max(0,idx)*(100/count)}% + 3px);
+                top:calc(${(course.renderStart - 1) / 13 * 100}% + 3px);
+                height:calc(${(course.renderEnd - course.renderStart + 1) / 13 * 100}% - 6px);
+                width:calc(${100 / count}% - 6px);
+                left:calc(${Math.max(0, idx) * (100 / count)}% + 3px);
                 z-index:5;
             `;
             const color = CARD_COLORS[hashCode(course.subjectCode) % CARD_COLORS.length];
             card.style.backgroundColor = color.bg;
-            card.style.borderLeftColor  = color.border;
+            card.style.borderLeftColor = color.border;
 
             const teacherName = course.teacherName || course.teacher?.profile?.fullName || 'N/A';
-            const timeStr     = `${LESSON_TIMES[course.renderStart]} → ${LESSON_END_TIMES[course.renderEnd]}`;
+            const timeStr = `${LESSON_TIMES[course.renderStart]} → ${LESSON_END_TIMES[course.renderEnd]}`;
 
             card.innerHTML = `
                 <div class="card-subject" style="color:${color.text};">${course.subjectName}</div>
                 <div class="card-code"    style="color:${color.border};">${course.subjectCode}</div>
                 <div class="card-meta">
-                    <div class="card-row" style="color:${color.text};"><ion-icon name="people-outline"></ion-icon><span>Nhóm ${course.className||'—'}</span></div>
-                    <div class="card-row" style="color:${color.text};"><ion-icon name="business-outline"></ion-icon><span>${course.room||'N/A'}</span></div>
+                    <div class="card-row" style="color:${color.text};"><ion-icon name="people-outline"></ion-icon><span>Nhóm ${course.className || '—'}</span></div>
+                    <div class="card-row" style="color:${color.text};"><ion-icon name="business-outline"></ion-icon><span>${course.room || 'N/A'}</span></div>
                     <div class="card-row" style="color:${color.text};"><ion-icon name="person-outline"></ion-icon><span>${teacherName}</span></div>
                     <div class="card-row card-time" style="color:${color.text};"><ion-icon name="time-outline"></ion-icon><span>${timeStr}</span></div>
                 </div>

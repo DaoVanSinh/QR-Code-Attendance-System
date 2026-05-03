@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -11,138 +12,350 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
         .profile-hero {
-            text-align: center; padding: 32px 20px 24px;
-            background: linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(236,72,153,0.06) 100%);
+            text-align: center;
+            padding: 32px 20px 24px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.06) 0%, rgba(236, 72, 153, 0.06) 100%);
             border-bottom: 1px solid var(--border-color);
-            position: relative; z-index: 1;
+            position: relative;
+            z-index: 1;
         }
+
         .profile-avatar {
-            width: 96px; height: 96px; border-radius: 50%;
-            object-fit: cover; margin: 0 auto 16px;
-            border: 3px solid rgba(79,70,229,0.2);
-            box-shadow: 0 8px 24px rgba(79,70,229,0.15);
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 16px;
+            border: 3px solid rgba(79, 70, 229, 0.2);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.15);
             transition: transform 0.3s;
         }
-        .profile-avatar:hover { transform: scale(1.05); }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
 
         /* Avatar upload button — hiển thị ngay dưới avatar circle */
         .avatar-upload-hero {
-            display: flex; align-items: center; justify-content: center;
-            gap: 8px; flex-wrap: wrap; margin-top: 10px; margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
-        .avatar-upload-hero-btn {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
-            border: 1.5px solid var(--primary); background: rgba(79,70,229,0.08);
-            color: var(--primary); cursor: pointer; transition: all 0.2s;
-        }
-        .avatar-upload-hero-btn:hover { background: rgba(79,70,229,0.15); }
-        .avatar-remove-hero-btn {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-            border: 1px solid #fca5a5; background: #fff5f5;
-            color: #dc2626; cursor: pointer; transition: all 0.2s;
-        }
-        .avatar-remove-hero-btn:hover { background: #fee2e2; }
-        #avatarFileInput { display: none; }
-        .avatar-size-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
-        .profile-name { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+        .avatar-upload-hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1.5px solid var(--primary);
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .avatar-upload-hero-btn:hover {
+            background: rgba(79, 70, 229, 0.15);
+        }
+
+        .avatar-remove-hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid #fca5a5;
+            background: #fff5f5;
+            color: #dc2626;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .avatar-remove-hero-btn:hover {
+            background: #fee2e2;
+        }
+
+        #avatarFileInput {
+            display: none;
+        }
+
+        .avatar-size-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .profile-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
         .profile-role-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
-            background: rgba(79,70,229,0.1); color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
         }
+
         .student-code-badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
-            background: rgba(16,185,129,0.1); color: #10b981; margin-top: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            margin-top: 6px;
         }
+
         .profile-section {
-            padding: 20px; position: relative; z-index: 1;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
         }
+
         .section-title {
-            font-size: 13px; font-weight: 700; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: 0.5px;
-            margin-bottom: 12px; padding-left: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-left: 4px;
         }
+
         .profile-card {
-            background: var(--bg-surface); border: 1px solid var(--glass-border);
-            border-radius: var(--radius); overflow: hidden;
-            box-shadow: var(--shadow-sm); margin-bottom: 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 16px;
         }
+
         .profile-field {
-            display: flex; align-items: center; gap: 14px;
-            padding: 16px; border-bottom: 1px solid rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
         }
-        .profile-field:last-child { border-bottom: none; }
+
+        .profile-field:last-child {
+            border-bottom: none;
+        }
+
         .profile-field-icon {
-            width: 38px; height: 38px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
         }
-        .profile-field-icon.email { background: rgba(79,70,229,0.1); color: var(--primary); }
-        .profile-field-icon.name { background: rgba(16,185,129,0.1); color: #10b981; }
-        .profile-field-icon.phone { background: rgba(245,158,11,0.1); color: #f59e0b; }
-        .profile-field-icon.id-card { background: rgba(99,102,241,0.1); color: #6366f1; }
-        .profile-field-icon.calendar { background: rgba(14,165,233,0.1); color: #0ea5e9; }
-        .profile-field-icon.gender { background: rgba(168,85,247,0.1); color: #a855f7; }
-        .profile-field-content { flex-grow: 1; min-width: 0; }
+
+        .profile-field-icon.email {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .profile-field-icon.name {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .profile-field-icon.phone {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .profile-field-icon.id-card {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+        }
+
+        .profile-field-icon.calendar {
+            background: rgba(14, 165, 233, 0.1);
+            color: #0ea5e9;
+        }
+
+        .profile-field-icon.gender {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+
+        .profile-field-content {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
         .profile-field-label {
-            font-size: 11px; font-weight: 600; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
         }
+
         .profile-field-input {
-            width: 100%; padding: 8px 0; border: none; border-bottom: 1.5px solid transparent;
-            font-size: 15px; font-weight: 500; color: var(--text-dark);
-            background: transparent; transition: all 0.2s; outline: none;
+            width: 100%;
+            padding: 8px 0;
+            border: none;
+            border-bottom: 1.5px solid transparent;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-dark);
+            background: transparent;
+            transition: all 0.2s;
+            outline: none;
         }
-        .profile-field-input:focus { border-bottom-color: var(--primary); }
+
+        .profile-field-input:focus {
+            border-bottom-color: var(--primary);
+        }
+
         .profile-field-input:disabled {
-            color: var(--text-muted); cursor: not-allowed;
-            border-bottom: 1.5px dashed rgba(0,0,0,0.08);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            border-bottom: 1.5px dashed rgba(0, 0, 0, 0.08);
         }
+
         .profile-field-select {
-            width: 100%; padding: 8px 0; border: none; border-bottom: 1.5px solid transparent;
-            font-size: 15px; font-weight: 500; color: var(--text-dark);
-            background: transparent; transition: all 0.2s; outline: none; appearance: none; cursor: pointer;
+            width: 100%;
+            padding: 8px 0;
+            border: none;
+            border-bottom: 1.5px solid transparent;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-dark);
+            background: transparent;
+            transition: all 0.2s;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
         }
-        .profile-field-select:focus { border-bottom-color: var(--primary); }
+
+        .profile-field-select:focus {
+            border-bottom-color: var(--primary);
+        }
+
         .profile-field-hint {
-            font-size: 11px; color: var(--text-muted); margin-top: 2px;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
+
         .readonly-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            font-size: 10px; font-weight: 600; color: #64748b;
-            background: rgba(100,116,139,0.08); padding: 2px 7px;
-            border-radius: 6px; margin-left: 8px; vertical-align: middle;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #64748b;
+            background: rgba(100, 116, 139, 0.08);
+            padding: 2px 7px;
+            border-radius: 6px;
+            margin-left: 8px;
+            vertical-align: middle;
         }
-        .profile-actions { padding: 0 20px 20px; position: relative; z-index: 1; }
+
+        .profile-actions {
+            padding: 0 20px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
         .btn-save {
-            width: 100%; padding: 14px; border: none; border-radius: 14px;
-            font-size: 16px; font-weight: 700; cursor: pointer;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white; box-shadow: 0 4px 16px rgba(79,70,229,0.3);
-            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: white;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,70,229,0.4); }
-        .btn-save:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-save:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-change-pwd {
-            width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 14px;
-            font-size: 15px; font-weight: 600; cursor: pointer;
-            background: var(--bg-surface); color: var(--text-dark);
-            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-            margin-top: 10px; text-decoration: none;
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--bg-surface);
+            color: var(--text-dark);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            text-decoration: none;
         }
-        .btn-change-pwd:hover { background: var(--bg-main); }
+
+        .btn-change-pwd:hover {
+            background: var(--bg-main);
+        }
+
         .back-btn {
-            display: flex; align-items: center; gap: 4px;
-            color: var(--text-muted); font-size: 14px; font-weight: 500;
-            text-decoration: none; padding: 4px 0; transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 4px 0;
+            transition: color 0.2s;
         }
-        .back-btn:hover { color: var(--primary); }
+
+        .back-btn:hover {
+            color: var(--primary);
+        }
     </style>
 </head>
+
 <body>
     <div class="app-root">
         <header class="premium-header">
@@ -155,7 +368,7 @@
 
         <div class="profile-hero">
             <img id="avatarPreview" class="profile-avatar" src="" alt="Avatar"
-                 onerror="this.src='https://ui-avatars.com/api/?name=SV&background=4f46e5&color=fff&size=128'">
+                onerror="this.src='https://ui-avatars.com/api/?name=SV&background=4f46e5&color=fff&size=128'">
 
             <!-- Upload / Remove nằm ngay dưới avatar -->
             <div class="avatar-upload-hero">
@@ -163,7 +376,8 @@
                     <ion-icon name="camera-outline"></ion-icon> Đổi ảnh
                 </label>
                 <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif">
-                <button type="button" class="avatar-remove-hero-btn" id="avatarRemoveBtn" style="display:none;" onclick="removeAvatar()">
+                <button type="button" class="avatar-remove-hero-btn" id="avatarRemoveBtn" style="display:none;"
+                    onclick="removeAvatar()">
                     <ion-icon name="trash-outline"></ion-icon> Xóa
                 </button>
             </div>
@@ -191,10 +405,10 @@
                         <div class="profile-field-content">
                             <div class="profile-field-label">
                                 Mã Sinh Viên
-                                <span class="readonly-badge"><ion-icon name="lock-closed-outline" style="font-size:9px;"></ion-icon> Chỉ đọc</span>
+                                <span class="readonly-badge"><ion-icon name="lock-closed-outline"
+                                        style="font-size:9px;"></ion-icon></span>
                             </div>
                             <input class="profile-field-input" type="text" id="username" disabled>
-                            <div class="profile-field-hint">Mã sinh viên do Admin cấp, không thể thay đổi.</div>
                         </div>
                     </div>
                     <!-- Email -->
@@ -283,11 +497,11 @@
                 if (!res.ok) throw new Error();
                 const data = await res.json();
 
-                document.getElementById('email').value     = data.email    || '';
-                document.getElementById('fullName').value  = data.fullName || '';
-                document.getElementById('phone').value     = data.phone    || '';
-                document.getElementById('birthday').value  = data.birthday || '';
-                document.getElementById('gender').value    = data.gender   || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('fullName').value = data.fullName || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('birthday').value = data.birthday || '';
+                document.getElementById('gender').value = data.gender || '';
 
                 // Mã sinh viên (username) — read-only
                 if (data.username) {
@@ -331,7 +545,7 @@
 
             const MAX_SIZE = 200 * 1024; // 200KB
             if (file.size > MAX_SIZE) {
-                showToast(`Ảnh quá lớn (${(file.size/1024).toFixed(0)}KB). Tối đa 200KB.`, 'error');
+                showToast(`Ảnh quá lớn (${(file.size / 1024).toFixed(0)}KB). Tối đa 200KB.`, 'error');
                 this.value = '';
                 return;
             }
@@ -361,12 +575,12 @@
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email:    document.getElementById('email').value.trim(),
+                        email: document.getElementById('email').value.trim(),
                         fullName: document.getElementById('fullName').value.trim(),
-                        phone:    document.getElementById('phone').value.trim(),
-                        avatar:   currentAvatarBase64,
+                        phone: document.getElementById('phone').value.trim(),
+                        avatar: currentAvatarBase64,
                         birthday: document.getElementById('birthday').value || null,
-                        gender:   document.getElementById('gender').value   || null
+                        gender: document.getElementById('gender').value || null
                         // username & studentCode KHÔNG gửi — read-only
                     })
                 });
@@ -390,4 +604,5 @@
         loadProfile();
     </script>
 </body>
+
 </html>

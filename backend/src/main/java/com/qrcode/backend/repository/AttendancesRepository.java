@@ -21,5 +21,12 @@ public interface AttendancesRepository extends JpaRepository<Attendances, Intege
      */
     @Query("SELECT COUNT(a) FROM Attendances a WHERE a.session.course.id = :courseId")
     long countBySessionCoursId(@Param("courseId") Integer courseId);
+
+    /**
+     * Kiểm tra sinh viên đã điểm danh ít nhất 1 lần trong 1 course chưa.
+     * Dùng khi hủy đăng ký học phần.
+     */
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Attendances a WHERE a.session.course.id = :courseId AND a.student.id = :studentId")
+    boolean existsBySessionCourseIdAndStudentId(@Param("courseId") Integer courseId, @Param("studentId") Integer studentId);
 }
 

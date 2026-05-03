@@ -160,10 +160,10 @@ function buildAdminSidebar(activePage) {
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4f46e5&color=fff&size=64`;
 
     const pages = [
-        { href: 'dashboard.html',      icon: 'grid-outline',        label: 'Tổng Quan' },
-        { href: 'create-account.html', icon: 'person-add-outline',  label: 'Thêm Tài Khoản' },
-        { href: 'courses.html',        icon: 'book-outline',         label: 'Phân Công Môn Học' },
-        { href: 'timetable.html',      icon: 'calendar-outline',     label: 'Thời Khóa Biểu' }
+        { href: 'dashboard.html',    icon: 'grid-outline',    label: 'Tổng Quan' },
+        { href: 'student-list.html', icon: 'school-outline',  label: 'Danh Sách Sinh Viên' },
+        { href: 'courses.html',      icon: 'book-outline',    label: 'Phân Công Môn Học' },
+        { href: 'timetable.html',    icon: 'calendar-outline', label: 'Thời Khóa Biểu' }
     ];
 
     const navItems = pages.map(p => `

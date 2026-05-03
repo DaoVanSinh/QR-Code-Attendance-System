@@ -9,6 +9,7 @@ import com.qrcode.backend.entity.enums.Gender;
 import com.qrcode.backend.repository.UserRepository;
 import com.qrcode.backend.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class UserService {
     private final AuditService auditService;
     private final EmailService emailService;
 
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
     @Transactional
     public void generateResetTokenAndSendEmail(String email) {
         User user = userRepository.findByEmail(email)
@@ -34,7 +38,7 @@ public class UserService {
         user.setResetPasswordTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
 
-        String resetLink = "http://localhost:8080/common/reset-password.html?token=" + token;
+        String resetLink = frontendUrl + "/common/reset-password.html?token=" + token;
 
         String subject = "Khôi phục mật khẩu - Hệ thống Điểm danh QR";
         String content = "Xin chào,\n\n"

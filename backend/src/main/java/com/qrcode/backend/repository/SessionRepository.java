@@ -12,4 +12,5 @@ public interface SessionRepository extends JpaRepository<Session, Integer> {
     Optional<Session> findByQrCodeOrPreviousQrCode(String qrCode, String previousQrCode);
     Optional<Session> findByQrCode(String qrCode);
     List<Session> findByCourseIdOrderByStartTimeDesc(Integer courseId);
+    boolean existsByCourseId(Integer courseId);
 }

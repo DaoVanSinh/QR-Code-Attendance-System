@@ -3,6 +3,7 @@ package com.qrcode.backend.service;
 import com.qrcode.backend.dto.request.CreateCourseRequest;
 import com.qrcode.backend.dto.response.AdminSessionResponse;
 import com.qrcode.backend.dto.response.CourseDetailResponse;
+import com.qrcode.backend.dto.response.EnrolledStudentResponse;
 import com.qrcode.backend.dto.response.SemesterResponse;
 import com.qrcode.backend.dto.response.UserSummaryResponse;
 import com.qrcode.backend.dto.request.AdminCreateUserRequest;
@@ -446,6 +447,24 @@ public class AdminService {
     public List<CourseDetailResponse> getAllCourses() {
         return courseRepository.findAll().stream()
                 .map(this::toCourseDetailResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<EnrolledStudentResponse> getStudentsByCourse(Integer courseId) {
+        return enrollmentRepository.findByCourseId(courseId).stream()
+                .map(e -> {
+                    User student = e.getStudent();
+                    Profile profile = student.getProfile();
+                    return EnrolledStudentResponse.builder()
+                            .studentId(student.getId())
+                            .fullName(profile != null ? profile.getFullName() : "")
+                            .email(student.getEmail())
+                            .username(student.getUsername())
+                            .className(profile != null ? profile.getClassName() : "")
+                            .enrolledAt(e.getEnrolledAt() != null ? e.getEnrolledAt().toString() : "")
+                            .status(e.getStatus() != null ? e.getStatus().name() : "ACTIVE")
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

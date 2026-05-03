@@ -4,6 +4,7 @@ import com.qrcode.backend.dto.request.AdminCreateUserRequest;
 import com.qrcode.backend.dto.request.CreateCourseRequest;
 import com.qrcode.backend.dto.response.AdminSessionResponse;
 import com.qrcode.backend.dto.response.CourseDetailResponse;
+import com.qrcode.backend.dto.response.EnrolledStudentResponse;
 import com.qrcode.backend.dto.response.SemesterResponse;
 import com.qrcode.backend.dto.response.TimetableResponse;
 import com.qrcode.backend.dto.response.UserSummaryResponse;
@@ -152,6 +153,11 @@ public class AdminController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/courses/{courseId}/students")
+    public ResponseEntity<List<EnrolledStudentResponse>> getStudentsByCourse(@PathVariable Integer courseId) {
+        return ResponseEntity.ok(adminService.getStudentsByCourse(courseId));
     }
 
     @PostMapping("/courses/sync-schedules")

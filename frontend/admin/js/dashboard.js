@@ -225,6 +225,82 @@ document.getElementById('editUserModal')?.addEventListener('click', function(e) 
     if (e.target === this) closeEditUser();
 });
 
+// ── Create Account Modal ───────────────────────────────────────────
+function openCreateAccountModal() {
+    // Reset form
+    ['caFullName','caEmail','caPassword','caUsername','caClassName'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    document.getElementById('caRole').value = 'STUDENT';
+    document.getElementById('caStudentFields').style.display = 'grid';
+    document.getElementById('createAccountModal').classList.add('open');
+}
+
+function closeCreateAccountModal() {
+    document.getElementById('createAccountModal').classList.remove('open');
+}
+
+function onCaRoleChange() {
+    const isStudent = document.getElementById('caRole').value === 'STUDENT';
+    document.getElementById('caStudentFields').style.display = isStudent ? 'grid' : 'none';
+    if (!isStudent) {
+        document.getElementById('caUsername').value = '';
+        document.getElementById('caClassName').value = '';
+    }
+}
+
+async function submitCreateAccount() {
+    const role     = document.getElementById('caRole').value;
+    const fullName = document.getElementById('caFullName').value.trim();
+    const email    = document.getElementById('caEmail').value.trim();
+    const password = document.getElementById('caPassword').value;
+    const username = document.getElementById('caUsername').value.trim();
+    const className = document.getElementById('caClassName').value.trim();
+
+    if (!fullName) { showToast('Vui lòng nhập Họ & Tên.', 'error'); return; }
+    if (!email)    { showToast('Vui lòng nhập Email.', 'error'); return; }
+    if (!password || password.length < 6) { showToast('Mật khẩu tối thiểu 6 ký tự.', 'error'); return; }
+    if (role === 'STUDENT' && !username) { showToast('Vui lòng nhập Mã Sinh Viên.', 'error'); return; }
+
+    const btn = document.getElementById('caBtnSave');
+    btn.disabled = true;
+    btn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Đang tạo...';
+
+    try {
+        const payload = { role, fullName, email, password };
+        if (role === 'STUDENT') {
+            payload.username  = username;
+            payload.className = className || null;
+        }
+
+        const res = await authFetch(`${API_BASE_URL}/admin/create-user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            showToast(`✅ Tạo tài khoản ${role === 'STUDENT' ? 'sinh viên' : 'giảng viên'} thành công!`, 'success');
+            closeCreateAccountModal();
+            loadDashboard();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showToast(data.error || 'Lỗi tạo tài khoản.', 'error');
+        }
+    } catch {
+        showToast('Lỗi kết nối mạng.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Tạo Tài Khoản';
+    }
+}
+
+document.getElementById('createAccountModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeCreateAccountModal();
+});
+
+
 // ── Edit Subject ──────────────────────────────────────────────────
 let _editingSubjectId   = null;
 let _editingSubjectName = '';

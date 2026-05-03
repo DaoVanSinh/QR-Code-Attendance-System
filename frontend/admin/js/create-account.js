@@ -3,24 +3,20 @@
 // Toggle fields based on role selection
 document.getElementById('role').addEventListener('change', function() {
     const isStudent = this.value === 'STUDENT';
-    const studentIdGroup  = document.getElementById('studentIdGroup');
-    const departmentGroup = document.getElementById('departmentGroup');
-    const classNameGroup  = document.getElementById('classNameGroup');
-    const usernameInput   = document.getElementById('username');
+    const studentIdGroup = document.getElementById('studentIdGroup');
+    const classNameGroup = document.getElementById('classNameGroup');
+    const usernameInput  = document.getElementById('username');
 
     if (isStudent) {
-        studentIdGroup.style.display  = 'block';
-        departmentGroup.style.display = 'block';
-        classNameGroup.style.display  = 'block';
+        studentIdGroup.style.display = 'block';
+        classNameGroup.style.display = 'block';
         usernameInput.setAttribute('required', 'required');
     } else {
-        studentIdGroup.style.display  = 'none';
-        departmentGroup.style.display = 'none';
-        classNameGroup.style.display  = 'none';
+        studentIdGroup.style.display = 'none';
+        classNameGroup.style.display = 'none';
         usernameInput.removeAttribute('required');
         usernameInput.value = '';
-        document.getElementById('department').value = '';
-        document.getElementById('className').value  = '';
+        document.getElementById('className').value = '';
     }
 });
 
@@ -32,7 +28,6 @@ document.getElementById('createAccountForm').addEventListener('submit', async (e
     const password    = document.getElementById('password').value;
     const role        = document.getElementById('role').value;
     const username   = document.getElementById('username').value.trim();
-    const department = document.getElementById('department')?.value.trim()  || '';
     const className  = document.getElementById('className')?.value.trim()   || '';
 
     if (!role) {
@@ -64,7 +59,6 @@ document.getElementById('createAccountForm').addEventListener('submit', async (e
         // Thêm các trường dành riêng cho STUDENT
         if (role === 'STUDENT') {
             payload.username = username;
-            if (department) payload.department = department;
             if (className)  payload.className  = className;
         }
 
@@ -88,7 +82,7 @@ document.getElementById('createAccountForm').addEventListener('submit', async (e
 
         // Reset form và redirect
         document.getElementById('createAccountForm').reset();
-        ['studentIdGroup','departmentGroup','classNameGroup']
+        ['studentIdGroup','classNameGroup']
             .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         document.querySelectorAll('.btn').forEach(b => b.disabled = true);
 

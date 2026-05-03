@@ -32,6 +32,7 @@ public class EnrollmentService {
     private final ScheduleService scheduleService;
     private final ScheduleRepository scheduleRepository;
     private final AttendancesRepository attendancesRepository;
+    private final com.qrcode.backend.repository.SessionRepository sessionRepository;
 
     /**
      * Lấy danh sách tất cả khóa học có thể đăng ký,
@@ -150,11 +151,17 @@ public class EnrollmentService {
             throw new ResourceNotFoundException("Bạn chưa đăng ký học phần này.");
         }
 
-        // ── Check attendance trước khi hủy ──────────────────────
-        // Kiểm tra xem SV đã có dữ liệu điểm danh trong course này chưa
-        // Nếu có → không cho hủy để giữ Data Integrity
-        long attCount = attendancesRepository.countBySessionCoursId(courseId);
-        if (attCount > 0) {
+        // ── Check A: Course đã có session điểm danh nào chưa? ──────────
+        // Nếu đã có session → lớp đã vào học → không cho hủy
+        if (sessionRepository.existsByCourseId(courseId)) {
+            throw new IllegalArgumentException(
+                "Không thể hủy đăng ký! Học phần này đã bắt đầu điểm danh (lớp đã vào học). " +
+                "Vui lòng liên hệ Giảng viên hoặc Admin nếu cần hỗ trợ."
+            );
+        }
+
+        // ── Check B: Sinh viên đã có dữ liệu điểm danh chưa? ───────────
+        if (attendancesRepository.existsBySessionCourseIdAndStudentId(courseId, student.getId())) {
             throw new IllegalArgumentException(
                 "Không thể hủy đăng ký! Bạn đã có dữ liệu điểm danh trong học phần này. " +
                 "Vui lòng liên hệ Admin nếu cần hỗ trợ."

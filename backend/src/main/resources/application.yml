@@ -36,6 +36,7 @@ app:
     jwt:
       secret: ${JWT_SECRET}
       expiration: ${JWT_EXPIRATION}
+  frontend-url: ${FRONTEND_URL:https://qrcode.ducminhit.id.vn}
 
 management:
   endpoints:
