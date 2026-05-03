@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,226 +11,574 @@
     <style>
         /* ── Page-specific overrides ── */
         .filter-bar {
-            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
-            padding: 16px 24px; border-bottom: 1px solid #e8edf5;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e8edf5;
             background: #f8fafd;
         }
-        .filter-bar input, .filter-bar select {
-            padding: 9px 14px; border: 1.5px solid #dde3ed;
-            border-radius: 10px; font-size: 13px;
-            background: #fff; color: #1e293b;
-            transition: border-color .2s; outline: none;
+
+        .filter-bar input,
+        .filter-bar select {
+            padding: 9px 14px;
+            border: 1.5px solid #dde3ed;
+            border-radius: 10px;
+            font-size: 13px;
+            background: #fff;
+            color: #1e293b;
+            transition: border-color .2s;
+            outline: none;
         }
-        .filter-bar input:focus, .filter-bar select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
-        .filter-bar input { min-width: 240px; }
+
+        .filter-bar input:focus,
+        .filter-bar select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
+        }
+
+        .filter-bar input {
+            min-width: 240px;
+        }
 
         /* Table improvements */
-        .table-wrapper table thead tr { background: #f0f6ff; }
-        .table-wrapper table thead th {
-            color: #1d4ed8; font-size: 12px; font-weight: 700;
-            padding: 12px 14px; border-bottom: 2px solid #bfdbfe;
-            text-transform: uppercase; letter-spacing: .4px;
+        .table-wrapper table thead tr {
+            background: #f0f6ff;
         }
+
+        .table-wrapper table thead th {
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 2px solid #bfdbfe;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
         .table-wrapper table tbody tr {
             border-bottom: 1px solid #f1f5f9;
             transition: background .15s;
         }
-        .table-wrapper table tbody tr:hover { background: #f8fbff; }
-        .table-wrapper table tbody td { padding: 13px 14px; vertical-align: middle; }
+
+        .table-wrapper table tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .table-wrapper table tbody td {
+            padding: 13px 14px;
+            vertical-align: middle;
+        }
 
         /* Table badges */
         .subject-badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            background: #dbeafe; color: #1d4ed8;
-            padding: 3px 10px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; letter-spacing: .3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .3px;
         }
+
         .credits-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            background: #dcfce7; color: #16a34a;
-            padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
         }
+
         .schedule-chip {
-            display: inline-flex; align-items: center; gap: 5px;
-            background: #eff6ff; border: 1px solid #bfdbfe;
-            padding: 4px 10px; border-radius: 7px; font-size: 12px; color: #1e40af; font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 4px 10px;
+            border-radius: 7px;
+            font-size: 12px;
+            color: #1e40af;
+            font-weight: 500;
         }
-        .schedule-chip.no-schedule { background: #f8fafc; border-color: #e2e8f0; color: #94a3b8; font-style: italic; }
-        .teacher-info { display: flex; align-items: center; gap: 9px; }
+
+        .schedule-chip.no-schedule {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .teacher-info {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
         .teacher-avatar {
-            width: 34px; height: 34px; border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white; font-size: 12px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(37,99,235,.25);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, .25);
         }
-        .teacher-name { font-weight: 600; font-size: 13px; color: #1e293b; }
-        .teacher-email { font-size: 11px; color: #64748b; margin-top: 1px; }
+
+        .teacher-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #1e293b;
+        }
+
+        .teacher-email {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 1px;
+        }
 
         /* ── Modal ── */
         .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(15,23,42,.5); z-index: 1000;
-            align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
             backdrop-filter: blur(3px);
         }
-        .modal-overlay.open { display: flex; animation: fadeIn .2s; }
+
+        .modal-overlay.open {
+            display: flex;
+            animation: fadeIn .2s;
+        }
+
         .modal-box {
-            background: #fff; width: 92%; max-width: 680px;
-            max-height: 90vh; overflow-y: auto; border-radius: 16px;
-            box-shadow: 0 24px 64px rgba(0,0,0,.2); display: flex; flex-direction: column;
+            background: #fff;
+            width: 92%;
+            max-width: 680px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 16px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .2);
+            display: flex;
+            flex-direction: column;
         }
+
         .modal-head {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 24px; border-bottom: 1px solid #e8edf5;
-            position: sticky; top: 0; background: #fff; z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e8edf5;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 1;
         }
-        .modal-head h2 { font-size: 17px; font-weight: 700; color: #0f172a; margin: 0; }
+
+        .modal-head h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
         .modal-close {
-            background: #f1f5f9; border: none; width: 32px; height: 32px;
-            border-radius: 50%; font-size: 18px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            color: #64748b; transition: all .2s;
+            background: #f1f5f9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: all .2s;
         }
-        .modal-close:hover { background: #fee2e2; color: #dc2626; }
+
+        .modal-close:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
 
         /* Step indicator */
         .step-nav {
-            display: flex; gap: 0; border-bottom: 1px solid #e8edf5;
-            background: #f8fafd; padding: 0 24px;
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #e8edf5;
+            background: #f8fafd;
+            padding: 0 24px;
         }
+
         .step-tab {
-            flex: 1; padding: 13px 8px; text-align: center; font-size: 12px;
-            font-weight: 600; color: #94a3b8; cursor: pointer;
-            border-bottom: 2px solid transparent; transition: all .2s;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
+            flex: 1;
+            padding: 13px 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
-        .step-tab.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+        .step-tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+
         .step-num {
-            width: 20px; height: 20px; border-radius: 50%; font-size: 11px;
-            background: #e2e8f0; color: #94a3b8;
-            display: flex; align-items: center; justify-content: center; font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 11px;
+            background: #e2e8f0;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
         }
-        .step-tab.active .step-num { background: #2563eb; color: white; }
-        .step-tab.done .step-num { background: #16a34a; color: white; }
+
+        .step-tab.active .step-num {
+            background: #2563eb;
+            color: white;
+        }
+
+        .step-tab.done .step-num {
+            background: #16a34a;
+            color: white;
+        }
 
         /* Form body */
-        .modal-body { padding: 24px; flex: 1; }
-        .form-section { display: none; }
-        .form-section.active { display: block; }
-        .form-row { display: grid; gap: 16px; margin-bottom: 16px; }
-        .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
-        .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-        .form-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+        .modal-body {
+            padding: 24px;
+            flex: 1;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-row.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-row.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .form-row.cols-4 {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+
         .fgroup label {
-            display: block; font-size: 12px; font-weight: 600; color: #64748b;
-            margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px;
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
         }
-        .fgroup input, .fgroup select {
-            width: 100%; padding: 10px 14px;
-            border: 1.5px solid #dde3ed; border-radius: 10px;
-            font-size: 14px; background: #fff; color: #0f172a;
-            transition: all .2s; font-family: 'Inter', sans-serif;
+
+        .fgroup input,
+        .fgroup select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #dde3ed;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #fff;
+            color: #0f172a;
+            transition: all .2s;
+            font-family: 'Inter', sans-serif;
         }
-        .fgroup input:focus, .fgroup select:focus {
-            outline: none; border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+
+        .fgroup input:focus,
+        .fgroup select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
         }
-        .fgroup small { display: block; margin-top: 5px; font-size: 11px; color: #94a3b8; }
+
+        .fgroup small {
+            display: block;
+            margin-top: 5px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
 
         /* Preview chip */
         .time-preview {
-            display: flex; align-items: center; gap: 8px;
-            background: #eff6ff; border: 1px solid #bfdbfe;
-            border-radius: 10px; padding: 10px 14px;
-            font-size: 13px; color: #1d4ed8;
-            margin-top: 12px; font-weight: 500; transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #1d4ed8;
+            margin-top: 12px;
+            font-weight: 500;
+            transition: all .2s;
         }
-        .time-preview.error { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
+        .time-preview.error {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #dc2626;
+        }
 
         /* Semester info strip */
         .sem-info-strip {
-            display: none; align-items: center; gap: 10px;
-            background: #eff6ff; border: 1px solid #bfdbfe;
-            border-radius: 10px; padding: 10px 14px;
-            font-size: 12px; color: #1d4ed8; margin-top: 8px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #1d4ed8;
+            margin-top: 8px;
         }
-        .sem-info-strip.show { display: flex; }
+
+        .sem-info-strip.show {
+            display: flex;
+        }
 
         /* Section title */
         .section-title {
-            font-size: 13px; font-weight: 700; color: #0f172a;
-            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-            padding-bottom: 10px; border-bottom: 1px solid #e8edf5;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e8edf5;
         }
-        .section-title ion-icon { color: #2563eb; font-size: 16px; }
+
+        .section-title ion-icon {
+            color: #2563eb;
+            font-size: 16px;
+        }
 
         /* Footer */
         .modal-foot {
-            display: flex; gap: 10px; justify-content: space-between; align-items: center;
-            padding: 16px 24px; border-top: 1px solid #e8edf5;
-            background: #f8fafd; border-radius: 0 0 16px 16px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid #e8edf5;
+            background: #f8fafd;
+            border-radius: 0 0 16px 16px;
         }
-        .modal-foot .left { display: flex; gap: 8px; }
+
+        .modal-foot .left {
+            display: flex;
+            gap: 8px;
+        }
 
         /* Action buttons in table */
         .action-btn {
-            padding: 5px 11px; border-radius: 7px; font-size: 12px; font-weight: 600;
-            cursor: pointer; transition: all .15s; border: 1.5px solid;
-            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 11px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            border: 1.5px solid;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
-        .action-btn.edit { border-color: #bfdbfe; color: #1d4ed8; background: #eff6ff; }
-        .action-btn.edit:hover { background: #dbeafe; border-color: #93c5fd; }
-        .action-btn.delete { border-color: #fecaca; color: #dc2626; background: #fff5f5; }
-        .action-btn.delete:hover { background: #fee2e2; border-color: #f87171; }
+
+        .action-btn.edit {
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+            background: #eff6ff;
+        }
+
+        .action-btn.edit:hover {
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .action-btn.delete {
+            border-color: #fecaca;
+            color: #dc2626;
+            background: #fff5f5;
+        }
+
+        .action-btn.delete:hover {
+            background: #fee2e2;
+            border-color: #f87171;
+        }
 
         /* Semester tag in table */
         .sem-tag {
-            display: inline-block; padding: 3px 9px; border-radius: 6px;
-            font-size: 11px; font-weight: 600;
-            background: #fef3c7; color: #b45309; border: 1px solid #fde68a;
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
         }
 
         /* Empty & loading */
-        .tbl-empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
-        .tbl-empty ion-icon { font-size: 44px; color: #cbd5e1; display: block; margin: 0 auto 14px; }
+        .tbl-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .tbl-empty ion-icon {
+            font-size: 44px;
+            color: #cbd5e1;
+            display: block;
+            margin: 0 auto 14px;
+        }
 
         /* ── Confirm Delete Modal ── */
         .confirm-modal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(15,23,42,.5); z-index: 2000;
-            align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
             backdrop-filter: blur(3px);
         }
-        .confirm-modal.open { display: flex; animation: fadeIn .18s; }
+
+        .confirm-modal.open {
+            display: flex;
+            animation: fadeIn .18s;
+        }
+
         .confirm-box {
-            background: #fff; border-radius: 16px; padding: 28px 28px 24px;
-            width: 90%; max-width: 380px; text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,.18);
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 28px 24px;
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .18);
         }
+
         .confirm-icon {
-            width: 56px; height: 56px; border-radius: 50%;
-            background: #fef2f2; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 16px; font-size: 26px; color: #dc2626;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #fef2f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 26px;
+            color: #dc2626;
         }
-        .confirm-title { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-        .confirm-sub { font-size: 13px; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
-        .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+        .confirm-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .confirm-sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
         .btn-cancel-confirm {
-            padding: 9px 22px; border-radius: 9px; font-size: 14px; font-weight: 600;
-            border: 1.5px solid #e2e8f0; background: #fff; color: #475569;
-            cursor: pointer; transition: all .15s;
+            padding: 9px 22px;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            cursor: pointer;
+            transition: all .15s;
         }
-        .btn-cancel-confirm:hover { background: #f1f5f9; }
+
+        .btn-cancel-confirm:hover {
+            background: #f1f5f9;
+        }
+
         .btn-confirm-delete {
-            padding: 9px 22px; border-radius: 9px; font-size: 14px; font-weight: 600;
-            border: none; background: #dc2626; color: #fff;
-            cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px;
+            padding: 9px 22px;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            background: #dc2626;
+            color: #fff;
+            cursor: pointer;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .btn-confirm-delete:hover { background: #b91c1c; }
-        .btn-confirm-delete:disabled { opacity: .6; cursor: not-allowed; }
+
+        .btn-confirm-delete:hover {
+            background: #b91c1c;
+        }
+
+        .btn-confirm-delete:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
+
 <body>
     <div id="sidebar-placeholder"></div>
 
@@ -242,8 +591,8 @@
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
                 <button id="syncBtn" class="btn" onclick="syncSchedules()"
-                        style="border:1.5px solid var(--primary);color:var(--primary);background:transparent;"
-                        title="Đồng bộ lịch học cho các môn cũ (chạy 1 lần sau khi nâng cấp)">
+                    style="border:1.5px solid var(--primary);color:var(--primary);background:transparent;"
+                    title="Đồng bộ lịch học cho các môn cũ (chạy 1 lần sau khi nâng cấp)">
                     <ion-icon name="sync-outline"></ion-icon> Đồng bộ lịch
                 </button>
                 <button class="btn btn-primary" onclick="openCreateModal()">
@@ -256,7 +605,8 @@
         <div class="glass-card">
             <!-- Filter bar -->
             <div class="filter-bar">
-                <input type="text" id="filterSearch" placeholder="🔍  Tìm môn, mã, giảng viên..." oninput="filterCourses()">
+                <input type="text" id="filterSearch" placeholder="🔍  Tìm môn, mã, giảng viên..."
+                    oninput="filterCourses()">
                 <select id="filterSem" onchange="filterCourses()">
                     <option value="">Tất cả học kỳ</option>
                 </select>
@@ -270,7 +620,8 @@
                     <option value="7">Thứ 7</option>
                     <option value="8">Chủ Nhật</option>
                 </select>
-                <span id="courseCount" style="margin-left:auto;font-size:13px;color:var(--text-muted);font-weight:500;"></span>
+                <span id="courseCount"
+                    style="margin-left:auto;font-size:13px;color:var(--text-muted);font-weight:500;"></span>
             </div>
 
             <!-- Table -->
@@ -288,10 +639,12 @@
                         </tr>
                     </thead>
                     <tbody id="courseTable">
-                        <tr><td colspan="7" class="tbl-empty">
-                            <ion-icon name="hourglass-outline"></ion-icon>
-                            Đang tải dữ liệu...
-                        </td></tr>
+                        <tr>
+                            <td colspan="7" class="tbl-empty">
+                                <ion-icon name="hourglass-outline"></ion-icon>
+                                Đang tải dữ liệu...
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -427,7 +780,7 @@
                             </div>
                             <div class="fgroup">
                                 <label>Tiết Kết Thúc *</label>
-                                <select id="endLesson" required onchange="updateLessonPreview()"></select>
+                                <select id="endLesson" required onchange="onEndLessonChange()"></select>
                             </div>
                         </div>
                         <div class="time-preview" id="lessonTimePreview">
@@ -461,7 +814,7 @@
                                 </div>
                                 <div class="fgroup">
                                     <label>Tiết Kết Thúc *</label>
-                                    <select id="endLesson2" onchange="updateLessonPreview2()"></select>
+                                    <select id="endLesson2" onchange="onEndLesson2Change()"></select>
                                 </div>
                             </div>
                             <div class="time-preview" id="lessonTimePreview2">
@@ -489,7 +842,8 @@
                 <!-- Modal Footer -->
                 <div class="modal-foot">
                     <div class="left">
-                        <button type="button" class="btn btn-sm" id="btnPrev" onclick="prevStep()" style="display:none;">
+                        <button type="button" class="btn btn-sm" id="btnPrev" onclick="prevStep()"
+                            style="display:none;">
                             <ion-icon name="arrow-back-outline"></ion-icon> Quay lại
                         </button>
                     </div>
@@ -516,7 +870,8 @@
         <div class="confirm-box">
             <div class="confirm-icon"><ion-icon name="trash-outline"></ion-icon></div>
             <div class="confirm-title">Xóa học phần này?</div>
-            <div class="confirm-sub" id="confirmDeleteText">Hành động này không thể hoàn tác. Tất cả lịch học và điểm danh liên quan sẽ bị xóa.</div>
+            <div class="confirm-sub" id="confirmDeleteText">Hành động này không thể hoàn tác. Tất cả lịch học và điểm
+                danh liên quan sẽ bị xóa.</div>
             <div class="confirm-actions">
                 <button class="btn-cancel-confirm" onclick="closeConfirmDelete()">Hủy</button>
                 <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="confirmDeleteCourse()">
@@ -526,14 +881,15 @@
         </div>
     </div>
 
-    <script src="js/utils.js?v=102"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('ADMIN');
         if (auth) {
-            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('courses.html');`n            fetchAndCacheAvatar();
+            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('courses.html');
+            fetchAndCacheAvatar();
         }
     </script>
     <script src="js/courses.js?v=15"></script>
 </body>
-</html>
 
+</html>

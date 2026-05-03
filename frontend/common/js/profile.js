@@ -1,8 +1,17 @@
-const token = localStorage.getItem('jwt_token');
+// ── Detect role từ URL path để dùng đúng prefix localStorage ─────────
+function _profileDetectPrefix() {
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('/admin/'))   return 'ADMIN_';
+    if (path.includes('/teacher/')) return 'TEACHER_';
+    if (path.includes('/student/')) return 'STUDENT_';
+    return '';
+}
+const _profilePrefix = _profileDetectPrefix();
+const token = localStorage.getItem(_profilePrefix + 'jwt_token');
 
 if (!token) {
     alert('Unauthorized: You must be logged in.');
-    window.location.href = '../student/login.html';
+    window.location.href = '/common/login.html';
 }
 
 async function fetchProfile() {

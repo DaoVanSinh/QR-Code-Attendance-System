@@ -1,3 +1,13 @@
+// ── Detect role từ URL path để dùng đúng prefix localStorage ─────────
+function _pwdDetectPrefix() {
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('/admin/'))   return 'ADMIN_';
+    if (path.includes('/teacher/')) return 'TEACHER_';
+    if (path.includes('/student/')) return 'STUDENT_';
+    return '';
+}
+const _pwdPrefix = _pwdDetectPrefix();
+
 document.getElementById('pwdForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -13,7 +23,7 @@ document.getElementById('pwdForm').addEventListener('submit', async (e) => {
     submitBtn.disabled = true;
 
     // Use JWT strictly for all requests
-    const token = localStorage.getItem('jwt_token');
+    const token = localStorage.getItem(_pwdPrefix + 'jwt_token');
     if (!token) {
         errorMsg.innerText = 'Access denied. You must be logged in.';
         errorMsg.style.display = 'block';

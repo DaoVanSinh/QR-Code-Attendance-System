@@ -337,7 +337,7 @@ function openCourseDetailModal(course) {
     document.getElementById('cdmCredits').textContent  = `${course.credits || 'N/A'} tín chỉ`;
 
     document.getElementById('cdmBtnCreateSession').onclick = () => {
-        localStorage.setItem('selected_course_id', course.courseId);
+        storageSet('selected_course_id', course.courseId);
         window.location.href = 'create-session.html';
     };
     modal.style.display = 'flex';

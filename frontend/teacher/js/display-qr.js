@@ -4,9 +4,9 @@ if (auth) {
     fetchAndCacheAvatar();
 }
 
-let qrCodeValue = localStorage.getItem('current_qr_code');
-const expiredAtStr = localStorage.getItem('current_expired_at');
-const sessionId = localStorage.getItem('current_session_id');
+let qrCodeValue = storageGet('current_qr_code');
+const expiredAtStr = storageGet('current_expired_at');
+const sessionId = storageGet('current_session_id');
 
 const LESSON_TIMES = {
     1: '06:45', 2: '07:45', 3: '08:45', 4: '09:45', 5: '10:45',
@@ -30,7 +30,7 @@ if (!qrCodeValue || !expiredAtStr || !sessionId) {
         if (!box) return;
         let info = {};
         try {
-            info = JSON.parse(localStorage.getItem('current_course_info') || '{}');
+            info = JSON.parse(storageGet('current_course_info') || '{}');
         } catch (e) { return; }
         if (!info.subjectName) { box.style.display = 'none'; return; }
 
@@ -126,7 +126,7 @@ if (!qrCodeValue || !expiredAtStr || !sessionId) {
                 if (res.ok) {
                     const data = await res.json();
                     qrCodeValue = data.qrCode;
-                    localStorage.setItem('current_qr_code', qrCodeValue);
+                    storageSet('current_qr_code', qrCodeValue);
                     document.getElementById('qrcode').innerHTML = '';
                     qrCodeObj = new QRCode(document.getElementById('qrcode'), {
                         text: getQrScanUrl(qrCodeValue),

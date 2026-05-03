@@ -35,30 +35,12 @@ const CARD_COLORS = [
 let allCourses      = [];
 let weekData        = [];
 let semesterDBCache = [];
-let viewMode        = 'combined'; // 'combined' | 'byTeacher'
-let activeTeacherTab = null;      // tên GV đang active trong tab mode
-
 // --- Khởi động ---
 document.addEventListener('DOMContentLoaded', () => {
     loadTimetable();
     document.getElementById('btnPrevWeek').addEventListener('click', () => navigateWeek(-1));
     document.getElementById('btnNextWeek').addEventListener('click', () => navigateWeek(+1));
-
-    // Toggle view mode
-    document.getElementById('btnViewCombined')?.addEventListener('click', () => setViewMode('combined'));
-    document.getElementById('btnViewByTeacher')?.addEventListener('click', () => setViewMode('byTeacher'));
 });
-
-function setViewMode(mode) {
-    viewMode = mode;
-    // Cập nhật giao diện nút toggle
-    document.getElementById('btnViewCombined')?.classList.toggle('view-mode-active', mode === 'combined');
-    document.getElementById('btnViewByTeacher')?.classList.toggle('view-mode-active', mode === 'byTeacher');
-    // Ẩn/hiện filter giảng viên (chỉ dùng ở combined mode)
-    const teacherFilterGroup = document.getElementById('teacherFilterGroup');
-    if (teacherFilterGroup) teacherFilterGroup.style.display = mode === 'combined' ? 'flex' : 'none';
-    renderGrid();
-}
 
 function navigateWeek(delta) {
     const sel  = document.getElementById('weekFilter');
@@ -193,25 +175,12 @@ function computeWeeks(courses) {
 
 // --- Render lưới TKB ---
 function renderGrid() {
-    if (viewMode === 'byTeacher') {
-        renderByTeacher();
-        return;
-    }
-    renderCombined();
-}
-
-// ── Chế độ Tổng hợp ─────────────────────────────────────────
-function renderCombined() {
     const filterSem     = document.getElementById('semesterFilter')?.value || 'ALL';
     const filterTeacher = document.getElementById('teacherFilter')?.value  || '';
     const weekSelValue  = document.getElementById('weekFilter')?.value;
 
-    // Ẩn teacher-tabs, hiện grid đơn
-    document.getElementById('teacherTabsBar').style.display    = 'none';
-    document.getElementById('teacherGridContainer').style.display = 'none';
-    document.getElementById('timetableWrapper').style.display  = 'block';
-
     const grid = document.getElementById('tkbGrid');
+    if (!grid) return;
     grid.innerHTML = '';
     updateWeekNav();
 
@@ -222,7 +191,7 @@ function renderCombined() {
     _buildEmptyCells(grid);
 
     let filtered = _filterCourses(allCourses, filterSem, weekSelValue);
-    // Luôn lọc theo GV được chọn (không có option ALL)
+    // Lọc theo giảng viên được chọn
     if (filterTeacher) {
         filtered = filtered.filter(c => {
             const tName = c.teacherName || c.teacher?.profile?.fullName;
@@ -234,78 +203,6 @@ function renderCombined() {
     if (countEl) countEl.textContent = filtered.length;
 
     _renderCourseCards(grid, filtered, weekSelValue);
-}
-
-// ── Chế độ Theo giảng viên (Tab) ────────────────────────────
-function renderByTeacher() {
-    const filterSem   = document.getElementById('semesterFilter')?.value || 'ALL';
-    const weekSelValue = document.getElementById('weekFilter')?.value;
-
-    // Ẩn grid đơn, hiện teacher-tabs section
-    document.getElementById('timetableWrapper').style.display    = 'none';
-    document.getElementById('teacherTabsBar').style.display      = 'flex';
-    document.getElementById('teacherGridContainer').style.display = 'block';
-
-    updateWeekNav();
-
-    let filtered = _filterCourses(allCourses, filterSem, weekSelValue);
-
-    // Nhóm theo giảng viên
-    const teacherMap = new Map();
-    filtered.forEach(c => {
-        const tName = c.teacherName || c.teacher?.profile?.fullName || 'Chưa phân công';
-        if (!teacherMap.has(tName)) teacherMap.set(tName, []);
-        teacherMap.get(tName).push(c);
-    });
-
-    const teachers = [...teacherMap.keys()].sort();
-
-    // Nếu chưa có tab active hoặc tab cũ không tồn tại → chọn teacher đầu tiên
-    if (!activeTeacherTab || !teachers.includes(activeTeacherTab)) {
-        activeTeacherTab = teachers[0] || null;
-    }
-
-    // Render tabs
-    const tabsBar = document.getElementById('teacherTabsBar');
-    tabsBar.innerHTML = '';
-    teachers.forEach(tName => {
-        const tab = document.createElement('button');
-        tab.className = 'teacher-tab' + (tName === activeTeacherTab ? ' teacher-tab-active' : '');
-        tab.textContent = tName;
-        tab.title = tName;
-        tab.addEventListener('click', () => {
-            activeTeacherTab = tName;
-            renderByTeacher();
-        });
-        tabsBar.appendChild(tab);
-    });
-
-    // Render grid của GV đang active
-    const container = document.getElementById('teacherGridContainer');
-    container.innerHTML = '';
-
-    const countEl = document.getElementById('courseCount');
-    if (!activeTeacherTab) {
-        container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px;">Không có dữ liệu thời khóa biểu.</p>';
-        if (countEl) countEl.textContent = 0;
-        return;
-    }
-
-    const teacherCourses = teacherMap.get(activeTeacherTab) || [];
-    if (countEl) countEl.textContent = teacherCourses.length;
-
-    const gridWrapper = document.createElement('div');
-    gridWrapper.className = 'tkb-wrapper';
-    const gridEl = document.createElement('div');
-    gridEl.className = 'tkb-grid';
-    gridWrapper.appendChild(gridEl);
-    container.appendChild(gridWrapper);
-
-    const weekStart = _getWeekStart(weekSelValue);
-    const today = new Date(); today.setHours(0,0,0,0);
-    _buildGridHeader(gridEl, weekStart, today);
-    _buildEmptyCells(gridEl);
-    _renderCourseCards(gridEl, teacherCourses, weekSelValue);
 }
 
 // ── Helper: lấy weekStart từ weekSelValue ───────────────────

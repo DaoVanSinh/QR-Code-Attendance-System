@@ -37,7 +37,7 @@
         </div>
     </main>
 
-    <script src="js/utils.js?v=101"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('TEACHER');
         if (auth) {
@@ -81,11 +81,11 @@
         }
 
         function goCreateSession(courseId) {
-            localStorage.setItem('selected_course_id', courseId);
+            storageSet('selected_course_id', courseId);
             window.location.href = 'create-session.html';
         }
         function goTimetable(courseId) {
-            localStorage.setItem('selected_course_id', courseId);
+            storageSet('selected_course_id', courseId);
             window.location.href = 'timetable.html';
         }
     </script>

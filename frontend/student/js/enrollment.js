@@ -5,7 +5,7 @@ let currentTab = 'all';
 if (auth) {
     document.getElementById('headerUserName').textContent = auth.name || 'Sinh Viên';
     // Load avatar từ cache trước
-    const cachedAvatar = localStorage.getItem('user_avatar');
+    const cachedAvatar = storageGet('user_avatar');
     const avatarEl = document.getElementById('studentAvatar');
     if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
         avatarEl.src = cachedAvatar;
@@ -117,33 +117,9 @@ async function enroll(courseId) {
         const res = await authFetch(`${API_BASE_URL}/student/courses/${courseId}/enroll`, { method: 'POST' });
         const data = await res.json();
         if (res.ok) {
-            // Update local state
-            const course = allCourses.find(c => c.courseId === courseId);
-            if (course) course.enrolled = true;
-            showToast('✅ Đăng ký học phần thành công! Lịch học đã được cập nhật vào <a href="timetable.html" style="color:white;text-decoration:underline;font-weight:700;">Thời Khóa Biểu →</a>', 'success');
-            updateSummary();
-            
-            // Tìm course trong danh sách
-            const courseCard = document.querySelector(`[data-course-id="${courseId}"]`);
-            if (courseCard) {
-                // Đổi nút Đăng ký → Hủy đăng ký
-                const enrollBtn = courseCard.querySelector('.btn-enroll');
-                if (enrollBtn) {
-                    enrollBtn.innerHTML = '<ion-icon name="close-outline"></ion-icon> Hủy Đăng Ký';
-                    enrollBtn.className = 'btn-enroll unenroll';
-                    enrollBtn.onclick   = () => unenroll(courseId);
-                }
-                // Thêm badge "Đã đăng ký"
-                const existingBadge = courseCard.querySelector('.enrolled-badge') || courseCard.querySelector('.badge-enrolled');
-                if (!existingBadge) {
-                    const badge = document.createElement('span');
-                    badge.className = 'enrolled-badge';
-                    badge.style.cssText = 'background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:6px;';
-                    badge.textContent = '✓ Đã đăng ký';
-                    courseCard.querySelector('.course-info').prepend(badge);
-                }
-                courseCard.classList.add('enrolled');
-            }
+            showToast('Đăng ký học phần thành công! Lịch học đã được cập nhật vào <a href="timetable.html" style="color:white;text-decoration:underline;font-weight:700;">Thời Khóa Biểu →</a>', 'success');
+            // Tự động load lại dữ liệu từ server
+            await loadCourses();
         } else {
             showToast(data.error || 'Đăng ký thất bại.', 'error');
             btn.disabled = false;
@@ -166,28 +142,9 @@ async function unenroll(courseId) {
         const res = await authFetch(`${API_BASE_URL}/student/courses/${courseId}/unenroll`, { method: 'DELETE' });
         const data = await res.json();
         if (res.ok) {
-            const course = allCourses.find(c => c.courseId === courseId);
-            if (course) course.enrolled = false;
             showToast('Đã hủy đăng ký học phần. <a href="timetable.html" style="color:white;text-decoration:underline;">Xem lại TKB →</a>', 'success');
-            updateSummary();
-            
-            const courseCard = document.querySelector(`[data-course-id="${courseId}"]`);
-            if (courseCard) {
-                const enrollBtn = courseCard.querySelector('.btn-enroll');
-                if (enrollBtn) {
-                    enrollBtn.innerHTML = '<ion-icon name="add-outline"></ion-icon> Đăng ký';
-                    enrollBtn.className = 'btn-enroll enroll';
-                    enrollBtn.onclick   = () => enroll(courseId);
-                }
-                
-                const badge1 = courseCard.querySelector('.enrolled-badge');
-                if (badge1) badge1.remove();
-                
-                const badge2 = courseCard.querySelector('.badge-enrolled');
-                if (badge2) badge2.remove();
-
-                courseCard.classList.remove('enrolled');
-            }
+            // Tự động load lại dữ liệu từ server
+            await loadCourses();
         } else {
             showToast(data.error || 'Hủy đăng ký thất bại.', 'error');
             btn.disabled = false;
@@ -202,5 +159,5 @@ async function unenroll(courseId) {
 
 function escHtml(str) {
     if (!str) return '';
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

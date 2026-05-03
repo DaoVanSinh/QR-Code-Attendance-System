@@ -5,7 +5,7 @@ let allRecords = [];
 if (auth) {
     document.getElementById('studentName').textContent = auth.name || 'Sinh Viên';
     // Load avatar từ cache trước
-    const cachedAvatar = localStorage.getItem('user_avatar');
+    const cachedAvatar = storageGet('user_avatar');
     const avatarEl = document.getElementById('studentAvatar');
     if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
         avatarEl.src = cachedAvatar;

@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,110 +10,266 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
-        .profile-page { max-width: 720px; }
+        .profile-page {
+            max-width: 720px;
+        }
+
         .avatar-section {
-            display: flex; align-items: center; gap: 24px;
-            padding: 28px; background: linear-gradient(135deg, rgba(79,70,229,0.04), rgba(236,72,153,0.04));
-            border-radius: var(--radius); border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 28px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.04), rgba(236, 72, 153, 0.04));
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
             margin-bottom: 28px;
         }
+
         .avatar-preview {
-            width: 88px; height: 88px; border-radius: 50%;
-            object-fit: cover; border: 3px solid var(--primary-light);
-            box-shadow: 0 4px 16px rgba(79,70,229,0.15);
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-light);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
             transition: transform 0.3s;
         }
-        .avatar-preview:hover { transform: scale(1.05); }
-        .avatar-info h2 { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+        }
+
+        .avatar-info h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
         .avatar-info .role-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-            background: rgba(79,70,229,0.1); color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
         }
+
         .info-card {
-            background: var(--bg-surface); border: 1px solid var(--border-color);
-            border-radius: var(--radius); overflow: hidden;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
         }
+
         .info-card-header {
-            padding: 18px 24px; border-bottom: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(248,250,252,0.5);
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(248, 250, 252, 0.5);
         }
-        .info-card-header h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .info-card-body { padding: 24px; }
+
+        .info-card-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card-body {
+            padding: 24px;
+        }
+
         .field-row {
-            display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
         }
-        .field-row:last-child { margin-bottom: 0; }
+
+        .field-row:last-child {
+            margin-bottom: 0;
+        }
+
         .field-icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; flex-shrink: 0; margin-top: 2px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
         }
-        .field-icon.email-icon { background: rgba(79,70,229,0.1); color: var(--primary); }
-        .field-icon.name-icon { background: rgba(16,185,129,0.1); color: var(--success); }
-        .field-icon.phone-icon { background: rgba(245,158,11,0.1); color: var(--warning); }
-        .field-icon.avatar-icon { background: rgba(236,72,153,0.1); color: var(--secondary); }
-        .field-content { flex-grow: 1; }
+
+        .field-icon.email-icon {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .field-icon.name-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .field-icon.phone-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .field-icon.avatar-icon {
+            background: rgba(236, 72, 153, 0.1);
+            color: var(--secondary);
+        }
+
+        .field-content {
+            flex-grow: 1;
+        }
+
         .field-content label {
-            display: block; font-size: 12px; font-weight: 600; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
         }
+
         .field-content input {
-            width: 100%; padding: 10px 14px; border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm); font-size: 14px; color: var(--text-dark);
-            background: var(--bg-surface); transition: all 0.2s;
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            color: var(--text-dark);
+            background: var(--bg-surface);
+            transition: all 0.2s;
         }
+
         .field-content input:focus {
-            border-color: var(--primary); outline: none;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
+
         .field-content input:disabled {
-            background: var(--bg-main); color: var(--text-muted);
-            cursor: not-allowed; border-style: dashed;
+            background: var(--bg-main);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            border-style: dashed;
         }
-        .field-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        .field-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
         .actions-bar {
-            display: flex; gap: 12px; justify-content: flex-end;
-            padding: 20px 24px; border-top: 1px solid var(--border-color);
-            background: rgba(248,250,252,0.3);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(248, 250, 252, 0.3);
         }
+
         .btn-secondary {
-            background: var(--bg-surface); border: 1px solid var(--border-color);
-            color: var(--text-dark); padding: 10px 20px; border-radius: var(--radius-sm);
-            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-            display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
         }
-        .btn-secondary:hover { background: var(--bg-main); border-color: #cbd5e1; }
+
+        .btn-secondary:hover {
+            background: var(--bg-main);
+            border-color: #cbd5e1;
+        }
 
         /* ── Avatar upload ─────────────────────────────────── */
         .avatar-upload-area {
-            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
+
         .avatar-thumb {
-            width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
-            border: 2px solid var(--border-color); flex-shrink: 0;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+            flex-shrink: 0;
         }
+
         .avatar-upload-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 8px 16px; border-radius: var(--radius-sm);
-            border: 1.5px dashed var(--primary); background: rgba(79,70,229,0.05);
-            color: var(--primary); font-size: 13px; font-weight: 600;
-            cursor: pointer; transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: 1.5px dashed var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .avatar-upload-btn:hover { background: rgba(79,70,229,0.1); border-style: solid; }
+
+        .avatar-upload-btn:hover {
+            background: rgba(79, 70, 229, 0.1);
+            border-style: solid;
+        }
+
         .avatar-remove-btn {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 7px 12px; border-radius: var(--radius-sm);
-            border: 1px solid #fca5a5; background: #fff5f5;
-            color: #dc2626; font-size: 12px; font-weight: 600;
-            cursor: pointer; transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 7px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #fca5a5;
+            background: #fff5f5;
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .avatar-remove-btn:hover { background: #fee2e2; }
-        #avatarFileInput { display: none; }
-        .avatar-size-hint { font-size: 11px; color: var(--text-muted); }
+
+        .avatar-remove-btn:hover {
+            background: #fee2e2;
+        }
+
+        #avatarFileInput {
+            display: none;
+        }
+
+        .avatar-size-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
     </style>
 </head>
+
 <body>
     <div id="sidebar-placeholder"></div>
 
@@ -127,7 +284,7 @@
 
             <div class="avatar-section">
                 <img id="avatarPreview" class="avatar-preview" src="" alt="Avatar"
-                     onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff&size=128'">
+                    onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff&size=128'">
                 <div class="avatar-info">
                     <h2 id="displayName">—</h2>
                     <span class="role-badge">
@@ -171,32 +328,38 @@
                                 <label>Ảnh Đại Diện</label>
                                 <div class="avatar-upload-area">
                                     <img id="avatarThumb" class="avatar-thumb" src="" alt="Preview"
-                                         onerror="this.src='https://ui-avatars.com/api/?name=A&background=4f46e5&color=fff&size=56'">
+                                        onerror="this.src='https://ui-avatars.com/api/?name=A&background=4f46e5&color=fff&size=56'">
                                     <div>
                                         <label class="avatar-upload-btn" for="avatarFileInput">
                                             <ion-icon name="cloud-upload-outline"></ion-icon> Chọn ảnh từ máy
                                         </label>
-                                        <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif">
-                                        <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn" style="display:none;" onclick="removeAvatar()">
+                                        <input type="file" id="avatarFileInput"
+                                            accept="image/png,image/jpeg,image/webp,image/gif">
+                                        <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn"
+                                            style="display:none;" onclick="removeAvatar()">
                                             <ion-icon name="trash-outline"></ion-icon> Xóa ảnh
                                         </button>
-                                        <div class="avatar-size-hint" style="margin-top:6px;">Tối đa 200KB. Định dạng: JPG, PNG, WebP</div>
+                                        <div class="avatar-size-hint" style="margin-top:6px;">Tối đa 200KB. Định dạng:
+                                            JPG, PNG, WebP</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="field-row">
-                            <div class="field-icon" style="background:rgba(14,165,233,0.1);color:#0ea5e9;"><ion-icon name="calendar-outline"></ion-icon></div>
+                            <div class="field-icon" style="background:rgba(14,165,233,0.1);color:#0ea5e9;"><ion-icon
+                                    name="calendar-outline"></ion-icon></div>
                             <div class="field-content">
                                 <label for="birthday">Ngày Sinh</label>
                                 <input type="date" id="birthday">
                             </div>
                         </div>
                         <div class="field-row">
-                            <div class="field-icon" style="background:rgba(168,85,247,0.1);color:#a855f7;"><ion-icon name="male-female-outline"></ion-icon></div>
+                            <div class="field-icon" style="background:rgba(168,85,247,0.1);color:#a855f7;"><ion-icon
+                                    name="male-female-outline"></ion-icon></div>
                             <div class="field-content">
                                 <label for="gender">Giới Tính</label>
-                                <select id="gender" style="width:100%;padding:10px 14px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:14px;color:var(--text-dark);background:var(--bg-surface);">
+                                <select id="gender"
+                                    style="width:100%;padding:10px 14px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:14px;color:var(--text-dark);background:var(--bg-surface);">
                                     <option value="">— Chọn giới tính —</option>
                                     <option value="MALE">Nam</option>
                                     <option value="FEMALE">Nữ</option>
@@ -220,11 +383,12 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=102"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('ADMIN');
         if (auth) {
-            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('profile.html');`n            fetchAndCacheAvatar();
+            document.getElementById('sidebar-placeholder').innerHTML = buildAdminSidebar('profile.html');
+            fetchAndCacheAvatar();
         }
 
         // Base64 hiện tại (từ DB hoặc chọn mới)
@@ -249,8 +413,8 @@
 
                 // Cache vào localStorage + cập nhật sidebar ngay lập tức
                 const displayName = data.fullName || data.email || 'Admin';
-                localStorage.setItem('user_avatar', currentAvatarBase64);
-                localStorage.setItem('user_name', displayName);
+                storageSet('user_avatar', currentAvatarBase64);
+                storageSet('user_name', displayName);
                 _updateSidebarAvatar(currentAvatarBase64, displayName);
             } catch (e) {
                 showToast('Không thể tải thông tin cá nhân.', 'error');
@@ -271,7 +435,7 @@
             const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'A')}&background=4f46e5&color=fff&size=128`;
             const displaySrc = src || fallback;
             document.getElementById('avatarPreview').src = displaySrc;
-            document.getElementById('avatarThumb').src   = displaySrc;
+            document.getElementById('avatarThumb').src = displaySrc;
             document.getElementById('avatarRemoveBtn').style.display = src ? 'inline-flex' : 'none';
         }
 
@@ -282,7 +446,7 @@
 
             const MAX_SIZE = 200 * 1024; // 200KB
             if (file.size > MAX_SIZE) {
-                showToast(`Ảnh quá lớn (${(file.size/1024).toFixed(0)}KB). Tối đa 200KB.`, 'error');
+                showToast(`Ảnh quá lớn (${(file.size / 1024).toFixed(0)}KB). Tối đa 200KB.`, 'error');
                 this.value = '';
                 return;
             }
@@ -312,18 +476,18 @@
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email:    document.getElementById('email').value.trim(),
+                        email: document.getElementById('email').value.trim(),
                         fullName: document.getElementById('fullName').value.trim(),
-                        phone:    document.getElementById('phone').value.trim(),
-                        avatar:   currentAvatarBase64,
+                        phone: document.getElementById('phone').value.trim(),
+                        avatar: currentAvatarBase64,
                         birthday: document.getElementById('birthday').value || null,
-                        gender:   document.getElementById('gender').value   || null
+                        gender: document.getElementById('gender').value || null
                     })
                 });
                 if (res.ok) {
                     showToast('Cập nhật thông tin thành công!', 'success');
                     const name = document.getElementById('fullName').value.trim();
-                    if (name) localStorage.setItem('user_name', name);
+                    if (name) storageSet('user_name', name);
                     loadProfile();
                 } else {
                     const data = await res.json().catch(() => ({}));
@@ -340,5 +504,5 @@
         loadProfile();
     </script>
 </body>
-</html>
 
+</html>

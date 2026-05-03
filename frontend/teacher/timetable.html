@@ -25,9 +25,11 @@
             margin-bottom: 16px;
         }
         .tkb-controls select.form-control {
-            height: 38px;
+            min-height: 38px;
+            padding: 8px 12px;
             font-size: 13px;
             border-radius: 8px;
+            line-height: 1.4;
         }
         .tkb-controls label {
             font-size: 13px;
@@ -391,7 +393,7 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=101"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('TEACHER');
         if (auth) {

@@ -21,6 +21,40 @@ let allTeacherCourses = [];   // lưu list course để tra cứu khi user chọ
 
 async function loadCourses() {
     try {
+        // Kiểm tra xem có phiên điểm danh nào đang chưa kết thúc không
+        const expStr = storageGet('current_expired_at');
+        if (expStr) {
+            // Fix timezone issue by treating string as UTC if Z is missing
+            const expiredStrUTC = expStr.endsWith('Z') ? expStr : expStr + 'Z';
+            const expiredAt = new Date(expiredStrUTC).getTime();
+            if (expiredAt > Date.now()) {
+                const warningBox = document.getElementById('activeSessionWarning');
+                if (warningBox) {
+                    warningBox.style.display = 'block';
+                    
+                    // Thử lấy thông tin khóa học nếu có
+                    const courseInfoStr = storageGet('current_course_info');
+                    if (courseInfoStr) {
+                        try {
+                            const info = JSON.parse(courseInfoStr);
+                            document.getElementById('activeSessionSubject').textContent = info.subjectName || info.subjectCode;
+                            document.getElementById('activeSessionClass').textContent = info.className;
+                        } catch (e) {}
+                    } else {
+                        // Trạng thái cũ chưa lưu courseInfoStr
+                        document.getElementById('activeSessionSubject').textContent = "đang mở";
+                        document.getElementById('activeSessionClass').textContent = "?";
+                    }
+                }
+            } else {
+                // Xóa dữ liệu cũ nếu đã hết hạn
+                storageRemove('current_session_id');
+                storageRemove('current_qr_code');
+                storageRemove('current_expired_at');
+                storageRemove('current_course_info');
+            }
+        }
+
         const res = await authFetch(`${API_BASE_URL}/teacher/courses`);
         if (!res.ok) { showToast('Lỗi khi tải danh sách khóa học', 'error'); return; }
         const courses = await res.json();
@@ -34,18 +68,75 @@ async function loadCourses() {
         }
 
         select.innerHTML = '<option value="" disabled selected>-- Chọn khóa học --</option>';
+
+        const today = new Date();
+        const jsDow = today.getDay();
+        const systemDow = jsDow === 0 ? 8 : jsDow + 1;
+        today.setHours(0, 0, 0, 0);
+
+        const coursesToday = [];
+        const coursesOther = [];
+
         courses.forEach(c => {
+            let isToday = false;
+            // Parse c.dayOfWeek và c.dayOfWeek2 đề phòng backend trả về chuỗi hoặc null
+            const courseDow1 = parseInt(c.dayOfWeek, 10);
+            const courseDow2 = parseInt(c.dayOfWeek2, 10);
+            
+            if (courseDow1 === systemDow || courseDow2 === systemDow) {
+                // Kiểm tra xem có đang trong thời gian học kỳ không
+                let validDate = true;
+                if (c.startDate && c.endDate) {
+                    const start = new Date(c.startDate + 'T00:00:00');
+                    const end = new Date(c.endDate + 'T23:59:59');
+                    if (today < start || today > end) {
+                        validDate = false;
+                    }
+                }
+                if (validDate) isToday = true;
+            }
+
+            if (isToday) coursesToday.push(c);
+            else coursesOther.push(c);
+        });
+
+        const createOption = (c) => {
             const opt = document.createElement('option');
             opt.value = c.id;
             opt.textContent = `${c.subjectCode} - ${c.subjectName} | ${c.className} | HK ${c.semester}`;
-            select.appendChild(opt);
-        });
+            return opt;
+        };
+
+        // Luôn hiển thị nhóm "Hôm nay" để user biết tính năng đang hoạt động
+        const groupToday = document.createElement('optgroup');
+        groupToday.label = ` Hôm nay (${DOW_LABELS[systemDow]})`;
+        if (coursesToday.length > 0) {
+            coursesToday.forEach(c => groupToday.appendChild(createOption(c)));
+        } else {
+            const emptyOpt = document.createElement('option');
+            emptyOpt.disabled = true;
+            emptyOpt.textContent = "Không có lịch dạy hôm nay";
+            groupToday.appendChild(emptyOpt);
+        }
+        select.appendChild(groupToday);
+
+        if (coursesOther.length > 0) {
+            const groupOther = document.createElement('optgroup');
+            groupOther.label = coursesToday.length > 0 ? "Các môn học khác" : "Tất cả môn học";
+            coursesOther.forEach(c => groupOther.appendChild(createOption(c)));
+            select.appendChild(groupOther);
+        }
 
         // Pre-select if coming from dashboard
-        const preselectedId = localStorage.getItem('selected_course_id');
+        const preselectedId = storageGet('selected_course_id');
         if (preselectedId) {
             select.value = preselectedId;
-            localStorage.removeItem('selected_course_id');
+            storageRemove('selected_course_id');
+            select.dispatchEvent(new Event('change'));
+        } else if (coursesToday.length === 1) {
+            // Auto-select if there is exactly 1 course today
+            select.value = coursesToday[0].id;
+            select.dispatchEvent(new Event('change'));
         }
     } catch (e) {
         showToast('Lỗi mạng lưới kết nối', 'error');
@@ -61,9 +152,23 @@ document.getElementById('courseSelect').addEventListener('change', function () {
     const todayStr = new Date().toLocaleDateString('vi-VN', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
-    const timeStr = course.startLesson
+    
+    // Xử lý lịch 1
+    const timeStr1 = course.startLesson
         ? `${LESSON_TIMES[course.startLesson]} – ${LESSON_END_TIMES[course.endLesson]}`
         : 'N/A';
+    const schedule1 = `${DOW_LABELS[course.dayOfWeek] || 'N/A'} | Tiết ${course.startLesson || 'N/A'}→${course.endLesson || 'N/A'} (${timeStr1})`;
+
+    // Xử lý lịch 2 (nếu có)
+    let schedule2HTML = '';
+    if (course.dayOfWeek2) {
+        const timeStr2 = course.startLesson2
+            ? `${LESSON_TIMES[course.startLesson2]} – ${LESSON_END_TIMES[course.endLesson2]}`
+            : 'N/A';
+        const schedule2 = `${DOW_LABELS[course.dayOfWeek2] || 'N/A'} | Tiết ${course.startLesson2 || 'N/A'}→${course.endLesson2 || 'N/A'} (${timeStr2})`;
+        schedule2HTML = `<div> <strong>Lịch 2:</strong> ${schedule2}</div>`;
+    }
+
     const startDateStr = course.startDate
         ? new Date(course.startDate + 'T00:00:00').toLocaleDateString('vi-VN')
         : 'N/A';
@@ -78,14 +183,14 @@ document.getElementById('courseSelect').addEventListener('change', function () {
                 Thông tin lớp học
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;line-height:1.8;">
-                <div> <strong>Môn học:</strong> ${course.subjectCode} — ${course.subjectName}</div>
+                <div style="grid-column:1/-1;"> <strong>Môn học:</strong> ${course.subjectCode} — ${course.subjectName}</div>
                 <div> <strong>Nhóm/Lớp:</strong> ${course.className}</div>
                 <div> <strong>Phòng học:</strong> ${course.room || 'N/A'}</div>
-                <div> <strong>Lịch:</strong> ${DOW_LABELS[course.dayOfWeek] || 'N/A'} | Tiết ${course.startLesson || 'N/A'}→${course.endLesson || 'N/A'}</div>
-                <div> <strong>Thời gian tiết:</strong> ${timeStr}</div>
+                <div style="grid-column:1/-1;"> <strong>Lịch 1:</strong> ${schedule1}</div>
+                ${schedule2HTML ? `<div style="grid-column:1/-1;">${schedule2HTML}</div>` : ''}
                 <div> <strong>Học kỳ:</strong> ${course.semester}</div>
                 <div style="grid-column:1/-1;font-size:11px;color:var(--text-muted);">
-                     Học kỳ: ${startDateStr} → ${endDateStr}
+                     Thời hạn: ${startDateStr} → ${endDateStr}
                 </div>
             </div>
             <div style="margin-top:10px;padding:10px;background:#fff3e0;border:1px solid #ffb74d;border-radius:4px;font-weight:600;color:#e65100;">
@@ -116,13 +221,13 @@ document.getElementById('sessionForm').addEventListener('submit', async (e) => {
 
         const data = await res.json();
         if (res.ok) {
-            localStorage.setItem('current_session_id', data.id);
-            localStorage.setItem('current_qr_code', data.qrCode);
-            localStorage.setItem('current_expired_at', data.expiredAt);
+            storageSet('current_session_id', data.id);
+            storageSet('current_qr_code', data.qrCode);
+            storageSet('current_expired_at', data.expiredAt);
 
             const selectedCourse = allTeacherCourses.find(c => c.id === parseInt(courseId));
             if (selectedCourse) {
-                localStorage.setItem('current_course_info', JSON.stringify({
+                storageSet('current_course_info', JSON.stringify({
                     subjectName: data.subjectName || selectedCourse.subjectName,
                     subjectCode: data.subjectCode || selectedCourse.subjectCode,
                     className: data.className || selectedCourse.className,

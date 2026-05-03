@@ -21,6 +21,21 @@
             <div class="card-header">
                 <h2>Thông Tin Phiên</h2>
             </div>
+
+            <!-- Cảnh báo có phiên điểm danh chưa kết thúc -->
+            <div id="activeSessionWarning" style="display:none; margin-bottom: 24px; padding: 16px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; color: #f57f17;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-weight: 600; font-size: 15px;">
+                    <ion-icon name="warning-outline" style="font-size: 22px; color: #fbc02d;"></ion-icon>
+                    Phiên Điểm Danh Chưa Kết Thúc
+                </div>
+                <div style="font-size: 13.5px; line-height: 1.5; margin-bottom: 14px; color: #f57f17;">
+                    Bạn đang có một phiên điểm danh cho môn <strong id="activeSessionSubject">...</strong> (Nhóm <strong id="activeSessionClass">...</strong>) vẫn còn hiệu lực. Bạn có muốn tiếp tục hiển thị mã QR này không?
+                </div>
+                <button type="button" class="btn btn-primary" onclick="window.location.href='display-qr.html'" style="width: 100%; background: #fb8c00; border: none; box-shadow: 0 2px 6px rgba(251, 140, 0, 0.3);">
+                    <ion-icon name="scan-outline"></ion-icon> Tiếp tục hiển thị mã QR
+                </button>
+            </div>
+
             <form id="sessionForm">
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label>Khóa Học *</label>
@@ -50,7 +65,7 @@
         </div>
     </main>
 
-    <script src="js/utils.js?v=101"></script>
+    <script src="js/utils.js?v=300"></script>
     <script src="js/create-session.js?v=3"></script>
 </body>
 </html>

@@ -220,7 +220,7 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=101"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('TEACHER');
         if (auth) {
@@ -247,8 +247,8 @@
 
                 // Cache vào localStorage + cập nhật sidebar
                 const displayName = data.fullName || data.email || 'Giảng Viên';
-                localStorage.setItem('user_avatar', currentAvatarBase64);
-                localStorage.setItem('user_name', displayName);
+                storageSet('user_avatar', currentAvatarBase64);
+                storageSet('user_name', displayName);
                 _updateSidebarAvatar(currentAvatarBase64, displayName);
             } catch (e) {
                 showToast('Không thể tải thông tin cá nhân.', 'error');
@@ -319,7 +319,7 @@
                 if (res.ok) {
                     showToast('Cập nhật thông tin thành công!', 'success');
                     const name = document.getElementById('fullName').value.trim();
-                    if (name) localStorage.setItem('user_name', name);
+                    if (name) storageSet('user_name', name);
                     loadProfile();
                 } else {
                     const data = await res.json().catch(() => ({}));

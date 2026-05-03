@@ -203,7 +203,7 @@
         </form>
     </div>
 
-    <script src="js/utils.js?v=99"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         // Xử lý toggle hiển thị mật khẩu
         const togglePassword = document.querySelector('.toggle-password');
@@ -220,28 +220,32 @@
             }
         });
 
-        // Nếu đã đăng nhập VÀ token còn hạn → redirect luôn, ngược lại xóa token cũ
-        (function() {
-            const token = localStorage.getItem('jwt_token');
-            const role  = localStorage.getItem('user_role');
-            if (!token || !role) return; // Chưa đăng nhập → hiện form bình thường
-
-            // Decode JWT để kiểm tra hạn sử dụng (không cần gọi API)
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-                const isExpired = payload.exp && (payload.exp * 1000 < Date.now());
-                if (isExpired) {
-                    // Token hết hạn → xóa im lặng, hiện form đăng nhập sạch
-                    localStorage.clear();
-                    return;
-                }
-                // Token còn hạn → redirect về trang phù hợp
-                redirectByRole(role);
-            } catch (e) {
-                // Token lỗi (không decode được) → xóa và hiện form
-                localStorage.clear();
+        // ── Helper: lưu/đọc localStorage theo prefix role ──────────────
+        function rolePrefix(role) { return role.toUpperCase() + '_'; }
+        function roleStorageSet(role, key, val) { localStorage.setItem(rolePrefix(role) + key, val); }
+        function roleStorageGet(role, key) { return localStorage.getItem(rolePrefix(role) + key); }
+        function roleStorageRemove(role, key) { localStorage.removeItem(rolePrefix(role) + key); }
+        function roleStorageClear(role) {
+            const prefix = rolePrefix(role);
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith(prefix)) keys.push(k);
             }
+            keys.forEach(k => localStorage.removeItem(k));
+        }
+        // ── Dọn dẹp old keys (migration từ v1 → v3 multi-session) ────────
+        // Lần đầu tiên user truy cập login page sau khi deploy multi-session,
+        // xóa các key cũ (không prefix) để tránh redirect loop
+        (function migrateOldKeys() {
+            if (localStorage.getItem('migrated_v3')) return; // Đã migrate rồi
+            const oldKeys = ['jwt_token', 'refresh_token', 'user_role', 'user_name', 'user_id', 'user_avatar'];
+            oldKeys.forEach(k => localStorage.removeItem(k));
+            localStorage.setItem('migrated_v3', '1');
         })();
+
+        // Multi-session: Luôn hiện form đăng nhập
+        // Mỗi role có namespace riêng nên user cần login từng role riêng biệt
 
         function redirectByRole(role) {
             const params = new URLSearchParams(window.location.search);
@@ -250,9 +254,9 @@
                 window.location.href = redirectUrl;
                 return;
             }
-            if (role === 'ADMIN')        window.location.href = '../admin/dashboard.html';
-            else if (role === 'TEACHER') window.location.href = '../teacher/create-session.html';
-            else if (role === 'STUDENT') window.location.href = '../student/index.html';
+            if (role === 'ADMIN')        window.location.href = '/admin/dashboard.html';
+            else if (role === 'TEACHER') window.location.href = '/teacher/create-session.html';
+            else if (role === 'STUDENT') window.location.href = '/student/index.html';
         }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -278,12 +282,20 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    localStorage.setItem('jwt_token',  data.token);
-                    localStorage.setItem('user_role',  data.user.role);
-                    localStorage.setItem('user_name',  data.user.fullName || data.user.email);
-                    localStorage.setItem('user_id',    data.user.id);
+                    const role = data.user.role; // ADMIN, TEACHER, STUDENT
+                    // Lưu với prefix role → mỗi role có namespace riêng
+                    roleStorageSet(role, 'jwt_token',     data.token);
+                    roleStorageSet(role, 'refresh_token', data.refreshToken || '');
+                    roleStorageSet(role, 'user_role',     role);
+                    roleStorageSet(role, 'user_name',     data.user.fullName || data.user.email);
+                    roleStorageSet(role, 'user_id',       data.user.id);
+                    if (data.user.avatar) {
+                        roleStorageSet(role, 'user_avatar', data.user.avatar);
+                    } else {
+                        roleStorageRemove(role, 'user_avatar');
+                    }
                     showToast('Đăng nhập thành công!', 'success');
-                    setTimeout(() => redirectByRole(data.user.role), 900);
+                    setTimeout(() => redirectByRole(role), 900);
                 } else {
                     // Hiển thị thông báo thân thiện, không lộ lỗi kỹ thuật
                     const rawMsg = (data && data.error) ? data.error : '';

@@ -1,20 +1,42 @@
 const API_BASE_URL = '/api';
-const LOGIN_URL = '../common/login.html';
+const LOGIN_URL = '/common/login.html';
+const ROLE_PREFIX = 'ADMIN_';
+
+// ── Storage Helpers (namespace theo role) ─────────────────────────────
+function storageGet(key)       { return localStorage.getItem(ROLE_PREFIX + key); }
+function storageSet(key, val)  { localStorage.setItem(ROLE_PREFIX + key, val); }
+function storageRemove(key)    { localStorage.removeItem(ROLE_PREFIX + key); }
+function storageClearRole() {
+    // Chỉ xóa key có prefix của role này, không ảnh hưởng role khác
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(ROLE_PREFIX)) keysToRemove.push(k);
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+}
+
+// ── Migration: xóa old keys không prefix (v1 → v3) ──────────────────
+(function migrateOldKeys() {
+    if (localStorage.getItem('migrated_v3')) return;
+    ['jwt_token','refresh_token','user_role','user_name','user_id','user_avatar'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('migrated_v3', '1');
+})();
 
 function checkAuth(requiredRole) {
-    const token = localStorage.getItem('jwt_token');
-    const role  = localStorage.getItem('user_role');
+    const token = storageGet('jwt_token');
+    const role  = storageGet('user_role');
     if (!token || !role) {
         window.location.href = LOGIN_URL;
         return null;
     }
     if (requiredRole && role !== requiredRole) {
         alert('Cảnh báo! Bạn không có quyền truy cập trang này.');
-        localStorage.clear();
+        storageClearRole();
         window.location.href = LOGIN_URL;
         return null;
     }
-    return { token, role, name: localStorage.getItem('user_name') };
+    return { token, role, name: storageGet('user_name') };
 }
 
 // ── Refresh Token Helper ──────────────────────────────────────────────
@@ -22,7 +44,7 @@ let _isRefreshing = false;
 let _refreshQueue = [];
 
 async function _doRefresh() {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = storageGet('refresh_token');
     if (!refreshToken) return false;
     try {
         const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
@@ -33,12 +55,12 @@ async function _doRefresh() {
         if (!res.ok) return false;
         const data = await res.json();
         if (data.token && data.refreshToken) {
-            localStorage.setItem('jwt_token', data.token);
-            localStorage.setItem('refresh_token', data.refreshToken);
+            storageSet('jwt_token', data.token);
+            storageSet('refresh_token', data.refreshToken);
             if (data.user) {
-                localStorage.setItem('user_role', data.user.role);
-                localStorage.setItem('user_name', data.user.fullName || data.user.email);
-                localStorage.setItem('user_id', data.user.id);
+                storageSet('user_role', data.user.role);
+                storageSet('user_name', data.user.fullName || data.user.email);
+                storageSet('user_id', data.user.id);
             }
             return true;
         }
@@ -49,7 +71,7 @@ async function _doRefresh() {
 }
 
 async function authFetch(url, options = {}) {
-    const token = localStorage.getItem('jwt_token');
+    const token = storageGet('jwt_token');
     const headers = { ...options.headers };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -72,7 +94,7 @@ async function authFetch(url, options = {}) {
         _refreshQueue = [];
 
         if (refreshed) {
-            const newToken = localStorage.getItem('jwt_token');
+            const newToken = storageGet('jwt_token');
             const retryHeaders = { ...options.headers };
             if (newToken) retryHeaders['Authorization'] = `Bearer ${newToken}`;
             return fetch(url, { ...options, headers: retryHeaders });
@@ -107,7 +129,7 @@ function showToast(message, type = 'success') {
 }
 
 async function logout() {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = storageGet('refresh_token');
     if (refreshToken) {
         try {
             await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -117,7 +139,7 @@ async function logout() {
             });
         } catch (e) {}
     }
-    localStorage.clear();
+    storageClearRole();
     window.location.href = LOGIN_URL;
 }
 
@@ -130,8 +152,8 @@ document.addEventListener('click', function(e) {
 });
 
 function buildAdminSidebar(activePage) {
-    const name = localStorage.getItem('user_name') || 'Admin';
-    const cachedAvatar = localStorage.getItem('user_avatar');
+    const name = storageGet('user_name') || 'Admin';
+    const cachedAvatar = storageGet('user_avatar');
     // Dùng cached avatar nếu có, ngược lại fallback về ui-avatars
     const avatarSrc = (cachedAvatar && cachedAvatar.length > 10)
         ? cachedAvatar
@@ -179,7 +201,7 @@ function buildAdminSidebar(activePage) {
 }
 
 /**
- * Gọi /api/users/me để lấy avatar mới nhất → lưu localStorage → cập nhật img#sidebarAvatar.
+ * Gọi /api/user/profile để lấy avatar mới nhất → lưu localStorage → cập nhật img#sidebarAvatar.
  * Gọi sau buildAdminSidebar() trên mọi trang admin.
  */
 async function fetchAndCacheAvatar() {
@@ -192,8 +214,8 @@ async function fetchAndCacheAvatar() {
         const fullName = data.fullName || data.name || '';
 
         // Cập nhật cache
-        if (avatar)   localStorage.setItem('user_avatar', avatar);
-        if (fullName) localStorage.setItem('user_name',   fullName);
+        if (avatar)   storageSet('user_avatar', avatar);
+        if (fullName) storageSet('user_name',   fullName);
 
         // Cập nhật DOM không cần reload trang
         const imgEl  = document.getElementById('sidebarAvatar');

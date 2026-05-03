@@ -130,6 +130,38 @@ function onStartLesson2Change() {
     updateLessonPreview2();
 }
 
+// ── Called when Tiết kết thúc (session 1) changes ────────────
+function onEndLessonChange() {
+    const credits = parseInt(document.getElementById('credits')?.value);
+    const rule    = CREDIT_RULES[credits];
+    if (rule) _applyStartOffset('endLesson', 'startLesson', rule.endOffset);
+    updateLessonPreview();
+}
+
+// ── Called when Tiết kết thúc (session 2) changes ────────────
+function onEndLesson2Change() {
+    const credits = parseInt(document.getElementById('credits')?.value);
+    const rule    = CREDIT_RULES[credits];
+    if (rule) _applyStartOffset('endLesson2', 'startLesson2', rule.endOffset);
+    updateLessonPreview2();
+}
+
+function _applyStartOffset(endId, startId, offset) {
+    const endL = parseInt(document.getElementById(endId)?.value) || 3;
+    const startEl = document.getElementById(startId);
+    if (!startEl) return;
+    
+    let newStart = endL - offset;
+    if (newStart < 1) newStart = 1;
+    
+    if (INVALID_START_LESSONS.has(newStart)) {
+        showToast(`Tiết kết thúc bạn chọn khiến tiết bắt đầu rơi vào tiết ${newStart} (cuối buổi học). Vui lòng chọn lại.`, 'error');
+        newStart = newStart === 5 ? 4 : 12;
+        document.getElementById(endId).value = String(Math.min(newStart + offset, 13));
+    }
+    startEl.value = String(newStart);
+}
+
 function _applyEndOffset(startId, endId, offset) {
     const startL = parseInt(document.getElementById(startId)?.value) || 1;
     const endEl  = document.getElementById(endId);
@@ -419,8 +451,17 @@ function validateStep(step) {
 async function openCreateModal() {
     editingCourseId = null;
     document.getElementById('modalTitle').textContent = 'Thêm Môn Học Mới';
-    document.getElementById('submitLabel').textContent = 'Tạo & Phân Công';
     document.getElementById('courseForm').reset();
+    
+    // Đặt lại trạng thái nút submit (chống kẹt Đang lưu...)
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> <span id="submitLabel">Tạo & Phân Công</span>';
+    } else {
+        const lbl = document.getElementById('submitLabel');
+        if (lbl) lbl.textContent = 'Tạo & Phân Công';
+    }
 
     // Reset bonus UI elements not cleared by reset()
     const banner = document.getElementById('creditInfoBanner');

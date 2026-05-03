@@ -159,13 +159,13 @@
     </div>
 
     <div id="toast-container"></div>
-    <script src="js/utils.js?v=101"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('STUDENT');
         if (auth) {
             document.getElementById('studentName').textContent = auth.name || 'Sinh Viên';
             // Load avatar từ cache trước (hiện ngay)
-            const cachedAvatar = localStorage.getItem('user_avatar');
+            const cachedAvatar = storageGet('user_avatar');
             const avatarEl = document.getElementById('studentAvatar');
             if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
                 avatarEl.src = cachedAvatar;

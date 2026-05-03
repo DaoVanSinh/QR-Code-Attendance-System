@@ -177,11 +177,10 @@
                             <th>ID</th>
                             <th>Mã Môn</th>
                             <th>Tên Môn Học</th>
-                            <th style="text-align:right;width:70px;">Sửa</th>
                         </tr>
                     </thead>
                     <tbody id="subjectTable">
-                        <tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Đang tải...</td></tr>
+                        <tr><td colspan="3" style="text-align:center;color:var(--text-muted);">Đang tải...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -256,54 +255,9 @@
         </div>
     </div>
 
-    <!-- ── Edit Subject Modal ── -->
-    <div id="editSubjectModal" class="eu-overlay">
-        <div class="eu-box" style="max-width:440px;">
-            <div class="eu-head">
-                <h3 id="esTitle">Sửa Thông Tin Môn Học</h3>
-                <button class="eu-close" onclick="closeEditSubject()">✕</button>
-            </div>
-            <div class="eu-body">
-                <!-- Mã Môn + Số Tín Chỉ -->
-                <div class="eu-row">
-                    <div class="eu-fgroup">
-                        <label>Mã Môn *</label>
-                        <input id="esCode" type="text" placeholder="VD: CS101, INT2210">
-                    </div>
-                    <div class="eu-fgroup">
-                        <label>Số Tín Chỉ *</label>
-                        <select id="esCredits">
-                            <option value="1">1 tín chỉ</option>
-                            <option value="2">2 tín chỉ</option>
-                            <option value="3" selected>3 tín chỉ</option>
-                            <option value="4">4 tín chỉ</option>
-                            <option value="5">5 tín chỉ</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- Tên Môn Học -->
-                <div class="eu-row full">
-                    <div class="eu-fgroup">
-                        <label>Tên Môn Học *</label>
-                        <input id="esName" type="text" placeholder="VD: Lập Trình Web, Giải Tích 1">
-                    </div>
-                </div>
-            </div>
-            <div class="eu-foot" style="justify-content:space-between;">
-                <button class="eu-btn-delete" id="esBtnDelete" onclick="deleteSubjectFromModal()">
-                    <ion-icon name="trash-outline"></ion-icon> Xóa Môn
-                </button>
-                <div style="display:flex;gap:8px;">
-                    <button class="eu-btn-cancel" onclick="closeEditSubject()">Hủy</button>
-                    <button class="eu-btn-save" id="esBtnSave" onclick="saveEditSubject()">
-                        <ion-icon name="checkmark-outline"></ion-icon> Lưu
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <script src="js/utils.js?v=102"></script>
+
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('ADMIN');
         if (auth) {
@@ -311,6 +265,6 @@
             fetchAndCacheAvatar();
         }
     </script>
-    <script src="js/dashboard.js?v=8"></script>
+    <script src="js/dashboard.js?v=10"></script>
 </body>
 </html>

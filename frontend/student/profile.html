@@ -271,7 +271,7 @@
 
     <div id="toast-container"></div>
 
-    <script src="js/utils.js?v=101"></script>
+    <script src="js/utils.js?v=300"></script>
     <script>
         const auth = checkAuth('STUDENT');
 
@@ -305,8 +305,8 @@
 
                 // Cache vào localStorage và cập nhật header avatar ngay
                 const displayName = data.fullName || data.email || 'Sinh Viên';
-                localStorage.setItem('user_avatar', currentAvatarBase64);
-                localStorage.setItem('user_name', displayName);
+                storageSet('user_avatar', currentAvatarBase64);
+                storageSet('user_name', displayName);
                 // Cập nhật avatar trên header nếu có (student index.html)
                 const headerAv = document.getElementById('studentAvatar');
                 if (headerAv) {
@@ -373,7 +373,7 @@
                 if (res.ok) {
                     showToast('Cập nhật thành công!', 'success');
                     const name = document.getElementById('fullName').value.trim();
-                    if (name) localStorage.setItem('user_name', name);
+                    if (name) storageSet('user_name', name);
                     loadProfile();
                 } else {
                     const data = await res.json().catch(() => ({}));

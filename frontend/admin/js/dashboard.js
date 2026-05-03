@@ -48,22 +48,14 @@ async function loadDashboard() {
             tbody2.innerHTML = subjects.map(s =>
                 `<tr>
                     <td>${s.id}</td>
-                    <td>${s.code}</td>
-                    <td>${s.name}</td>
-                    <td style="text-align:right;">
-                        <button onclick="openEditSubject(${s.id}, '${(s.code||'').replace(/'/g,'')}', '${(s.name||'').replace(/'/g,'')}', ${s.credits||3})"
-                            style="background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.3);
-                                   color:#60a5fa;padding:3px 9px;font-size:11px;border-radius:6px;
-                                   cursor:pointer;font-weight:600;">
-                            Sửa
-                        </button>
-                    </td>
+                    <td><span style="font-family:monospace;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#334155;font-size:13px;">${s.code}</span></td>
+                    <td style="font-weight:500;color:#1e293b;">${s.name}</td>
                 </tr>`
             ).join('');
         }
     } catch (e) {
         document.getElementById('subjectTable').innerHTML =
-            `<tr class="error-row"><td colspan="4">Lỗi tải môn học.</td></tr>`;
+            `<tr class="error-row"><td colspan="3">Lỗi tải môn học.</td></tr>`;
     }
 }
 
@@ -237,21 +229,6 @@ document.getElementById('editUserModal')?.addEventListener('click', function(e) 
 let _editingSubjectId   = null;
 let _editingSubjectName = '';
 
-function openEditSubject(id, code, name, credits) {
-    _editingSubjectId   = id;
-    _editingSubjectName = name;
-    document.getElementById('esCode').value    = code;
-    document.getElementById('esName').value    = name;
-    // Đặt đúng option trong select (fallback về 3 nếu không khớp)
-    const sel = document.getElementById('esCredits');
-    sel.value = credits;
-    if (!sel.value) sel.value = '3';
-    document.getElementById('esTitle').textContent = `Sửa: ${name}`;
-    switchSubjectTab(1);  // Luôn reset về tab 1 khi mở
-    document.getElementById('editSubjectModal').classList.add('open');
-    loadSubjectCourses(code);  // Load courses ngầm
-}
-
 function closeEditSubject() {
     _editingSubjectId   = null;
     _editingSubjectName = '';
@@ -318,87 +295,6 @@ async function deleteSubjectFromModal() {
 document.getElementById('editSubjectModal')?.addEventListener('click', function(e) {
     if (e.target === this) closeEditSubject();
 });
-
-// ── Subject Tab Switching ──────────────────────────────────────────
-function switchSubjectTab(tab) {
-    document.getElementById('esTab1').classList.toggle('active', tab === 1);
-    document.getElementById('esTab2').classList.toggle('active', tab === 2);
-    document.getElementById('esPanel1').classList.toggle('active', tab === 1);
-    document.getElementById('esPanel2').classList.toggle('active', tab === 2);
-}
-
-// ── Load courses for a subject ────────────────────────────────────
-const DOW_VN = ['','','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ Nhật'];
-
-async function loadSubjectCourses(subjectCode) {
-    const listEl  = document.getElementById('esCourseList');
-    const countEl = document.getElementById('esCourseCount');
-    if (!listEl) return;
-
-    listEl.innerHTML = `
-        <div class="es-empty-state">
-            <ion-icon name="hourglass-outline" style="font-size:28px;color:#93c5fd;"></ion-icon>
-            <div style="font-size:12px;margin-top:6px;">Đang tải lớp học phần...</div>
-        </div>`;
-
-    try {
-        const res = await authFetch(`${API_BASE_URL}/admin/courses`);
-        if (!res.ok) throw new Error();
-        const courses = await res.json();
-
-        // Filter theo subjectCode (case-insensitive)
-        const filtered = courses.filter(c =>
-            (c.subjectCode || '').toUpperCase() === (subjectCode || '').toUpperCase()
-        );
-
-        // Cập nhật badge số lớp
-        if (countEl) countEl.textContent = filtered.length;
-
-        if (filtered.length === 0) {
-            listEl.innerHTML = `
-                <div class="es-empty-state">
-                    <ion-icon name="calendar-outline"></ion-icon>
-                    <div style="font-weight:600;color:#475569;margin-bottom:4px;">Chưa có lớp học phần nào</div>
-                    <div style="font-size:12px;">Nhấn nút bên dưới để phân công giảng viên và lịch học.</div>
-                </div>`;
-            return;
-        }
-
-        listEl.innerHTML = filtered.map(c => {
-            const initials = (c.teacherName || 'GV').split(' ').slice(-2).map(w => w[0]).join('').toUpperCase();
-            const scheduleText = c.dayOfWeek
-                ? `${DOW_VN[c.dayOfWeek] || ''} · Tiết ${c.startLesson}–${c.endLesson}`
-                : 'Chưa xếp lịch';
-            return `
-                <div class="es-course-card">
-                    <div class="es-course-title">
-                        <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:5px;
-                                     font-size:11px;font-weight:700;">${c.className}</span>
-                        <span class="es-course-sem-tag">${c.semester}</span>
-                    </div>
-                    <div class="es-course-meta">
-                        <span style="display:inline-flex;align-items:center;gap:4px;">
-                            <span style="width:22px;height:22px;border-radius:50%;background:#2563eb;
-                                         color:#fff;font-size:9px;font-weight:700;
-                                         display:inline-flex;align-items:center;justify-content:center;
-                                         flex-shrink:0;">${initials}</span>
-                            ${c.teacherName || 'N/A'}
-                        </span>
-                        <span><ion-icon name="time-outline"></ion-icon> ${scheduleText}</span>
-                        ${c.room ? `<span><ion-icon name="location-outline"></ion-icon> ${c.room}</span>` : ''}
-                    </div>
-                </div>`;
-        }).join('');
-
-    } catch {
-        listEl.innerHTML = `
-            <div class="es-empty-state">
-                <ion-icon name="wifi-outline" style="color:#fca5a5;"></ion-icon>
-                <div style="color:#ef4444;font-size:12px;">Lỗi tải dữ liệu lớp học phần.</div>
-            </div>`;
-    }
-}
-
 
 // ── Subject Modal (legacy, kept for backward compat) ─────────────
 function openSubjectModal() {
