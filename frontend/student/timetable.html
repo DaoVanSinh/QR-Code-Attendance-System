@@ -97,6 +97,25 @@
         .card-time { font-weight:600; margin-top:2px; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Responsive Desktop ≥ 768px ─── */
+        @media (min-width: 768px) {
+            .tkb-controls { padding: 14px 18px; gap: 14px; border-radius: 14px; }
+            .tkb-controls select { padding: 10px 14px; font-size: 14px; }
+            #weekLabel { font-size: 13px; min-width: 220px; }
+            .week-nav-btn { width: 34px; height: 34px; font-size: 18px; }
+            .tkb-grid { grid-template-columns: 80px repeat(7, minmax(110px, 1fr)); }
+            .tkb-header { padding: 12px 8px 10px; }
+            .tkb-header-day { font-size: 14px; }
+            .tkb-header-date { font-size: 13px; }
+            .lesson-num { font-size: 13px; }
+            .lesson-time { font-size: 10.5px; }
+            .tkb-course-card { padding: 8px 10px; font-size: 12px; }
+            .card-subject { font-size: 13px; }
+            .card-code { font-size: 11px; }
+            .card-row { font-size: 11.5px; gap: 4px; }
+            .card-row ion-icon { font-size: 11px; }
+        }
     </style>
 </head>
 <body>
@@ -105,7 +124,7 @@
             <div class="brand">🎓 Lịch Học</div>
             <div class="header-profile" onclick="event.stopPropagation(); document.getElementById('studentProfileDropdown').classList.toggle('show')">
                 <img src="" id="studentAvatar"
-                     onerror="this.src='https://ui-avatars.com/api/?name=SV&background=4f46e5&color=fff&size=64'" alt="Avatar" class="avatar">
+                     onerror="this.src='https://ui-avatars.com/api/?name=SV&background=2563eb&color=fff&size=64'" alt="Avatar" class="avatar">
                 <div class="user-name" id="studentName">Sinh Viên</div>
                 <ion-icon name="chevron-down-outline"></ion-icon>
 
@@ -170,7 +189,7 @@
             if (cachedAvatar && cachedAvatar.length > 10 && avatarEl) {
                 avatarEl.src = cachedAvatar;
             } else if (avatarEl) {
-                avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(auth.name || 'SV')}&background=4f46e5&color=fff&size=64`;
+                avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(auth.name || 'SV')}&background=2563eb&color=fff&size=64`;
             }
             // Fetch mới nhất từ server (cập nhật lại nếu có thay đổi)
             fetchAndCacheAvatar();

@@ -103,7 +103,7 @@ async function loadCourses() {
         const createOption = (c) => {
             const opt = document.createElement('option');
             opt.value = c.id;
-            opt.textContent = `${c.subjectCode} - ${c.subjectName} | ${c.className} | HK ${c.semester}`;
+            opt.textContent = `${c.subjectCode} - ${c.subjectName} | ${c.className} | ${c.semester}`;
             return opt;
         };
 

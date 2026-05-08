@@ -74,6 +74,14 @@
             flex-shrink: 0;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Responsive Desktop ≥ 768px ─── */
+        @media (min-width: 768px) {
+            #successOverlay h2 { font-size: 36px; }
+            #successOverlay p { font-size: 18px; }
+            .success-check-icon { font-size: 96px; }
+            #cameraLoadingMsg { font-size: 16px; }
+        }
     </style>
 </head>
 <body>
@@ -85,7 +93,7 @@
             <div class="brand" style="font-size:14px;">🎓 QR Điểm Danh</div>
             <div class="header-profile" onclick="event.stopPropagation(); document.getElementById('studentProfileDropdown').classList.toggle('show')">
                 <img src="../teacher/css/default-avatar.png" id="studentAvatar"
-                     onerror="this.src='https://ui-avatars.com/api/?name=ST&background=4f46e5&color=fff'" alt="Avatar" class="avatar">
+                     onerror="this.src='https://ui-avatars.com/api/?name=ST&background=2563eb&color=fff'" alt="Avatar" class="avatar">
                 <div class="user-name" id="studentName">ST</div>
                 <ion-icon name="chevron-down-outline"></ion-icon>
                 <div class="profile-dropdown" id="studentProfileDropdown" onclick="event.stopPropagation()">

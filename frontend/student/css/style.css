@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #4f46e5;
-    --primary-dark: #4338ca;
-    --primary-light: #e0e7ff;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
     --secondary: #ec4899;
     --bg-main: #f8fafc;
     --bg-surface: rgba(255, 255, 255, 0.85);
@@ -49,7 +49,7 @@ body {
     position: absolute;
     top: -10%; left: -10%;
     width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(79,70,229,0.15) 0%, rgba(255,255,255,0) 70%);
+    background: radial-gradient(circle, rgba(37,99,235,0.15) 0%, rgba(255,255,255,0) 70%);
     z-index: 0; pointer-events: none;
 }
 .app-root::after {
@@ -140,7 +140,7 @@ body {
     cursor: pointer; text-align: left; width: 100%;
     transition: background 0.2s;
 }
-.profile-dropdown a:hover, .profile-dropdown button:hover { background: rgba(79,70,229,0.05); color: var(--primary); }
+.profile-dropdown a:hover, .profile-dropdown button:hover { background: rgba(37,99,235,0.05); color: var(--primary); }
 .profile-dropdown button.text-danger { color: var(--danger); }
 .profile-dropdown button.text-danger:hover { color: var(--danger); background: rgba(239, 68, 68, 0.05); }
 
@@ -175,7 +175,7 @@ body {
 }
 .nav-btn ion-icon { font-size: 24px; transition: transform 0.3s; }
 .nav-btn:hover ion-icon { transform: translateY(-3px); color: var(--primary); }
-.nav-btn.active { color: var(--primary); font-weight: 700; background: rgba(79, 70, 229, 0.1); }
+.nav-btn.active { color: var(--primary); font-weight: 700; background: rgba(37, 99, 235, 0.1); }
 .nav-btn.active ion-icon { transform: translateY(-3px); }
 
 /* ─── Action Cards ───────────────────────────────────── */
@@ -211,8 +211,8 @@ body {
 }
 
 .enrollment-bg {
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
-    border-color: rgba(124, 58, 237, 0.2);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+    border-color: rgba(59, 130, 246, 0.2);
 }
 .history-bg {
     background: linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(244, 63, 94, 0.05) 100%);
@@ -226,7 +226,7 @@ body {
     margin-bottom: 16px;
     font-size: 24px;
 }
-.enrollment-bg .card-icon { background: rgba(124, 58, 237, 0.1); color: #7c3aed; }
+.enrollment-bg .card-icon { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
 .history-bg .card-icon { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
 
 .action-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text-dark); }
@@ -276,8 +276,8 @@ body {
     font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none;
     transition: all 0.2s;
 }
-.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4); }
 
 .btn-logout-sm {
     background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);
@@ -299,4 +299,80 @@ th { text-align: left; padding: 14px 16px; font-size: 13px; color: var(--text-mu
 td { padding: 14px 16px; font-size: 14px; border-bottom: 1px solid rgba(0,0,0,0.05); }
 
 .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-.badge-subject { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
+.badge-subject { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — Desktop / Tablet
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+    body {
+        background: #e2e8f0;
+    }
+
+    .app-root {
+        max-width: 960px;
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+    }
+
+    .bottom-nav {
+        max-width: 960px;
+    }
+
+    .premium-header {
+        padding: 18px 36px;
+    }
+    .premium-header .brand {
+        font-size: 20px;
+    }
+
+    .page-content {
+        padding: 32px 40px;
+    }
+
+    .page-title {
+        font-size: 32px;
+    }
+
+    .page-sub {
+        font-size: 16px;
+    }
+
+    /* Action cards — 2 columns wider */
+    .action-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Premium cards — larger padding */
+    .premium-card {
+        padding: 28px;
+    }
+
+    .action-card h2 {
+        font-size: 20px;
+    }
+
+    /* Recent list items */
+    .subject-name {
+        font-size: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 14px 28px;
+        font-size: 16px;
+    }
+
+    /* Nav buttons — bigger icons on desktop */
+    .nav-btn {
+        font-size: 13px;
+        padding: 10px 0;
+    }
+    .nav-btn ion-icon {
+        font-size: 26px;
+    }
+
+    /* Tables — more padding */
+    th { padding: 16px 20px; font-size: 14px; }
+    td { padding: 16px 20px; font-size: 15px; }
+}

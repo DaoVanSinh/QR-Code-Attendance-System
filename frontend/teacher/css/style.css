@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #4f46e5;
-    --primary-dark: #4338ca;
-    --primary-light: #e0e7ff;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
     --secondary: #ec4899;
     --bg-main: #f8fafc;
     --bg-surface: #ffffff;
@@ -118,7 +118,7 @@ body {
 }
 .nav-item:hover { background-color: var(--primary-light); color: var(--primary); }
 .nav-item.active {
-    background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(79,70,229,0.05));
+    background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(37,99,235,0.05));
     color: var(--primary); font-weight: 700;
 }
 .nav-item ion-icon { font-size: 20px; transition: transform 0.2s; }
@@ -204,9 +204,9 @@ body {
 .btn:hover { background: var(--bg-main); border-color: #cbd5e1; transform: translateY(-1px); }
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    border: none; color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+    border: none; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.25);
 }
-.btn-primary:hover { background: linear-gradient(135deg, var(--primary-dark), #312e81); color: white; box-shadow: 0 6px 16px rgba(79,70,229,0.3); }
+.btn-primary:hover { background: linear-gradient(135deg, var(--primary-dark), #1e3a8a); color: white; box-shadow: 0 6px 16px rgba(37,99,235,0.3); }
 .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-dark); }
 .btn-outline:hover { background: var(--bg-main); }
 .btn-sm { padding: 6px 12px; font-size: 13px; }
@@ -225,7 +225,7 @@ tr:hover td { background-color: rgba(248,250,252,0.8); }
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .badge-active, .badge-live { background-color: rgba(16,185,129,0.1); color: var(--success); }
 .badge-expired { background-color: rgba(239,68,68,0.1); color: var(--danger); }
-.badge-admin { background-color: rgba(79,70,229,0.1); color: var(--primary); }
+.badge-admin { background-color: rgba(37,99,235,0.1); color: var(--primary); }
 .badge-teacher { background-color: rgba(245,158,11,0.1); color: var(--warning); }
 .badge-student { background-color: rgba(148,163,184,0.1); color: var(--text-muted); }
 
@@ -239,7 +239,7 @@ form { padding: 24px; }
     font-size: 14px; transition: all 0.2s; background: var(--bg-surface);
 }
 .form-control:focus, .form-select:focus {
-    border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 
 /* ─── Toast ───────────────────────────────────────────── */

@@ -168,7 +168,7 @@ async function fetchAndCacheAvatar() {
         if (imgEl && avatar && avatar.length > 10) {
             imgEl.src = avatar;
         } else if (imgEl && fullName) {
-            imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=4f46e5&color=fff&size=64`;
+            imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=2563eb&color=fff&size=64`;
         }
 
         // Cập nhật tên trên header (các trang student dùng ID khác nhau)

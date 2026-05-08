@@ -300,7 +300,7 @@ function renderGrid() {
                 <div class="card-subject" style="color:${color.text};">${course.subjectName}</div>
                 <div class="card-code" style="color:${color.border};">${course.subjectCode}</div>
                 <div class="card-meta">
-                    <div class="card-row"><ion-icon name="people-outline"></ion-icon><span>Nhóm ${course.className || '—'}</span></div>
+                    <div class="card-row"><ion-icon name="people-outline"></ion-icon><span>${course.className || '—'}</span></div>
                     <div class="card-row"><ion-icon name="business-outline"></ion-icon><span>${course.room || 'N/A'}</span></div>
                     <div class="card-row card-time"><ion-icon name="time-outline"></ion-icon><span>${timeStr}</span></div>
                 </div>
