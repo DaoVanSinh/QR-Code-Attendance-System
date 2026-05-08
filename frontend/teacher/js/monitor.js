@@ -65,7 +65,7 @@ async function onCourseChange() {
             const opt = document.createElement('option');
             opt.value = s.id;
             const date = new Date(s.startTime + (s.startTime.endsWith('Z') ? '' : 'Z'));
-            const dateStr = date.toLocaleString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            const dateStr = date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             const expired = s.expired ? ' [Đã kết thúc]' : ' [Đang mở]';
             opt.textContent = `Phiên ${idx + 1}: ${dateStr}${expired}`;
             // Auto-select phiên đầu tiên (phiên mới nhất)
@@ -140,12 +140,12 @@ function renderTable(students) {
 
     tbody.innerHTML = students.map((s, i) => {
         const statusBadge = s.present
-            ? '<span class="badge-present">✅ Có mặt</span>'
-            : '<span class="badge-absent">❌ Vắng mặt</span>';
+            ? '<span class="badge-present">Có mặt</span>'
+            : '<span class="badge-absent">Vắng mặt</span>';
 
         const checkInTime = s.checkInTime
             ? new Date(s.checkInTime + (s.checkInTime.endsWith('Z') ? '' : 'Z'))
-                .toLocaleString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' })
+                .toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
             : '—';
 
         return `
@@ -162,10 +162,10 @@ function renderTable(students) {
 // ── Cập nhật số liệu thống kê ─────────────────────────────────────────────
 function updateStats(students) {
     const presentCount = students.filter(s => s.present).length;
-    const absentCount  = students.length - presentCount;
-    document.getElementById('statTotal').textContent   = students.length;
+    const absentCount = students.length - presentCount;
+    document.getElementById('statTotal').textContent = students.length;
     document.getElementById('statPresent').textContent = presentCount;
-    document.getElementById('statAbsent').textContent  = absentCount;
+    document.getElementById('statAbsent').textContent = absentCount;
 }
 
 // ── Export Excel ──────────────────────────────────────────────────────────
@@ -228,6 +228,6 @@ function resetTable(msg) {
 }
 
 function resetStats() {
-    ['statTotal','statPresent','statAbsent'].forEach(id =>
+    ['statTotal', 'statPresent', 'statAbsent'].forEach(id =>
         document.getElementById(id).textContent = '0');
 }

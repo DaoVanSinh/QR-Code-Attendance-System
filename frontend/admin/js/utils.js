@@ -157,7 +157,7 @@ function buildAdminSidebar(activePage) {
     // Dùng cached avatar nếu có, ngược lại fallback về ui-avatars
     const avatarSrc = (cachedAvatar && cachedAvatar.length > 10)
         ? cachedAvatar
-        : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4f46e5&color=fff&size=64`;
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563eb&color=fff&size=64`;
 
     const pages = [
         { href: 'dashboard.html',    icon: 'grid-outline',    label: 'Tổng Quan' },
@@ -176,14 +176,14 @@ function buildAdminSidebar(activePage) {
     <aside class="sidebar">
         <div class="brand-header">
             <div class="logo-icon"><ion-icon name="shield-checkmark-outline"></ion-icon></div>
-            <div class="brand-text">Admin Panel</div>
+            <div class="brand-text">Quản Trị Viên</div>
         </div>
 
         <div class="user-profile-card" onclick="event.stopPropagation(); document.getElementById('adminProfileDropdown').classList.toggle('show')">
             <img id="sidebarAvatar" src="${avatarSrc}" alt="Avatar" class="avatar">
             <div class="info">
                 <div class="name" id="sidebarUserName">${name}</div>
-                <div class="role">Super Administrator</div>
+                <div class="role">Quản trị viên</div>
             </div>
             <ion-icon name="chevron-down-outline" style="color:var(--text-muted);"></ion-icon>
             

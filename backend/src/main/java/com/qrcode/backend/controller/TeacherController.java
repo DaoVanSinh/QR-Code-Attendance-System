@@ -108,7 +108,7 @@ public class TeacherController {
     @Operation(
         summary     = "Xuất báo cáo điểm danh (Excel)",
         description = "Tạo và tải xuống file .xlsx chứa danh sách điểm danh của toàn bộ sinh viên "
-                    + "trong một buổi học. Chỉ giảng viên phụ trách buổi học mới được phép truy cập."
+                    + "trong một buổi học."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200",

@@ -2,28 +2,34 @@
 //  CONSTANTS
 // ══════════════════════════════════════════════════════════════
 const LESSON_TIMES = {
-    1:'06:45', 2:'07:45', 3:'08:45', 4:'09:45', 5:'10:45',
-    6:'12:30', 7:'13:30', 8:'14:30', 9:'15:30', 10:'16:30',
-    11:'17:30', 12:'18:30', 13:'19:30'
+    1: '06:45', 2: '07:45', 3: '08:45', 4: '09:45', 5: '10:45',
+    6: '12:30', 7: '13:30', 8: '14:30', 9: '15:30', 10: '16:30',
+    11: '17:30', 12: '18:30', 13: '19:30'
 };
 const LESSON_END_TIMES = {
-    1:'07:35', 2:'08:35', 3:'09:35', 4:'10:35', 5:'11:35',
-    6:'13:20', 7:'14:20', 8:'15:20', 9:'16:20', 10:'17:20',
-    11:'18:20', 12:'19:20', 13:'20:20'
+    1: '07:35', 2: '08:35', 3: '09:35', 4: '10:35', 5: '11:35',
+    6: '13:20', 7: '14:20', 8: '15:20', 9: '16:20', 10: '17:20',
+    11: '18:20', 12: '19:20', 13: '20:20'
 };
-const DOW_LABELS = ['','','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ Nhật'];
+const DOW_LABELS = ['', '', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
 
 // Credit → schedule rules
 const CREDIT_RULES = {
-    2: { endOffset: 1, sessionsPerWeek: 1, lessonsPerSession: 2, needsSecondSession: false,
-         label: '2 tín chỉ', color: '#e3f2fd', border: '#90caf9', text: '#0d47a1',
-         desc: '1 buổi/tuần · mỗi buổi <strong>2 tiết liên tiếp</strong>' },
-    3: { endOffset: 2, sessionsPerWeek: 1, lessonsPerSession: 3, needsSecondSession: false,
-         label: '3 tín chỉ', color: '#e8f5e9', border: '#a5d6a7', text: '#1b5e20',
-         desc: '1 buổi/tuần · mỗi buổi <strong>3 tiết liên tiếp</strong>' },
-    4: { endOffset: 1, sessionsPerWeek: 2, lessonsPerSession: 2, needsSecondSession: true,
-         label: '4 tín chỉ', color: '#fff3e0', border: '#ffcc80', text: '#e65100',
-         desc: '2 buổi/tuần · mỗi buổi <strong>2 tiết liên tiếp</strong> — nhập cả 2 buổi bên dưới' }
+    2: {
+        endOffset: 1, sessionsPerWeek: 1, lessonsPerSession: 2, needsSecondSession: false,
+        label: '2 tín chỉ', color: '#e3f2fd', border: '#90caf9', text: '#0d47a1',
+        desc: '1 buổi/tuần · mỗi buổi <strong>2 tiết liên tiếp</strong>'
+    },
+    3: {
+        endOffset: 2, sessionsPerWeek: 1, lessonsPerSession: 3, needsSecondSession: false,
+        label: '3 tín chỉ', color: '#e8f5e9', border: '#a5d6a7', text: '#1b5e20',
+        desc: '1 buổi/tuần · mỗi buổi <strong>3 tiết liên tiếp</strong>'
+    },
+    4: {
+        endOffset: 1, sessionsPerWeek: 2, lessonsPerSession: 2, needsSecondSession: true,
+        label: '4 tín chỉ', color: '#fff3e0', border: '#ffcc80', text: '#e65100',
+        desc: '2 buổi/tuần · mỗi buổi <strong>2 tiết liên tiếp</strong> — nhập cả 2 buổi bên dưới'
+    }
 };
 
 // Tiết không được là tiết bắt đầu (cuối buổi sáng / cuối ngày)
@@ -33,10 +39,10 @@ const INVALID_START_LESSONS = new Set([5, 13]);
 //  STATE
 // ══════════════════════════════════════════════════════════════
 let allAdminCourses = [];
-let semesterCache   = [];
+let semesterCache = [];
 let editingCourseId = null;
-let currentStep     = 1;
-const TOTAL_STEPS   = 3;
+let currentStep = 1;
+const TOTAL_STEPS = 3;
 
 // ══════════════════════════════════════════════════════════════
 //  INIT
@@ -58,31 +64,31 @@ function populateLessonSelects() {
 
 function _fillLessonSelect(startId, endId, defaultStart, defaultEnd) {
     const startSel = document.getElementById(startId);
-    const endSel   = document.getElementById(endId);
+    const endSel = document.getElementById(endId);
     if (!startSel || !endSel) return;
     startSel.innerHTML = '';
-    endSel.innerHTML   = '';
+    endSel.innerHTML = '';
     for (let i = 1; i <= 13; i++) {
         startSel.add(new Option(`Tiết ${i}  (${LESSON_TIMES[i]})`, i));
         endSel.add(new Option(`Tiết ${i}  (${LESSON_END_TIMES[i]})`, i));
     }
     startSel.value = String(defaultStart);
-    endSel.value   = String(defaultEnd);
+    endSel.value = String(defaultEnd);
 }
 
 // ── Called when credits select changes ──────────────────────
 function onCreditsChange() {
     const credits = parseInt(document.getElementById('credits')?.value);
-    const rule    = CREDIT_RULES[credits];
+    const rule = CREDIT_RULES[credits];
     if (!rule) return;
 
     // Update info banner
     const banner = document.getElementById('creditInfoBanner');
     if (banner) {
-        banner.style.display     = 'flex';
-        banner.style.background  = rule.color;
+        banner.style.display = 'flex';
+        banner.style.background = rule.color;
         banner.style.borderColor = rule.border;
-        banner.style.color       = rule.text;
+        banner.style.color = rule.text;
         banner.innerHTML = `<ion-icon name="information-circle-outline" style="font-size:16px;flex-shrink:0;"></ion-icon>
             <span><strong>${rule.label}:</strong> ${rule.desc}</span>`;
     }
@@ -106,26 +112,26 @@ function onCreditsChange() {
 
 // ── Called when Tiết bắt đầu (session 1) changes ────────────
 function onStartLessonChange() {
-    const startL  = parseInt(document.getElementById('startLesson')?.value);
+    const startL = parseInt(document.getElementById('startLesson')?.value);
     if (INVALID_START_LESSONS.has(startL)) {
         showToast(`Tiết ${startL} không thể là tiết bắt đầu (cuối buổi học). Vui lòng chọn tiết khác.`, 'error');
         document.getElementById('startLesson').value = startL === 5 ? '4' : '12';
     }
     const credits = parseInt(document.getElementById('credits')?.value);
-    const rule    = CREDIT_RULES[credits];
+    const rule = CREDIT_RULES[credits];
     if (rule) _applyEndOffset('startLesson', 'endLesson', rule.endOffset);
     updateLessonPreview();
 }
 
 // ── Called when Tiết bắt đầu (session 2) changes ────────────
 function onStartLesson2Change() {
-    const startL  = parseInt(document.getElementById('startLesson2')?.value);
+    const startL = parseInt(document.getElementById('startLesson2')?.value);
     if (INVALID_START_LESSONS.has(startL)) {
         showToast(`Tiết ${startL} không thể là tiết bắt đầu (cuối buổi học). Vui lòng chọn tiết khác.`, 'error');
         document.getElementById('startLesson2').value = startL === 5 ? '4' : '12';
     }
     const credits = parseInt(document.getElementById('credits')?.value);
-    const rule    = CREDIT_RULES[credits];
+    const rule = CREDIT_RULES[credits];
     if (rule) _applyEndOffset('startLesson2', 'endLesson2', rule.endOffset);
     updateLessonPreview2();
 }
@@ -133,7 +139,7 @@ function onStartLesson2Change() {
 // ── Called when Tiết kết thúc (session 1) changes ────────────
 function onEndLessonChange() {
     const credits = parseInt(document.getElementById('credits')?.value);
-    const rule    = CREDIT_RULES[credits];
+    const rule = CREDIT_RULES[credits];
     if (rule) _applyStartOffset('endLesson', 'startLesson', rule.endOffset);
     updateLessonPreview();
 }
@@ -141,7 +147,7 @@ function onEndLessonChange() {
 // ── Called when Tiết kết thúc (session 2) changes ────────────
 function onEndLesson2Change() {
     const credits = parseInt(document.getElementById('credits')?.value);
-    const rule    = CREDIT_RULES[credits];
+    const rule = CREDIT_RULES[credits];
     if (rule) _applyStartOffset('endLesson2', 'startLesson2', rule.endOffset);
     updateLessonPreview2();
 }
@@ -150,10 +156,10 @@ function _applyStartOffset(endId, startId, offset) {
     const endL = parseInt(document.getElementById(endId)?.value) || 3;
     const startEl = document.getElementById(startId);
     if (!startEl) return;
-    
+
     let newStart = endL - offset;
     if (newStart < 1) newStart = 1;
-    
+
     if (INVALID_START_LESSONS.has(newStart)) {
         showToast(`Tiết kết thúc bạn chọn khiến tiết bắt đầu rơi vào tiết ${newStart} (cuối buổi học). Vui lòng chọn lại.`, 'error');
         newStart = newStart === 5 ? 4 : 12;
@@ -164,13 +170,13 @@ function _applyStartOffset(endId, startId, offset) {
 
 function _applyEndOffset(startId, endId, offset) {
     const startL = parseInt(document.getElementById(startId)?.value) || 1;
-    const endEl  = document.getElementById(endId);
+    const endEl = document.getElementById(endId);
     if (endEl) endEl.value = String(Math.min(startL + offset, 13));
 }
 
 function updateLessonPreview2() {
-    const s   = parseInt(document.getElementById('startLesson2')?.value);
-    const e   = parseInt(document.getElementById('endLesson2')?.value);
+    const s = parseInt(document.getElementById('startLesson2')?.value);
+    const e = parseInt(document.getElementById('endLesson2')?.value);
     const box = document.getElementById('lessonTimePreview2');
     if (!box) return;
     if (s && e && s <= e) {
@@ -186,8 +192,8 @@ function updateLessonPreview2() {
 }
 
 function updateLessonPreview() {
-    const s   = parseInt(document.getElementById('startLesson')?.value);
-    const e   = parseInt(document.getElementById('endLesson')?.value);
+    const s = parseInt(document.getElementById('startLesson')?.value);
+    const e = parseInt(document.getElementById('endLesson')?.value);
     const box = document.getElementById('lessonTimePreview');
     if (!box) return;
     if (s && e && s <= e) {
@@ -248,11 +254,11 @@ function onSemesterSelectChange() {
 
     // Auto-fill dates in Step 3
     if (sem.startDate) document.getElementById('startDate').value = sem.startDate;
-    if (sem.endDate)   document.getElementById('endDate').value   = sem.endDate;
+    if (sem.endDate) document.getElementById('endDate').value = sem.endDate;
 
     // Show date range info strip (no Active badge)
-    const start = sem.startDate ? new Date(sem.startDate+'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
-    const end   = sem.endDate   ? new Date(sem.endDate+'T00:00:00').toLocaleDateString('vi-VN')   : 'N/A';
+    const start = sem.startDate ? new Date(sem.startDate + 'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
+    const end = sem.endDate ? new Date(sem.endDate + 'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
 
     const box = document.getElementById('semesterInfoBox');
     box.className = 'sem-info-strip show';
@@ -283,7 +289,7 @@ function populateSemFilterDropdown() {
 async function loadCourses() {
     const tbody = document.getElementById('courseTable');
     try {
-        const res  = await authFetch(`${API_BASE_URL}/admin/courses`);
+        const res = await authFetch(`${API_BASE_URL}/admin/courses`);
         const data = await res.json();
 
         allAdminCourses = data || [];
@@ -292,7 +298,7 @@ async function loadCourses() {
         // Populate semester filter from loaded data
         if (semesterCache.length === 0) {
             const sems = [...new Set(allAdminCourses.map(c => c.semester).filter(Boolean))];
-            const sel  = document.getElementById('filterSem');
+            const sel = document.getElementById('filterSem');
             sems.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
         }
     } catch {
@@ -353,8 +359,8 @@ function renderCourses(list) {
             <td>
                 <span class="sem-tag">${c.semester}</span>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
-                    ${c.startDate ? new Date(c.startDate+'T00:00:00').toLocaleDateString('vi-VN') : '?'}
-                    → ${c.endDate ? new Date(c.endDate+'T00:00:00').toLocaleDateString('vi-VN') : '?'}
+                    ${c.startDate ? new Date(c.startDate + 'T00:00:00').toLocaleDateString('vi-VN') : '?'}
+                    → ${c.endDate ? new Date(c.endDate + 'T00:00:00').toLocaleDateString('vi-VN') : '?'}
                 </div>
             </td>
             <td>
@@ -370,7 +376,7 @@ function renderCourses(list) {
                 <button class="action-btn edit" onclick="editCourse(${c.id})">
                     <ion-icon name="pencil-outline"></ion-icon> Sửa
                 </button>
-                <button class="action-btn delete" onclick="askDeleteCourse(${c.id}, '${(c.subjectName||'').replace(/'/g, '')}')"
+                <button class="action-btn delete" onclick="askDeleteCourse(${c.id}, '${(c.subjectName || '').replace(/'/g, '')}')"
                         style="margin-left:5px;">
                     <ion-icon name="trash-outline"></ion-icon> Xóa
                 </button>
@@ -383,13 +389,13 @@ function renderCourses(list) {
 //  FILTER
 // ══════════════════════════════════════════════════════════════
 function filterCourses() {
-    const q   = document.getElementById('filterSearch').value.toLowerCase();
+    const q = document.getElementById('filterSearch').value.toLowerCase();
     const sem = document.getElementById('filterSem').value;
     const day = document.getElementById('filterDay').value;
 
     const filtered = allAdminCourses.filter(c => {
-        const matchQ   = !q || [c.subjectCode, c.subjectName, c.teacherName, c.teacherEmail, c.className]
-                                .some(v => (v||'').toLowerCase().includes(q));
+        const matchQ = !q || [c.subjectCode, c.subjectName, c.teacherName, c.teacherEmail, c.className]
+            .some(v => (v || '').toLowerCase().includes(q));
         const matchSem = !sem || c.semester === sem;
         const matchDay = !day || String(c.dayOfWeek) === day;
         return matchQ && matchSem && matchDay;
@@ -417,8 +423,8 @@ function _setStep(n) {
             tab.classList.toggle('done', i < n);
         }
     }
-    document.getElementById('btnPrev').style.display  = n > 1 ? 'inline-flex' : 'none';
-    document.getElementById('btnNext').style.display  = n < TOTAL_STEPS ? 'inline-flex' : 'none';
+    document.getElementById('btnPrev').style.display = n > 1 ? 'inline-flex' : 'none';
+    document.getElementById('btnNext').style.display = n < TOTAL_STEPS ? 'inline-flex' : 'none';
     document.getElementById('submitBtn').style.display = n === TOTAL_STEPS ? 'inline-flex' : 'none';
 }
 
@@ -435,12 +441,12 @@ function validateStep(step) {
     if (step === 1) {
         if (!document.getElementById('subjectCode').value.trim()) { showToast('Vui lòng nhập Mã Môn Học.', 'error'); return false; }
         if (!document.getElementById('subjectName').value.trim()) { showToast('Vui lòng nhập Tên Môn Học.', 'error'); return false; }
-        if (!document.getElementById('semester').value)           { showToast('Vui lòng chọn Học Kỳ.', 'error'); return false; }
+        if (!document.getElementById('semester').value) { showToast('Vui lòng chọn Học Kỳ.', 'error'); return false; }
     }
     if (step === 2) {
-        if (!document.getElementById('teacherId').value)          { showToast('Vui lòng chọn Giảng Viên.', 'error'); return false; }
-        if (!document.getElementById('className').value.trim())   { showToast('Vui lòng nhập Tên Nhóm/Lớp.', 'error'); return false; }
-        if (!document.getElementById('room').value.trim())        { showToast('Vui lòng nhập Phòng Học.', 'error'); return false; }
+        if (!document.getElementById('teacherId').value) { showToast('Vui lòng chọn Giảng Viên.', 'error'); return false; }
+        if (!document.getElementById('className').value.trim()) { showToast('Vui lòng nhập Tên Nhóm/Lớp.', 'error'); return false; }
+        if (!document.getElementById('room').value.trim()) { showToast('Vui lòng nhập Phòng Học.', 'error'); return false; }
     }
     return true;
 }
@@ -452,7 +458,7 @@ async function openCreateModal() {
     editingCourseId = null;
     document.getElementById('modalTitle').textContent = 'Thêm Môn Học Mới';
     document.getElementById('courseForm').reset();
-    
+
     // Đặt lại trạng thái nút submit (chống kẹt Đang lưu...)
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) {
@@ -503,7 +509,7 @@ function closeCreateModal() {
 }
 
 // Close on overlay click
-document.getElementById('courseModal').addEventListener('click', function(e) {
+document.getElementById('courseModal').addEventListener('click', function (e) {
     if (e.target === this) closeCreateModal();
 });
 
@@ -516,29 +522,29 @@ async function editCourse(id) {
 
     await openCreateModal();
     editingCourseId = id;
-    document.getElementById('modalTitle').textContent     = 'Cập Nhật Môn Học';
-    document.getElementById('submitLabel').textContent    = 'Lưu Thay Đổi';
+    document.getElementById('modalTitle').textContent = 'Cập Nhật Môn Học';
+    document.getElementById('submitLabel').textContent = 'Lưu Thay Đổi';
 
-    document.getElementById('subjectCode').value  = course.subjectCode  || '';
-    document.getElementById('subjectName').value  = course.subjectName  || '';
-    document.getElementById('credits').value      = course.credits      || '3';
-    document.getElementById('className').value    = course.className    || '';
-    document.getElementById('room').value         = course.room         || '';
-    document.getElementById('dayOfWeek').value    = course.dayOfWeek    || 2;
-    document.getElementById('startLesson').value  = course.startLesson  || 1;
-    document.getElementById('endLesson').value    = course.endLesson    || 3;
-    document.getElementById('startDate').value    = course.startDate    || '';
-    document.getElementById('endDate').value      = course.endDate      || '';
-    document.getElementById('teacherId').value    = course.teacherId    || '';
+    document.getElementById('subjectCode').value = course.subjectCode || '';
+    document.getElementById('subjectName').value = course.subjectName || '';
+    document.getElementById('credits').value = course.credits || '3';
+    document.getElementById('className').value = course.className || '';
+    document.getElementById('room').value = course.room || '';
+    document.getElementById('dayOfWeek').value = course.dayOfWeek || 2;
+    document.getElementById('startLesson').value = course.startLesson || 1;
+    document.getElementById('endLesson').value = course.endLesson || 3;
+    document.getElementById('startDate').value = course.startDate || '';
+    document.getElementById('endDate').value = course.endDate || '';
+    document.getElementById('teacherId').value = course.teacherId || '';
 
     const rule = CREDIT_RULES[parseInt(course.credits || '3')];
     if (rule) {
         const banner = document.getElementById('creditInfoBanner');
         if (banner) {
-            banner.style.display     = 'flex';
-            banner.style.background  = rule.color;
+            banner.style.display = 'flex';
+            banner.style.background = rule.color;
             banner.style.borderColor = rule.border;
-            banner.style.color       = rule.text;
+            banner.style.color = rule.text;
             banner.innerHTML = `<ion-icon name="information-circle-outline" style="font-size:16px;flex-shrink:0;"></ion-icon>
                 <span><strong>${rule.label}:</strong> ${rule.desc}</span>`;
         }
@@ -549,23 +555,23 @@ async function editCourse(id) {
 
     // Pre-fill buổi 2 (nếu môn học thuộc loại cần 2 buổi và có dữ liệu)
     if (course.dayOfWeek2 && rule && rule.needsSecondSession) {
-        document.getElementById('dayOfWeek2').value    = course.dayOfWeek2    || 2;
-        document.getElementById('startLesson2').value  = course.startLesson2  || 1;
-        document.getElementById('endLesson2').value    = course.endLesson2    || 3;
+        document.getElementById('dayOfWeek2').value = course.dayOfWeek2 || 2;
+        document.getElementById('startLesson2').value = course.startLesson2 || 1;
+        document.getElementById('endLesson2').value = course.endLesson2 || 3;
         updateLessonPreview2();
     }
 
     // Match semester
     const semSel = document.getElementById('semester');
-    const match  = Array.from(semSel.options).find(o => o.value === course.semester);
+    const match = Array.from(semSel.options).find(o => o.value === course.semester);
     if (match) semSel.value = course.semester;
 
     updateLessonPreview();
     const sem = semesterCache.find(s => s.label === course.semester);
     if (sem) {
         const box = document.getElementById('semesterInfoBox');
-        const start = sem.startDate ? new Date(sem.startDate+'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
-        const end   = sem.endDate   ? new Date(sem.endDate+'T00:00:00').toLocaleDateString('vi-VN')   : 'N/A';
+        const start = sem.startDate ? new Date(sem.startDate + 'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
+        const end = sem.endDate ? new Date(sem.endDate + 'T00:00:00').toLocaleDateString('vi-VN') : 'N/A';
         box.className = 'sem-info-strip show';
         box.innerHTML = `<ion-icon name="calendar-number-outline"></ion-icon> <span>${start} → ${end}</span>`;
     }
@@ -579,11 +585,11 @@ document.getElementById('courseForm').addEventListener('submit', async (e) => {
     if (!validateStep(3)) return;
 
     const startL = parseInt(document.getElementById('startLesson').value);
-    const endL   = parseInt(document.getElementById('endLesson').value);
+    const endL = parseInt(document.getElementById('endLesson').value);
     if (startL > endL) { showToast('Tiết bắt đầu phải ≤ tiết kết thúc!', 'error'); return; }
 
     const startDate = document.getElementById('startDate').value;
-    const endDate   = document.getElementById('endDate').value;
+    const endDate = document.getElementById('endDate').value;
     if (!startDate || !endDate) { showToast('Vui lòng nhập ngày bắt đầu và kết thúc.', 'error'); return; }
     if (new Date(startDate) >= new Date(endDate)) { showToast('Ngày bắt đầu phải trước ngày kết thúc!', 'error'); return; }
 
@@ -599,20 +605,20 @@ document.getElementById('courseForm').addEventListener('submit', async (e) => {
     }
 
     const credits = parseInt(document.getElementById('credits').value);
-    const rule    = CREDIT_RULES[credits];
+    const rule = CREDIT_RULES[credits];
 
     const payload = {
         subjectCode: document.getElementById('subjectCode').value.trim(),
         subjectName: document.getElementById('subjectName').value.trim(),
         credits,
-        className:   document.getElementById('className').value.trim(),
-        room:        document.getElementById('room').value.trim(),
-        dayOfWeek:   parseInt(document.getElementById('dayOfWeek').value),
+        className: document.getElementById('className').value.trim(),
+        room: document.getElementById('room').value.trim(),
+        dayOfWeek: parseInt(document.getElementById('dayOfWeek').value),
         startLesson: startL,
-        endLesson:   endL,
-        teacherId:   parseInt(document.getElementById('teacherId').value),
-        semester:    semLabel,
-        semesterId:  selectedSem?.id || null,
+        endLesson: endL,
+        teacherId: parseInt(document.getElementById('teacherId').value),
+        semester: semLabel,
+        semesterId: selectedSem?.id || null,
         startDate,
         endDate
     };
@@ -624,21 +630,21 @@ document.getElementById('courseForm').addEventListener('submit', async (e) => {
         const d2 = parseInt(document.getElementById('dayOfWeek2')?.value);
         if (!d2 || !s2 || !e2) { showToast(`Vui lòng điền đủ thông tin Buổi 2 cho môn ${credits} tín chỉ.`, 'error'); return; }
         if (s2 > e2) { showToast('Buổi 2: Tiết bắt đầu phải ≤ tiết kết thúc!', 'error'); return; }
-        payload.dayOfWeek2   = d2;
+        payload.dayOfWeek2 = d2;
         payload.startLesson2 = s2;
-        payload.endLesson2   = e2;
+        payload.endLesson2 = e2;
     }
 
     try {
-        const url    = editingCourseId ? `${API_BASE_URL}/admin/courses/${editingCourseId}` : `${API_BASE_URL}/admin/courses`;
+        const url = editingCourseId ? `${API_BASE_URL}/admin/courses/${editingCourseId}` : `${API_BASE_URL}/admin/courses`;
         const method = editingCourseId ? 'PUT' : 'POST';
         const submitBtn = document.getElementById('submitBtn');
         if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Đang lưu...'; }
 
-        const res    = await authFetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const res = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
         if (res.ok) {
-            showToast(editingCourseId ? '✅ Cập nhật thành công!' : '✅ Tạo môn học và phân công thành công!');
+            showToast(editingCourseId ? 'Cập nhật thành công!' : 'Tạo môn học và phân công thành công!');
             closeCreateModal();
             loadCourses();
         } else {
@@ -679,7 +685,7 @@ async function confirmDeleteCourse() {
     try {
         const res = await authFetch(`${API_BASE_URL}/admin/courses/${_deletingCourseId}`, { method: 'DELETE' });
         if (res.ok) {
-            showToast('✅ Xóa học phần thành công!', 'success');
+            showToast('Xóa học phần thành công!', 'success');
             closeConfirmDelete();
             loadCourses();
         } else {
@@ -695,7 +701,7 @@ async function confirmDeleteCourse() {
 }
 
 // Close confirm modal on overlay click
-document.getElementById('confirmDeleteModal')?.addEventListener('click', function(e) {
+document.getElementById('confirmDeleteModal')?.addEventListener('click', function (e) {
     if (e.target === this) closeConfirmDelete();
 });
 
@@ -706,10 +712,10 @@ async function syncSchedules() {
     const btn = document.getElementById('syncBtn');
     if (btn) { btn.disabled = true; btn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Đang đồng bộ...'; }
     try {
-        const res  = await authFetch(`${API_BASE_URL}/admin/courses/sync-schedules`, { method: 'POST' });
+        const res = await authFetch(`${API_BASE_URL}/admin/courses/sync-schedules`, { method: 'POST' });
         const data = await res.json();
         if (res.ok) {
-            showToast(`✅ Đồng bộ xong! Đã tạo ${data.schedulesCreated} lịch, liên kết ${data.semestersLinked} học kỳ / ${data.totalCourses} môn.`);
+            showToast(`Đồng bộ xong! Đã tạo ${data.schedulesCreated} lịch, liên kết ${data.semestersLinked} học kỳ / ${data.totalCourses} môn.`);
             loadCourses();
         } else {
             showToast(data.error || 'Lỗi khi đồng bộ.', 'error');

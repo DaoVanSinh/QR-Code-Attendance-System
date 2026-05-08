@@ -33,6 +33,12 @@ public class AdminController {
     private final AdminService adminService;
     private final ScheduleService scheduleService;
 
+    // ── Dashboard Stats ────────────────────────────────────────────
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<com.qrcode.backend.dto.response.DashboardStatsResponse> getDashboardStats() {
+        return ResponseEntity.ok(adminService.getDashboardStats());
+    }
+
     // ── Users ──────────────────────────────────────────────────
     @GetMapping("/users")
     public ResponseEntity<List<UserSummaryResponse>> getUsers() {

@@ -1,11 +1,7 @@
 package com.qrcode.backend.service;
 
 import com.qrcode.backend.dto.request.CreateCourseRequest;
-import com.qrcode.backend.dto.response.AdminSessionResponse;
-import com.qrcode.backend.dto.response.CourseDetailResponse;
-import com.qrcode.backend.dto.response.EnrolledStudentResponse;
-import com.qrcode.backend.dto.response.SemesterResponse;
-import com.qrcode.backend.dto.response.UserSummaryResponse;
+import com.qrcode.backend.dto.response.*;
 import com.qrcode.backend.dto.request.AdminCreateUserRequest;
 import com.qrcode.backend.entity.*;
 import com.qrcode.backend.entity.enums.Gender;
@@ -19,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.DayOfWeek;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,6 +38,145 @@ public class AdminService {
     private final ScheduleRepository scheduleRepository;
     private final ScheduleService scheduleService;
     private final EnrollmentRepository enrollmentRepository;
+    private final LogRepository logRepository;
+
+    // ── Dashboard Stats ──────────────────────────────────────────────
+    public DashboardStatsResponse getDashboardStats() {
+        LocalDateTime now = LocalDateTime.now();
+
+        // ── Basic counts ──
+        long totalStudents = userRepository.countByRole(Role.STUDENT);
+        long totalTeachers = userRepository.countByRole(Role.TEACHER);
+        long totalCourses = courseRepository.count();
+        long totalSessions = sessionRepository.count();
+        long totalAttendances = attendancesRepository.count();
+        long totalSubjects = subjectRepository.count();
+
+        // ── Enrollment breakdown ──
+        long enrollActive = enrollmentRepository.countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.ACTIVE);
+        long enrollCancelled = enrollmentRepository.countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.CANCELLED);
+        long enrollPending = enrollmentRepository.countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.PENDING);
+
+        // ── Current semester ──
+        DashboardStatsResponse.SemesterInfo semesterInfo = null;
+        List<Semester> semesters = semesterRepository.findAllByOrderBySchoolYearDescNameAsc();
+        Semester activeSemester = semesters.stream()
+                .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                .findFirst().orElse(semesters.isEmpty() ? null : semesters.get(0));
+        if (activeSemester != null) {
+            String nameFull = switch (activeSemester.getName()) {
+                case "HK1" -> "Học kỳ 1";
+                case "HK2" -> "Học kỳ 2";
+                case "HK3" -> "Học kỳ hè";
+                default -> activeSemester.getName();
+            };
+            int totalWeeks = 0;
+            int currentWeek = 0;
+            if (activeSemester.getStartDate() != null && activeSemester.getEndDate() != null) {
+                totalWeeks = (int) ChronoUnit.WEEKS.between(activeSemester.getStartDate(), activeSemester.getEndDate());
+                long daysSinceStart = ChronoUnit.DAYS.between(activeSemester.getStartDate(), LocalDate.now());
+                currentWeek = daysSinceStart > 0 ? (int) (daysSinceStart / 7) + 1 : 0;
+                if (currentWeek > totalWeeks) currentWeek = totalWeeks;
+                if (currentWeek < 0) currentWeek = 0;
+            }
+            semesterInfo = DashboardStatsResponse.SemesterInfo.builder()
+                    .id(activeSemester.getId())
+                    .name(activeSemester.getName())
+                    .nameFull(nameFull)
+                    .schoolYear(activeSemester.getSchoolYear())
+                    .startDate(activeSemester.getStartDate())
+                    .endDate(activeSemester.getEndDate())
+                    .isActive(activeSemester.getIsActive())
+                    .totalWeeks(totalWeeks)
+                    .currentWeek(currentWeek)
+                    .build();
+        }
+
+        // ── Attendance last 7 days ──
+        List<DashboardStatsResponse.DailyAttendance> last7Days = new ArrayList<>();
+        String[] dayLabels = {"", "", "T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("dd/MM");
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = LocalDate.now().minusDays(i);
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+            long count = attendancesRepository.countByCheckInTimeBetween(startOfDay, endOfDay);
+            int dow = date.getDayOfWeek().getValue() + 1; // Monday=2 to match Vietnamese convention
+            if (dow > 8) dow = 8; // Sunday
+            String label = (dow >= 2 && dow <= 8) ? dayLabels[dow] : date.getDayOfWeek().toString().substring(0, 2);
+            last7Days.add(DashboardStatsResponse.DailyAttendance.builder()
+                    .date(date.format(dateFmt))
+                    .dayLabel(label)
+                    .count(count)
+                    .build());
+        }
+
+        // ── Today's schedules ──
+        String[] lessonTimes = {"", "07:00-07:50", "07:50-08:40", "08:40-09:30", "09:40-10:30",
+                "10:30-11:20", "11:20-12:10", "12:30-13:20", "13:20-14:10", "14:10-15:00",
+                "15:10-16:00", "16:00-16:50", "16:50-17:40", "18:00-18:50"};
+        int todayDow = LocalDate.now().getDayOfWeek().getValue() + 1; // Monday=2
+        if (todayDow > 8) todayDow = 8;
+        List<DashboardStatsResponse.TodayScheduleInfo> todaySchedules = new ArrayList<>();
+        try {
+            List<Schedule> schedules = scheduleRepository.findByDayOfWeekOrderByStartPeriodAsc(todayDow);
+            for (Schedule sch : schedules) {
+                Course c = sch.getCourse();
+                String teacherName = c.getTeacher().getProfile() != null
+                        ? c.getTeacher().getProfile().getFullName()
+                        : c.getTeacher().getEmail();
+                String sTime = sch.getStartPeriod() >= 1 && sch.getStartPeriod() < lessonTimes.length
+                        ? lessonTimes[sch.getStartPeriod()].split("-")[0] : "";
+                String eTime = sch.getEndPeriod() >= 1 && sch.getEndPeriod() < lessonTimes.length
+                        ? lessonTimes[sch.getEndPeriod()].split("-")[1] : "";
+                todaySchedules.add(DashboardStatsResponse.TodayScheduleInfo.builder()
+                        .courseId(c.getId())
+                        .subjectName(c.getSubject().getName())
+                        .subjectCode(c.getSubject().getCode())
+                        .className(c.getClasses().getName())
+                        .teacherName(teacherName)
+                        .room(sch.getRoom())
+                        .startLesson(sch.getStartPeriod())
+                        .endLesson(sch.getEndPeriod())
+                        .startTime(sTime)
+                        .endTime(eTime)
+                        .build());
+            }
+        } catch (Exception ignored) {}
+
+        // ── Quick stats ──
+        // Active sessions right now
+        long activeSessionCount = 0;
+        List<Session> allSessions = sessionRepository.findAll();
+        for (Session s : allSessions) {
+            if (s.getExpiredAt() != null && s.getExpiredAt().isAfter(now)) activeSessionCount++;
+        }
+        // Today's stats
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        LocalDateTime todayEnd = LocalDate.now().plusDays(1).atStartOfDay();
+        long todaySessionCount = allSessions.stream()
+                .filter(s -> s.getStartTime() != null && s.getStartTime().isAfter(todayStart) && s.getStartTime().isBefore(todayEnd))
+                .count();
+        long todayAttendanceCount = attendancesRepository.countByCheckInTimeBetween(todayStart, todayEnd);
+
+        return DashboardStatsResponse.builder()
+                .totalStudents(totalStudents)
+                .totalTeachers(totalTeachers)
+                .totalCourses(totalCourses)
+                .totalSessions(totalSessions)
+                .totalAttendances(totalAttendances)
+                .totalSubjects(totalSubjects)
+                .activeSessions(activeSessionCount)
+                .enrollmentActive(enrollActive)
+                .enrollmentCancelled(enrollCancelled)
+                .enrollmentPending(enrollPending)
+                .currentSemester(semesterInfo)
+                .attendanceLast7Days(last7Days)
+                .todaySchedules(todaySchedules)
+                .todaySessionCount(todaySessionCount)
+                .todayAttendanceCount(todayAttendanceCount)
+                .build();
+    }
 
     @Transactional
     public void createUser(AdminCreateUserRequest request) {

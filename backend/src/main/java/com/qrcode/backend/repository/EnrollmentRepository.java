@@ -27,6 +27,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     long countByCourseIdAndStatus(Integer courseId, EnrollmentStatus status);
 
     /**
+     * Đếm tổng enrollment theo status (toàn hệ thống).
+     */
+    long countByStatus(EnrollmentStatus status);
+
+    /**
      * Lấy enrollment list với PESSIMISTIC_WRITE lock — chống race condition.
      * Khi 2 SV cùng đăng ký 1 chỗ cuối cùng, chỉ 1 người được lock.
      */

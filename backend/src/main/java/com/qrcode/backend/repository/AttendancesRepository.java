@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface AttendancesRepository extends JpaRepository<Attendances, Integer> {
+
+    long countByCheckInTimeBetween(LocalDateTime start, LocalDateTime end);
     boolean existsBySessionIdAndStudentId(Integer sessionId, Integer studentId);
     List<Attendances> findBySessionId(Integer sessionId);
     List<Attendances> findByStudentIdOrderByCheckInTimeDesc(Integer studentId);

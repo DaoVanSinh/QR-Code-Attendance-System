@@ -16,6 +16,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByUsername(String username);
     boolean existsByEmailAndIdNot(String email, Integer id); // Kiểm tra email trùng (trừ user hiện tại)
     boolean existsByUsernameAndIdNot(String username, Integer id); // Kiểm tra mã SV trùng (trừ user hiện tại)
+    long countByRole(com.qrcode.backend.entity.enums.Role role);
 }
 
 

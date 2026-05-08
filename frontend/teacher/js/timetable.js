@@ -25,7 +25,6 @@ function hashCode(str) {
     return Math.abs(hash);
 }
 
-// ✅ Đầy đủ dấu tiếng Việt
 const DOW_LABELS  = ['','','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
 const DAY_HEADERS = ['','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
 

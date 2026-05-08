@@ -103,4 +103,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
         @Param("endPeriod") Integer endPeriod,
         @Param("excludeCourseId") Integer excludeCourseId
     );
+    /**
+     * Lấy tất cả schedule theo thứ trong tuần (dashboard — lịch hôm nay).
+     */
+    List<Schedule> findByDayOfWeekOrderByStartPeriodAsc(Integer dayOfWeek);
 }
