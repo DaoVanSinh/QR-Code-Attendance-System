@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Builder
 public class CourseDetailResponse {
     private Integer id;
+    private String courseCode;
     private String subjectName;
     private String subjectCode;
     private String className;
@@ -32,4 +33,3 @@ public class CourseDetailResponse {
     private Integer startLesson2;
     private Integer endLesson2;
 }
-

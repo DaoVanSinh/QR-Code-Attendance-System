@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Builder
 public class CourseResponse {
     private Integer id;
+    private String courseCode;
     private String subjectName;
     private String subjectCode;
     private Integer credits;
@@ -16,7 +17,7 @@ public class CourseResponse {
     private Integer dayOfWeek;
     private Integer startLesson;
     private Integer endLesson;
-    
+
     private Integer dayOfWeek2;
     private Integer startLesson2;
     private Integer endLesson2;

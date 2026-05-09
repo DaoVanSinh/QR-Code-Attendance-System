@@ -22,7 +22,7 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "course_code", length = 30, unique = true)
+    @Column(name = "course_code", length = 100)
     private String courseCode;
 
     @ManyToOne(fetch = FetchType.LAZY)

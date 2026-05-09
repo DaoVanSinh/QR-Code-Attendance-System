@@ -61,8 +61,7 @@ function updateWeekNav() {
     document.getElementById('btnNextWeek').disabled = cur >= weekData.length - 1;
     if (weekData[cur]) {
         const w = weekData[cur];
-        const fmt = d => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-        document.getElementById('weekLabel').textContent = `Tuần ${w.num}  ·  ${fmt(w.start)} – ${fmt(w.end)}`;
+        document.getElementById('weekLabel').textContent = `Tuần ${w.num}`;
     }
 }
 
@@ -162,8 +161,7 @@ function computeWeeks(courses) {
     while (curWeek <= maxD) {
         const endW = new Date(curWeek);
         endW.setDate(endW.getDate() + 6);
-        const fmt = d => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-        weekData.push({ label: `Tuần ${weekNum} (${fmt(curWeek)} – ${fmt(endW)})`, num: weekNum, start: new Date(curWeek), end: new Date(endW) });
+        weekData.push({ label: `Tuần ${weekNum}`, num: weekNum, start: new Date(curWeek), end: new Date(endW) });
         if (now >= curWeek && now <= endW) currentWeekIndex = weekNum - 1;
         curWeek.setDate(curWeek.getDate() + 7);
         weekNum++;

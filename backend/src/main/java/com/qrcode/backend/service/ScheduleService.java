@@ -6,6 +6,7 @@ import com.qrcode.backend.entity.Course;
 import com.qrcode.backend.entity.Schedule;
 import com.qrcode.backend.entity.Semester;
 import com.qrcode.backend.exception.ResourceNotFoundException;
+import com.qrcode.backend.repository.CourseRepository;
 import com.qrcode.backend.repository.ScheduleRepository;
 import com.qrcode.backend.repository.SemesterRepository;
 import com.qrcode.backend.security.CustomUserDetails;
@@ -25,6 +26,7 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final SemesterRepository semesterRepository;
+    private final CourseRepository courseRepository;
 
     // ── Bảng quy đổi Tiết → Giờ thực (cố định) ─────────────────
     private static final Map<Integer, LocalTime> SLOT_START_TIMES = Map.ofEntries(
@@ -163,12 +165,34 @@ public class ScheduleService {
     /**
      * Kiểm tra trùng lịch cá nhân sinh viên khi đăng ký.
      * Trả về tên môn trùng hoặc null nếu OK.
+     *
+     * Check 2 chiều:
+     * 1. Schedule table — check qua query findStudentTimeConflicts
+     * 2. Course legacy fields — check cho các môn đã đăng ký chưa có Schedule record
      */
     public String checkStudentTimeConflict(Integer studentId, Integer courseId) {
+        // ── Bước 1: Xác định tất cả slot (dayOfWeek, start, end) của course mới ──
+        List<int[]> newSlots = new ArrayList<>();
         List<Schedule> courseSchedules = scheduleRepository.findByCourseId(courseId);
-        for (Schedule cs : courseSchedules) {
+        if (!courseSchedules.isEmpty()) {
+            for (Schedule cs : courseSchedules) {
+                newSlots.add(new int[]{ cs.getDayOfWeek(), cs.getStartPeriod(), cs.getEndPeriod() });
+            }
+        } else {
+            // Fallback: dùng legacy fields trên Course entity
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course != null && course.getDayOfWeek() != null
+                    && course.getStartLesson() != null && course.getEndLesson() != null) {
+                newSlots.add(new int[]{ course.getDayOfWeek(), course.getStartLesson(), course.getEndLesson() });
+            }
+        }
+
+        if (newSlots.isEmpty()) return null; // Không xác định được lịch → cho qua
+
+        // ── Bước 2: Check qua Schedule table (các môn đã đăng ký có Schedule) ──
+        for (int[] slot : newSlots) {
             List<Schedule> conflicts = scheduleRepository.findStudentTimeConflicts(
-                studentId, cs.getDayOfWeek(), cs.getStartPeriod(), cs.getEndPeriod(), courseId
+                studentId, slot[0], slot[1], slot[2], courseId
             );
             if (!conflicts.isEmpty()) {
                 Schedule c = conflicts.get(0);
@@ -180,6 +204,27 @@ public class ScheduleService {
                 );
             }
         }
+
+        // ── Bước 3: Check qua Course legacy fields (các môn đã đăng ký chưa có Schedule) ──
+        List<Course> enrolledCourses = courseRepository.findEnrolledByStudentWithoutSchedule(studentId, courseId);
+        for (Course enrolled : enrolledCourses) {
+            if (enrolled.getDayOfWeek() == null || enrolled.getStartLesson() == null
+                    || enrolled.getEndLesson() == null) continue;
+            for (int[] slot : newSlots) {
+                // Overlap rule: start1 <= end2 AND end1 >= start2
+                if (enrolled.getDayOfWeek() == slot[0]
+                        && enrolled.getStartLesson() <= slot[2]
+                        && enrolled.getEndLesson() >= slot[1]) {
+                    return String.format(
+                        "Trùng lịch với môn '%s' (%s, Tiết %d→%d).",
+                        enrolled.getSubject().getName(),
+                        DOW_LABELS[enrolled.getDayOfWeek()],
+                        enrolled.getStartLesson(), enrolled.getEndLesson()
+                    );
+                }
+            }
+        }
+
         return null;
     }
 

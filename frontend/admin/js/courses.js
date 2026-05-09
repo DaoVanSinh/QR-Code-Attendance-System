@@ -215,10 +215,26 @@ async function loadSemestersIntoSelect() {
     const semSel = document.getElementById('semester');
     if (!semSel) return;
 
+    const FALLBACK_SEMESTERS = `
+        <option value="">-- Chọn học kỳ --</option>
+        <option value="HK1 — 2024-2025">Học kỳ 1 — 2024-2025</option>
+        <option value="HK2 — 2024-2025">Học kỳ 2 — 2024-2025</option>
+        <option value="HK1 — 2025-2026">Học kỳ 1 — 2025-2026</option>
+        <option value="HK2 — 2025-2026" selected>Học kỳ 2 — 2025-2026</option>
+        <option value="HK1 — 2026-2027">Học kỳ 1 — 2026-2027</option>`;
+
     try {
         const res = await authFetch(`${API_BASE_URL}/admin/semesters`);
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error('API returned ' + res.status);
         semesterCache = await res.json();
+
+        // Nếu API trả về mảng rỗng → fallback
+        if (!Array.isArray(semesterCache) || semesterCache.length === 0) {
+            console.warn('[Courses] Bảng semesters trống — dùng danh sách mặc định.');
+            semSel.innerHTML = FALLBACK_SEMESTERS;
+            semesterCache = [];
+            return;
+        }
 
         semSel.innerHTML = '<option value="">-- Chọn học kỳ --</option>';
         semesterCache.forEach(s => {
@@ -235,13 +251,10 @@ async function loadSemestersIntoSelect() {
             semSel.value = active.label;
             onSemesterSelectChange();
         }
-    } catch {
-        semSel.innerHTML = `
-            <option value="">-- Chọn học kỳ --</option>
-            <option value="HK1 — 2024-2025">Học kỳ 1 — 2024-2025</option>
-            <option value="HK2 — 2024-2025">Học kỳ 2 — 2024-2025</option>
-            <option value="HK1 — 2025-2026" selected>Học kỳ 1 — 2025-2026</option>
-            <option value="HK2 — 2025-2026">Học kỳ 2 — 2025-2026</option>`;
+    } catch (err) {
+        console.warn('[Courses] Lỗi tải học kỳ, dùng fallback:', err);
+        semSel.innerHTML = FALLBACK_SEMESTERS;
+        semesterCache = [];
     }
 
     semSel.addEventListener('change', onSemesterSelectChange);

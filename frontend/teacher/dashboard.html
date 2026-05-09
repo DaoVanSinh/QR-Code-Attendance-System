@@ -72,8 +72,8 @@
                         <button class="btn btn-primary btn-sm" onclick="goCreateSession(${c.id})">
                             <ion-icon name="qr-code-outline"></ion-icon> Tạo QR
                         </button>
-                        <button class="btn btn-outline btn-sm" onclick="goTimetable(${c.id})">
-                            <ion-icon name="calendar-outline"></ion-icon> Lịch Sử
+                        <button class="btn btn-outline btn-sm" onclick="goHistory(${c.id})">
+                            <ion-icon name="time-outline"></ion-icon> Lịch Sử
                         </button>
                     </div>
                 </div>
@@ -84,9 +84,9 @@
             storageSet('selected_course_id', courseId);
             window.location.href = 'create-session.html';
         }
-        function goTimetable(courseId) {
+        function goHistory(courseId) {
             storageSet('selected_course_id', courseId);
-            window.location.href = 'timetable.html';
+            window.location.href = 'monitor.html';
         }
     </script>
 </body>

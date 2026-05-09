@@ -54,8 +54,10 @@ public class AdminService {
 
         // ── Enrollment breakdown ──
         long enrollActive = enrollmentRepository.countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.ACTIVE);
-        long enrollCancelled = enrollmentRepository.countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.CANCELLED);
-        long enrollPending = enrollmentRepository.countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.PENDING);
+        long enrollCancelled = enrollmentRepository
+                .countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.CANCELLED);
+        long enrollPending = enrollmentRepository
+                .countByStatus(com.qrcode.backend.entity.enums.EnrollmentStatus.PENDING);
 
         // ── Current semester ──
         DashboardStatsResponse.SemesterInfo semesterInfo = null;
@@ -76,8 +78,10 @@ public class AdminService {
                 totalWeeks = (int) ChronoUnit.WEEKS.between(activeSemester.getStartDate(), activeSemester.getEndDate());
                 long daysSinceStart = ChronoUnit.DAYS.between(activeSemester.getStartDate(), LocalDate.now());
                 currentWeek = daysSinceStart > 0 ? (int) (daysSinceStart / 7) + 1 : 0;
-                if (currentWeek > totalWeeks) currentWeek = totalWeeks;
-                if (currentWeek < 0) currentWeek = 0;
+                if (currentWeek > totalWeeks)
+                    currentWeek = totalWeeks;
+                if (currentWeek < 0)
+                    currentWeek = 0;
             }
             semesterInfo = DashboardStatsResponse.SemesterInfo.builder()
                     .id(activeSemester.getId())
@@ -94,7 +98,7 @@ public class AdminService {
 
         // ── Attendance last 7 days ──
         List<DashboardStatsResponse.DailyAttendance> last7Days = new ArrayList<>();
-        String[] dayLabels = {"", "", "T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+        String[] dayLabels = { "", "", "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
         DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("dd/MM");
         for (int i = 6; i >= 0; i--) {
             LocalDate date = LocalDate.now().minusDays(i);
@@ -102,7 +106,8 @@ public class AdminService {
             LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
             long count = attendancesRepository.countByCheckInTimeBetween(startOfDay, endOfDay);
             int dow = date.getDayOfWeek().getValue() + 1; // Monday=2 to match Vietnamese convention
-            if (dow > 8) dow = 8; // Sunday
+            if (dow > 8)
+                dow = 8; // Sunday
             String label = (dow >= 2 && dow <= 8) ? dayLabels[dow] : date.getDayOfWeek().toString().substring(0, 2);
             last7Days.add(DashboardStatsResponse.DailyAttendance.builder()
                     .date(date.format(dateFmt))
@@ -112,11 +117,12 @@ public class AdminService {
         }
 
         // ── Today's schedules ──
-        String[] lessonTimes = {"", "07:00-07:50", "07:50-08:40", "08:40-09:30", "09:40-10:30",
+        String[] lessonTimes = { "", "07:00-07:50", "07:50-08:40", "08:40-09:30", "09:40-10:30",
                 "10:30-11:20", "11:20-12:10", "12:30-13:20", "13:20-14:10", "14:10-15:00",
-                "15:10-16:00", "16:00-16:50", "16:50-17:40", "18:00-18:50"};
+                "15:10-16:00", "16:00-16:50", "16:50-17:40", "18:00-18:50" };
         int todayDow = LocalDate.now().getDayOfWeek().getValue() + 1; // Monday=2
-        if (todayDow > 8) todayDow = 8;
+        if (todayDow > 8)
+            todayDow = 8;
         List<DashboardStatsResponse.TodayScheduleInfo> todaySchedules = new ArrayList<>();
         try {
             List<Schedule> schedules = scheduleRepository.findByDayOfWeekOrderByStartPeriodAsc(todayDow);
@@ -126,9 +132,11 @@ public class AdminService {
                         ? c.getTeacher().getProfile().getFullName()
                         : c.getTeacher().getEmail();
                 String sTime = sch.getStartPeriod() >= 1 && sch.getStartPeriod() < lessonTimes.length
-                        ? lessonTimes[sch.getStartPeriod()].split("-")[0] : "";
+                        ? lessonTimes[sch.getStartPeriod()].split("-")[0]
+                        : "";
                 String eTime = sch.getEndPeriod() >= 1 && sch.getEndPeriod() < lessonTimes.length
-                        ? lessonTimes[sch.getEndPeriod()].split("-")[1] : "";
+                        ? lessonTimes[sch.getEndPeriod()].split("-")[1]
+                        : "";
                 todaySchedules.add(DashboardStatsResponse.TodayScheduleInfo.builder()
                         .courseId(c.getId())
                         .subjectName(c.getSubject().getName())
@@ -142,20 +150,23 @@ public class AdminService {
                         .endTime(eTime)
                         .build());
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         // ── Quick stats ──
         // Active sessions right now
         long activeSessionCount = 0;
         List<Session> allSessions = sessionRepository.findAll();
         for (Session s : allSessions) {
-            if (s.getExpiredAt() != null && s.getExpiredAt().isAfter(now)) activeSessionCount++;
+            if (s.getExpiredAt() != null && s.getExpiredAt().isAfter(now))
+                activeSessionCount++;
         }
         // Today's stats
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
         LocalDateTime todayEnd = LocalDate.now().plusDays(1).atStartOfDay();
         long todaySessionCount = allSessions.stream()
-                .filter(s -> s.getStartTime() != null && s.getStartTime().isAfter(todayStart) && s.getStartTime().isBefore(todayEnd))
+                .filter(s -> s.getStartTime() != null && s.getStartTime().isAfter(todayStart)
+                        && s.getStartTime().isBefore(todayEnd))
                 .count();
         long todayAttendanceCount = attendancesRepository.countByCheckInTimeBetween(todayStart, todayEnd);
 
@@ -218,7 +229,8 @@ public class AdminService {
         if (request.getGender() != null && !request.getGender().trim().isEmpty()) {
             try {
                 newUser.setGender(Gender.valueOf(request.getGender().trim().toUpperCase()));
-            } catch (IllegalArgumentException ignored) { /* bỏ qua nếu giá trị không hợp lệ */ }
+            } catch (IllegalArgumentException ignored) {
+                /* bỏ qua nếu giá trị không hợp lệ */ }
         }
 
         Profile newProfile = Profile.builder()
@@ -267,10 +279,13 @@ public class AdminService {
         }
 
         // Birthday / Gender
-        if (request.getBirthday() != null) user.setBirthday(request.getBirthday());
+        if (request.getBirthday() != null)
+            user.setBirthday(request.getBirthday());
         if (request.getGender() != null && !request.getGender().trim().isEmpty()) {
-            try { user.setGender(Gender.valueOf(request.getGender().trim().toUpperCase())); }
-            catch (IllegalArgumentException ignored) {}
+            try {
+                user.setGender(Gender.valueOf(request.getGender().trim().toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         // Profile
@@ -278,8 +293,10 @@ public class AdminService {
         if (profile != null) {
             if (request.getFullName() != null && !request.getFullName().trim().isEmpty())
                 profile.setFullName(request.getFullName().trim());
-            if (request.getDepartment() != null) profile.setDepartment(request.getDepartment().trim());
-            if (request.getClassName()  != null) profile.setClassName(request.getClassName().trim());
+            if (request.getDepartment() != null)
+                profile.setDepartment(request.getDepartment().trim());
+            if (request.getClassName() != null)
+                profile.setClassName(request.getClassName().trim());
         }
 
         // Username (Mã SV — chỉ dành cho STUDENT)
@@ -335,10 +352,10 @@ public class AdminService {
                     .sum();
             if (enrollCount > 0) {
                 throw new RuntimeException(
-                    "Môn học đã có " + enrollCount + " sinh viên đang đăng ký. Không thể xóa.");
+                        "Môn học đã có " + enrollCount + " sinh viên đang đăng ký. Không thể xóa.");
             }
             throw new RuntimeException(
-                "Không thể xóa môn học đang được sử dụng trong " + courseCount + " lớp học phần.");
+                    "Không thể xóa môn học đang được sử dụng trong " + courseCount + " lớp học phần.");
         }
         subjectRepository.delete(subject);
     }
@@ -347,9 +364,12 @@ public class AdminService {
     public Subject updateSubject(Integer id, String code, String name, Integer credits) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy môn học."));
-        if (code != null && !code.trim().isEmpty()) subject.setCode(code.trim().toUpperCase());
-        if (name != null && !name.trim().isEmpty()) subject.setName(name.trim());
-        if (credits != null) subject.setCredits(credits);
+        if (code != null && !code.trim().isEmpty())
+            subject.setCode(code.trim().toUpperCase());
+        if (name != null && !name.trim().isEmpty())
+            subject.setName(name.trim());
+        if (credits != null)
+            subject.setCredits(credits);
         return subjectRepository.save(subject);
     }
 
@@ -367,12 +387,13 @@ public class AdminService {
 
         User teacher = userRepository.findById(request.getTeacherId())
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
-        
+
         Classes classes = classesRepository.findByName(request.getClassName())
                 .orElseGet(() -> {
                     String cleanCode = request.getClassName().replaceAll("[^a-zA-Z0-9_-]", "").toUpperCase();
-                    if (cleanCode.isEmpty()) cleanCode = "CLASS-" + System.currentTimeMillis();
-                    String uniqueCode = cleanCode + "-" + (int)(Math.random() * 1000);
+                    if (cleanCode.isEmpty())
+                        cleanCode = "CLASS-" + System.currentTimeMillis();
+                    String uniqueCode = cleanCode + "-" + (int) (Math.random() * 1000);
 
                     Classes newClass = Classes.builder()
                             .name(request.getClassName())
@@ -394,6 +415,7 @@ public class AdminService {
                 .subject(subject)
                 .teacher(teacher)
                 .classes(classes)
+                .courseCode(request.getClassName())
                 .semester(request.getSemester())
                 .semesterEntity(semesterEntity)
                 .maxSlots(request.getMaxSlots() != null ? request.getMaxSlots() : 50)
@@ -407,10 +429,9 @@ public class AdminService {
 
         // ── Triple-Check Filter (Bộ lọc 3 lớp) ───────────────
         scheduleService.runTripleCheck(
-            teacher.getId(), request.getRoom(),
-            request.getDayOfWeek(), request.getStartLesson(), request.getEndLesson(),
-            course, null
-        );
+                teacher.getId(), request.getRoom(),
+                request.getDayOfWeek(), request.getStartLesson(), request.getEndLesson(),
+                course, null);
 
         course = courseRepository.save(course);
 
@@ -467,6 +488,22 @@ public class AdminService {
                                 .build();
                         return subjectRepository.save(newSub);
                     });
+
+            // ── Cập nhật tên & số tín chỉ nếu admin đã thay đổi ──
+            boolean subjectChanged = false;
+            if (request.getSubjectName() != null && !request.getSubjectName().trim().isEmpty()
+                    && !request.getSubjectName().trim().equals(subject.getName())) {
+                subject.setName(request.getSubjectName().trim());
+                subjectChanged = true;
+            }
+            if (request.getCredits() != null && !request.getCredits().equals(subject.getCredits())) {
+                subject.setCredits(request.getCredits());
+                subjectChanged = true;
+            }
+            if (subjectChanged) {
+                subjectRepository.save(subject);
+            }
+
             course.setSubject(subject);
         }
 
@@ -475,8 +512,9 @@ public class AdminService {
             Classes classes = classesRepository.findByName(request.getClassName())
                     .orElseGet(() -> {
                         String cleanCode = request.getClassName().replaceAll("[^a-zA-Z0-9_-]", "").toUpperCase();
-                        if (cleanCode.isEmpty()) cleanCode = "CLASS-" + System.currentTimeMillis();
-                        String uniqueCode = cleanCode + "-" + (int)(Math.random() * 1000);
+                        if (cleanCode.isEmpty())
+                            cleanCode = "CLASS-" + System.currentTimeMillis();
+                        String uniqueCode = cleanCode + "-" + (int) (Math.random() * 1000);
 
                         Classes newClass = Classes.builder()
                                 .name(request.getClassName())
@@ -488,14 +526,23 @@ public class AdminService {
             course.setClasses(classes);
         }
 
-        if (request.getSemester() != null) course.setSemester(request.getSemester());
-        if (request.getRoom() != null) course.setRoom(request.getRoom());
-        if (request.getDayOfWeek() != null) course.setDayOfWeek(request.getDayOfWeek());
-        if (request.getStartLesson() != null) course.setStartLesson(request.getStartLesson());
-        if (request.getEndLesson() != null) course.setEndLesson(request.getEndLesson());
-        if (request.getStartDate() != null) course.setStartDate(request.getStartDate());
-        if (request.getEndDate() != null) course.setEndDate(request.getEndDate());
-        if (request.getMaxSlots() != null) course.setMaxSlots(request.getMaxSlots());
+        if (request.getClassName() != null) course.setCourseCode(request.getClassName());
+        if (request.getSemester() != null)
+            course.setSemester(request.getSemester());
+        if (request.getRoom() != null)
+            course.setRoom(request.getRoom());
+        if (request.getDayOfWeek() != null)
+            course.setDayOfWeek(request.getDayOfWeek());
+        if (request.getStartLesson() != null)
+            course.setStartLesson(request.getStartLesson());
+        if (request.getEndLesson() != null)
+            course.setEndLesson(request.getEndLesson());
+        if (request.getStartDate() != null)
+            course.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null)
+            course.setEndDate(request.getEndDate());
+        if (request.getMaxSlots() != null)
+            course.setMaxSlots(request.getMaxSlots());
 
         // ── Resolve semester entity: semesterId > label string ──
         if (course.getSemesterEntity() == null || request.getSemesterId() != null
@@ -503,15 +550,15 @@ public class AdminService {
             Semester resolved = resolveSemesterFromLabel(
                     request.getSemesterId(),
                     request.getSemester() != null ? request.getSemester() : course.getSemester());
-            if (resolved != null) course.setSemesterEntity(resolved);
+            if (resolved != null)
+                course.setSemesterEntity(resolved);
         }
 
         // ── Triple-Check Filter ────────────────────────────────
         scheduleService.runTripleCheck(
-            course.getTeacher().getId(), course.getRoom(),
-            course.getDayOfWeek(), course.getStartLesson(), course.getEndLesson(),
-            course, id
-        );
+                course.getTeacher().getId(), course.getRoom(),
+                course.getDayOfWeek(), course.getStartLesson(), course.getEndLesson(),
+                course, id);
 
         course = courseRepository.save(course);
 
@@ -574,8 +621,8 @@ public class AdminService {
         long attCount = attendancesRepository.countBySessionCoursId(id);
         if (attCount > 0) {
             throw new RuntimeException(
-                "Không thể xóa! Học phần đã có " + attCount + " bản ghi điểm danh. Vui lòng hủy các phiên điểm danh trước."
-            );
+                    "Không thể xóa! Học phần đã có " + attCount
+                            + " bản ghi điểm danh. Vui lòng hủy các phiên điểm danh trước.");
         }
 
         // Schedules sẽ tự xóa nhờ ON DELETE CASCADE trong DB
@@ -682,6 +729,7 @@ public class AdminService {
 
         return CourseDetailResponse.builder()
                 .id(course.getId())
+                .courseCode(course.getCourseCode())
                 .subjectName(course.getSubject().getName())
                 .subjectCode(course.getSubject().getCode())
                 .credits(course.getSubject().getCredits())
@@ -707,7 +755,8 @@ public class AdminService {
     }
 
     /**
-     * Resolve Semester entity: ưu tiên semesterId, fallback về parse label "HK1 — 2025-2026".
+     * Resolve Semester entity: ưu tiên semesterId, fallback về parse label "HK1 —
+     * 2025-2026".
      */
     private Semester resolveSemesterFromLabel(Integer semesterId, String semesterLabel) {
         if (semesterId != null) {
@@ -735,6 +784,12 @@ public class AdminService {
         int linkedSemesters = 0;
 
         for (Course course : courses) {
+            // 0. Backfill courseCode nếu đang null
+            if (course.getCourseCode() == null && course.getClasses() != null) {
+                course.setCourseCode(course.getClasses().getName());
+                courseRepository.save(course);
+            }
+
             // 1. Link semesterEntity nếu đang null
             if (course.getSemesterEntity() == null && course.getSemester() != null) {
                 Semester sem = resolveSemesterFromLabel(null, course.getSemester());
@@ -763,9 +818,8 @@ public class AdminService {
         }
 
         return Map.of(
-            "totalCourses", courses.size(),
-            "schedulesCreated", createdSchedules,
-            "semestersLinked", linkedSemesters
-        );
+                "totalCourses", courses.size(),
+                "schedulesCreated", createdSchedules,
+                "semestersLinked", linkedSemesters);
     }
 }

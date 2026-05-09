@@ -27,4 +27,3 @@ public class CreateCourseRequest {
     private Integer startLesson2;
     private Integer endLesson2;
 }
-

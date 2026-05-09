@@ -13,10 +13,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
     List<Schedule> findByCourseId(Integer courseId);
 
-    /**
-     * Tìm xung đột phòng: cùng phòng, cùng thứ, tiết giao nhau.
-     * Overlap rule: start1 <= end2 AND end1 >= start2
-     */
     @Query("SELECT s FROM Schedule s WHERE LOWER(s.room) = LOWER(:room) " +
            "AND s.dayOfWeek = :dow " +
            "AND s.startPeriod <= :endPeriod " +

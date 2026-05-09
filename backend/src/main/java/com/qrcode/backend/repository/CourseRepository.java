@@ -28,4 +28,18 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
         @Param("endLesson") Integer endLesson,
         @Param("excludeId") Integer excludeId
     );
+    /**
+     * Tìm các môn SV đã đăng ký (ACTIVE) mà KHÔNG có Schedule record nào.
+     * Dùng để check trùng lịch bằng legacy fields (dayOfWeek, startLesson, endLesson).
+     */
+    @Query("SELECT c FROM Course c " +
+           "JOIN Enrollment e ON e.course.id = c.id " +
+           "WHERE e.student.id = :studentId " +
+           "AND e.status = com.qrcode.backend.entity.enums.EnrollmentStatus.ACTIVE " +
+           "AND c.id <> :excludeCourseId " +
+           "AND c.schedules IS EMPTY")
+    List<Course> findEnrolledByStudentWithoutSchedule(
+        @Param("studentId") Integer studentId,
+        @Param("excludeCourseId") Integer excludeCourseId
+    );
 }

@@ -26,9 +26,19 @@ async function loadCourses() {
         courses.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.id;
-            opt.textContent = `${c.subjectName} — ${c.subjectCode} (${c.semester || ''})`;
+            opt.textContent = `${c.subjectName} — ${c.courseCode || c.subjectCode} (${c.semester || ''})`;
             sel.appendChild(opt);
         });
+
+        // ── Auto-select course nếu navigate từ Dashboard ──
+        const preselected = storageGet('selected_course_id');
+        if (preselected) {
+            sel.value = preselected;
+            storageRemove('selected_course_id');
+            if (sel.value === preselected) {
+                onCourseChange();
+            }
+        }
     } catch (e) {
         showToast('Lỗi tải danh sách học phần.', 'error');
     }
