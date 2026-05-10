@@ -5,10 +5,10 @@ function _loginStorageRemove(role, key) { localStorage.removeItem(_loginRolePref
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const identifier = document.getElementById('identifier')?.value?.trim()
-                    || document.getElementById('email')?.value?.trim()
-                    || '';
+        || document.getElementById('email')?.value?.trim()
+        || '';
     const password = document.getElementById('password').value;
     const btnText = document.getElementById('btnText');
     const btnLoader = document.getElementById('btnLoader');
@@ -33,14 +33,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
         if (response.ok) {
             showToast('Đăng nhập thành công!', 'success');
-            
+
             const role = data.user.role; // ADMIN, TEACHER, STUDENT
             // Lưu thông tin với prefix role → mỗi role có namespace riêng
-            _loginStorageSet(role, 'jwt_token',     data.token);
+            _loginStorageSet(role, 'jwt_token', data.token);
             _loginStorageSet(role, 'refresh_token', data.refreshToken || '');
-            _loginStorageSet(role, 'user_role',     role);
-            _loginStorageSet(role, 'user_name',     data.user.fullName || data.user.email);
-            _loginStorageSet(role, 'user_id',       data.user.id);
+            _loginStorageSet(role, 'user_role', role);
+            _loginStorageSet(role, 'user_name', data.user.fullName || data.user.email);
+            _loginStorageSet(role, 'user_id', data.user.id);
             if (data.user.avatar) {
                 _loginStorageSet(role, 'user_avatar', data.user.avatar);
             } else {
@@ -60,7 +60,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 } else if (role === 'ADMIN') {
                     window.location.href = '/admin/dashboard.html';
                 } else if (role === 'TEACHER') {
-                    window.location.href = '/teacher/create-session.html';
+                    window.location.href = '/teacher/dashboard.html';
                 }
             }, 1000);
         } else {
